@@ -11,6 +11,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import Link from "next/link"
+
 
 interface NavMainProps extends React.HTMLAttributes<HTMLDivElement> {
   items: {
@@ -35,10 +37,10 @@ export function NavMain({ items, className, ...props }: NavMainProps) {
                 // Check if the current path starts with the item URL or is exactly the item URL
                 isActive={pathname === item.url}
               >
-                <a href={item.url}>
+                <Link href={item.url}>
                   <item.icon className="size-4" />
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

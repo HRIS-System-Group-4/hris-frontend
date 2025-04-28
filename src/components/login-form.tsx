@@ -1,3 +1,9 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
+import axiosInstance from '@/lib/axios';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -5,8 +11,67 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { loginAdmin } from '@/services/authService';
 
 export function LoginTabs({ className }: { className?: string }) {
+  const router = useRouter();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const [companyUsername, setCompanyUsername] = useState('');
+  const [employeeId, setEmployeeId] = useState('');
+
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmitEmployee = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    console.log('Sending login data:', { email, password });
+    try {
+
+      const res = await axiosInstance.post('/login', {
+        company: companyUsername,
+        login: employeeId,
+        password: password,
+      });
+
+      const options = rememberMe ? { expires: 7 } : {}; // 7 hari jika Remember Me
+      Cookies.set('access_token', res.data.access_token, options);
+      Cookies.set('user', JSON.stringify(res.data.user), options);
+
+      router.push('/dashboard');
+    } catch (err) {
+      console.error(err);
+      alert(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    console.log('Sending login data:', { email, password });
+    try {
+
+      const res = await loginAdmin(email, password, rememberMe);
+
+      console.log('res', res);
+
+      const options = rememberMe ? { expires: 7 } : {}; // 7 hari jika Remember Me
+      Cookies.set('access_token', res.access_token, options);
+      Cookies.set('user', JSON.stringify(res.user), options);
+
+      router.push('/dashboard');
+    } catch (err) {
+      console.error(err);
+      alert(err);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <Tabs defaultValue="admin" className={cn("w-full max-w-md", className)}>
       <TabsList className="grid w-full grid-cols-2 mb-6">
@@ -16,7 +81,7 @@ export function LoginTabs({ className }: { className?: string }) {
 
       {/* EMPLOYEE FORM */}
       <TabsContent value="employee">
-        <form className="flex flex-col gap-6">
+        <form className="flex flex-col gap-6" onSubmit={handleSubmitEmployee}>
           <div className="flex flex-col items-center gap-2 text-center">
             <h1 className="text-2xl font-bold">Login to your account</h1>
             <p className="text-muted-foreground text-sm text-balance">
@@ -25,12 +90,26 @@ export function LoginTabs({ className }: { className?: string }) {
           </div>
           <div className="grid gap-6">
             <div className="grid gap-3">
-              <Label htmlFor="email">Company Username</Label>
-              <Input id="text" type="text" placeholder="hris" required />
+              <Label htmlFor="companyUsername">Company Username</Label>
+              <Input
+                id="companyUsername"
+                type="text"
+                placeholder="hris"
+                value={companyUsername}
+                onChange={(e) => setCompanyUsername(e.target.value)}
+                required
+              />
             </div>
             <div className="grid gap-3">
-              <Label htmlFor="email">Employee ID</Label>
-              <Input id="text" type="text" placeholder="0821312433" required />
+              <Label htmlFor="employeeId">Employee ID</Label>
+              <Input
+                id="employeeId"
+                type="text"
+                placeholder="0821312433"
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+                required
+              />
             </div>
             <div className="grid gap-3">
               <div className="flex items-center">
@@ -42,17 +121,26 @@ export function LoginTabs({ className }: { className?: string }) {
                   Forgot your password?
                 </a>
               </div>
-              <Input id="password" type="password" required />
+              <Input
+                id="password"
+                type="password"
+                placeholder='Password'
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="remember" />
+              <Checkbox
+                id="remember"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(!!checked)}
+              />
               <Label htmlFor="remember">Remember me</Label>
             </div>
-            <Link href={"/dashboard"}>
-              <Button type="submit" className="w-full">
-                Login
-              </Button>
-            </Link>
+            <Button type="submit" className="w-full" disabled={loading}>
+              Login
+            </Button>
           </div>
           <div className="text-center text-sm">
             Don&apos;t have an account?{" "}
@@ -65,7 +153,7 @@ export function LoginTabs({ className }: { className?: string }) {
 
       {/* ADMIN FORM */}
       <TabsContent value="admin">
-        <form className="flex flex-col gap-6">
+        <form className="flex flex-col gap-6" onSubmit={handleSubmitAdmin}>
           <div className="flex flex-col items-center gap-2 text-center">
             <h1 className="text-2xl font-bold">Login to your account</h1>
             <p className="text-muted-foreground text-sm text-balance">
@@ -75,7 +163,13 @@ export function LoginTabs({ className }: { className?: string }) {
           <div className="grid gap-6">
             <div className="grid gap-3">
               <Label htmlFor="email">Email or Phone Number</Label>
-              <Input id="email" type="email" placeholder="example@mail.com or 0821312433" required />
+              <Input
+                id="email"
+                type="email"
+                placeholder="example@mail.com or 0821312433"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required />
             </div>
             <div className="grid gap-3">
               <div className="flex items-center">
@@ -87,17 +181,26 @@ export function LoginTabs({ className }: { className?: string }) {
                   Forgot your password?
                 </a>
               </div>
-              <Input id="password" type="password" required />
+              <Input
+                id="password"
+                type="password"
+                placeholder='Password'
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="remember" />
+              <Checkbox
+                id="remember"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(!!checked)}
+              />
               <Label htmlFor="remember">Remember me</Label>
             </div>
-            <Link href={"/dashboard"}>
-              <Button type="submit" className="w-full">
-                Login
-              </Button>
-            </Link>
+            <Button type="submit" className="w-full" disabled={loading}>
+              Login
+            </Button>
             <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
               <span className="bg-background text-muted-foreground relative z-10 px-2">
                 Or continue with

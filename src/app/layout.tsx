@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter_Tight } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight-sans",
@@ -32,7 +33,9 @@ export default function RootLayout({
       <body
         className={`${interTight.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
