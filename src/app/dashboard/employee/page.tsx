@@ -1,6 +1,6 @@
 "use client"
 
-export default function EmployeesPage() {
+export default function EmployeePage() {
     return (
       <div className="rounded-lg border p-4">
         <h2 className="text-lg font-medium mb-4">Employee Management</h2>

@@ -2,6 +2,7 @@
 
 import type * as React from "react"
 import { usePathname } from "next/navigation"
+import { Progress } from "@/components/ui/progress"
 
 import {
   SidebarGroup,
@@ -10,6 +11,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
+import { Badge } from "./ui/badge"
+import SubsOverview from "./subs-overview"
 
 interface NavSecondaryProps extends React.HTMLAttributes<HTMLDivElement> {
   items: {
@@ -25,7 +29,7 @@ export function NavSecondary({ items, className, ...props }: NavSecondaryProps) 
   return (
     <SidebarGroup className={className} {...props}>
       <SidebarGroupContent>
-        <SidebarMenu>
+        <SidebarMenu >
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
@@ -40,6 +44,7 @@ export function NavSecondary({ items, className, ...props }: NavSecondaryProps) 
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
+          <SubsOverview />
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
