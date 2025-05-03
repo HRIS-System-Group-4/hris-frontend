@@ -1,10 +1,11 @@
-import { SectionCards } from "@/components/section-cards";
+import DashboardAdmin from "@/components/dashboard/dashboard-admin";
+import DashboardEmployee from "@/components/dashboard/dashboard-employee";
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-1 flex-col gap-4">
-      <SectionCards />
-      <div className="aspect-video rounded-xl bg-muted/50" />
+    <div>
+      {/* <DashboardAdmin /> */}
+      <DashboardEmployee />
     </div>
   )
 }

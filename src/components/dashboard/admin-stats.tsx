@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export function SectionCards() {
+export function AdminStats() {
   return (
     <div className="grid auto-rows-min gap-4 md:grid-cols-4">
         <Card>

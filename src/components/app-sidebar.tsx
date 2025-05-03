@@ -15,6 +15,8 @@ import {
   IconSettings,
   IconUsers,
   IconClock,
+  IconCalendarEvent,
+  IconBuildings,
 } from "@tabler/icons-react"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
@@ -41,89 +43,89 @@ const data = {
     },
     {
       title: "Employee",
-      url: "/dashboard/employees",
+      url: "/dashboard/employee",
       icon: IconUsers,
     },
     {
       title: "Check Lock",
-      url: "/dashboard/check-lock",
+      url: "/dashboard/check-clock",
       icon: IconClock,
     },
-    // {
-    //   title: "Employee",
-    //   url: "#",
-    //   icon: IconHome,
-    // },
-    // {
-    //   title: "Employee",
-    //   url: "#",
-    //   icon: IconHome,
-    // },
-  ],
-  navClouds: [
     {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
+      title: "Attendance",
+      url: "/dashboard/attendance",
+      icon: IconCalendarEvent,
     },
     {
-      title: "Proposal",
-      icon: IconFileDescription,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: IconFileAi,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
+      title: "Branch",
+      url: "/dashboard/branch",
+      icon: IconBuildings,
     },
   ],
+  // navClouds: [
+  //   {
+  //     title: "Capture",
+  //     icon: IconCamera,
+  //     isActive: true,
+  //     url: "#",
+  //     items: [
+  //       {
+  //         title: "Active Proposals",
+  //         url: "#",
+  //       },
+  //       {
+  //         title: "Archived",
+  //         url: "#",
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     title: "Proposal",
+  //     icon: IconFileDescription,
+  //     url: "#",
+  //     items: [
+  //       {
+  //         title: "Active Proposals",
+  //         url: "#",
+  //       },
+  //       {
+  //         title: "Archived",
+  //         url: "#",
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     title: "Prompts",
+  //     icon: IconFileAi,
+  //     url: "#",
+  //     items: [
+  //       {
+  //         title: "Active Proposals",
+  //         url: "#",
+  //       },
+  //       {
+  //         title: "Archived",
+  //         url: "#",
+  //       },
+  //     ],
+  //   },
+  // ],
   navSecondary: [
     {
       title: "Settings",
       url: "/dashboard/settings",
       icon: IconSettings,
     },
-    {
-      title: "Get Help",
-      url: "/dashboard/help",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "/dashboard/search",
-      icon: IconSearch,
-    },
+    // {
+    //   title: "Get Help",
+    //   url: "/dashboard/help",
+    //   icon: IconHelp,
+    // },
+    // {
+    //   title: "Search",
+    //   url: "/dashboard/search",
+    //   icon: IconSearch,
+    // },
   ],
   documents: [
     {
