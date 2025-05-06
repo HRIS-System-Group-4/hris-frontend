@@ -9,11 +9,13 @@ export function useBreadcrumbSegments() {
     const label = (() => {
       if (segment === "dashboard") return null
       if (segment === "add") return "Add"
-      if (/^[0-9a-fA-F-]+$/.test(segment)){
-          if (segments[index - 1] === "employee")
+      if (/^[0-9a-fA-F-]+$/.test(segment)) {
+        if (segments[index - 1] === "edit")
+          return "Edit"
+        if (segments[index - 1] === "employee")
           return "Detail"
-        }
-      if (segment === "edit") return "Edit"
+      }
+      if (segment === "edit") return null
       return segment.charAt(0).toUpperCase() + segment.slice(1)
     })()
 

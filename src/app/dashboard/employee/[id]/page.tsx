@@ -286,7 +286,7 @@ export default function EmployeeDetailsPage() {
           <CustomPageSubtitle>Manage and organize all your employees' data</CustomPageSubtitle>
         </CustomPageTitleContainer>
         <CustomPageTitleButtons>
-          <Link href={'/dashboard/employee/add'}>
+          <Link href={`/dashboard/employee/edit/${params.id}`}>
             <Button variant="default" size={"lg"}>
               Edit Employee</Button>
           </Link>
