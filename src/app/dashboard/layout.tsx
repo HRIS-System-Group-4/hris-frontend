@@ -16,7 +16,8 @@ import {
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { NavUser } from "@/components/nav-user"
-import {toTitleCase} from "@/lib/strings"
+import { toTitleCase } from "@/lib/strings"
+import { useBreadcrumbSegments } from "@/hooks/use-breadcrumbs"
 
 export default function DashboardLayout({
     children,
@@ -34,6 +35,8 @@ export default function DashboardLayout({
         },
     }
 
+    const segments = useBreadcrumbSegments()
+
     return (
         <SidebarProvider>
             <AppSidebar />
@@ -45,36 +48,25 @@ export default function DashboardLayout({
                         {/* <CustomBreadcrumb></CustomBreadcrumb> */}
                         <Breadcrumb>
                             <BreadcrumbList>
-                                {pathSegments.map((segment, index) => {
-                                    const isLast = index === pathSegments.length - 1
-                                    const href = "/" + pathSegments.slice(0, index + 1).join("/")
-
-                                    // Check if the first segment is "dashboard" and skip it
-                                    const isDashboard = segment === "dashboard"
-                                    const shouldSkipDashboard = isDashboard && pathSegments.length > 1
-
-                                    if (shouldSkipDashboard && index === 0) return null
-
-                                    return (
-                                        <div key={href} className="flex items-center gap-1">
-                                            <BreadcrumbItem>
-                                                {isLast ? (
-                                                    <BreadcrumbPage>{toTitleCase(segment)}</BreadcrumbPage>
-                                                ) : (
-                                                    <BreadcrumbLink asChild>
-                                                        <Link href={href}>{toTitleCase(segment)}</Link>
-                                                    </BreadcrumbLink>
-                                                )}
-                                            </BreadcrumbItem>
-                                            {!isLast && <BreadcrumbSeparator />}
-                                        </div>
-                                    )
-                                })}
+                                {segments.map(({ label, href, isLast }) => (
+                                    <div key={href} className="flex items-center gap-1">
+                                        <BreadcrumbItem>
+                                            {isLast ? (
+                                                <BreadcrumbPage>{label}</BreadcrumbPage>
+                                            ) : (
+                                                <BreadcrumbLink asChild>
+                                                    <Link href={href}>{label}</Link>
+                                                </BreadcrumbLink>
+                                            )}
+                                        </BreadcrumbItem>
+                                        {!isLast && <BreadcrumbSeparator />}
+                                    </div>
+                                ))}
                             </BreadcrumbList>
                         </Breadcrumb>
+
                     </div>
                     <div className="w-fit">
-
                         <NavUser user={data.user} />
                     </div>
                 </header>
