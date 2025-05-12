@@ -29,43 +29,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
 import Link from "next/link"
+import { formatWorkType } from "@/lib/utils/workType"
 
-// Define types
-type Billing = {
+type CheckClock = {
   id: string
-  invoiceDate: string
-  plan: string
-  ammount: string
-  status: "pending" | "processing" | "paid" | "failed"
+  name: string
+  totalEmployee: string
+  type: "wfo" | "wfa" | "hybrid"
 }
 
 type SortDirection = "asc" | "desc" | undefined
-type SortField = keyof Billing | undefined
+type SortField = keyof CheckClock | undefined
 
-// Status badge component
-const StatusBadge = ({ status }: { status: Billing["status"] }) => {
-  const statusConfig = {
-    pending: { label: "Pending", variant: "outline" as const },
-    processing: { label: "Processing", variant: "outline" as const },
-    paid: { label: "Paid", variant: "outline" as const },
-    failed: { label: "Failed", variant: "destructive" as const },
-  }
-
-  const config = statusConfig[status]
-
-  return (
-    <Badge variant={config.variant} className="capitalize">
-      {config.label}
-    </Badge>
-  )
-}
-
-
-export function TableBilling({ data }: { data: Billing[] }) {
+export function TableCheckClock({ data }: { data: CheckClock[] }) {
   const { toast } = useToast()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
+  // const [selectedBranch, setSelectedBranch] = useState<string | null>(null)
+  // const [selectedJobTitle, setSelectedJobTitle] = useState<string | null>(null)
+  // const [selectedGrade, setSelectedGrade] = useState<string | null>(null)
+  const [selectedTypes, setSelectedTypes] = useState<string | null>(null)
   const [sortField, setSortField] = useState<SortField>(undefined)
   const [sortDirection, setSortDirection] = useState<SortDirection>(undefined)
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
@@ -73,12 +55,14 @@ export function TableBilling({ data }: { data: Billing[] }) {
   const [rowsPerPage, setRowsPerPage] = useState(10)
 
   // Get unique values for filters
-  const getUniqueValues = <T extends keyof Billing>(field: T): Billing[T][] => {
+  const getUniqueValues = <T extends keyof CheckClock>(field: T): CheckClock[T][] => {
     return Array.from(new Set(data.map((data) => data[field])))
   }
 
-  const plans = getUniqueValues("plan")
-  const statuses = getUniqueValues("status")
+  // const branches = getUniqueValues("branch")
+  // const jobTitles = getUniqueValues("jobTitle")
+  // const grades = getUniqueValues("grade")
+  const types = getUniqueValues("type")
 
   // Handle sorting
   const handleSort = (field: SortField) => {
@@ -112,24 +96,41 @@ export function TableBilling({ data }: { data: Billing[] }) {
 
   const toggleAllRows = (checked: boolean) => {
     if (checked) {
-      const allIds = filteredData.map((data) => data.id)
+      const allIds = filteredDatas.map((data) => data.id)
       setSelectedRows(new Set(allIds))
     } else {
       setSelectedRows(new Set())
     }
   }
 
+  // // Handle view details
+  // const handleViewDetails = (data: CheckClock) => {
+  //   toast({
+  //     title: "View Employee Details",
+  //     description: `Viewing details for ${data.firstName} ${employee.lastName}`,
+  //   })
+  // }
 
-  // Filter Billing based on search and filters
-  const filteredData = data.filter((data) => {
-    const matchesPlan = selectedPlan ? data.plan === selectedPlan : true
-    const matchesStatus = selectedStatus ? data.status === selectedStatus : true
+  // Handle delete
+  const handleDelete = (data: CheckClock) => {
+    toast({
+      title: "Delete Employee",
+      description: `Are you sure you want to delete ${data.name} ?`,
+      variant: "destructive",
+    })
+  }
 
-    return matchesPlan && matchesStatus
+  // Filter employees based on search and filters
+  const filteredDatas = data.filter((data) => {
+    const matchesSearch = searchQuery ? data.name.includes(searchQuery.toLowerCase()) : true
+
+    const matchesTypes = selectedTypes ? data.type === selectedTypes : true
+
+    return matchesSearch && matchesTypes
   })
 
-  // Sort Billing
-  const sortedData = [...filteredData].sort((a, b) => {
+  // Sort employees
+  const sortedDatas = [...filteredDatas].sort((a, b) => {
     if (!sortField || !sortDirection) return 0
 
     const fieldA = a[sortField] ?? ""
@@ -142,14 +143,14 @@ export function TableBilling({ data }: { data: Billing[] }) {
 
 
   // Pagination
-  const totalPages = Math.ceil(sortedData.length / rowsPerPage)
+  const totalPages = Math.ceil(sortedDatas.length / rowsPerPage)
   const startIndex = (currentPage - 1) * rowsPerPage
-  const paginatedData = sortedData.slice(startIndex, startIndex + rowsPerPage)
+  const paginatedDatas = sortedDatas.slice(startIndex, startIndex + rowsPerPage)
 
   // Reset to first page when filters change
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, selectedPlan, selectedStatus])
+  }, [searchQuery, selectedTypes])
 
   return (
 
@@ -160,60 +161,27 @@ export function TableBilling({ data }: { data: Billing[] }) {
           <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search Billing..."
+            placeholder="Search check clock..."
             className="pl-8"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {/* Branch Filter */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="h-10">
-                {selectedPlan || "Plan"}
-                <ChevronDownIcon className="ml-2 h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
-              <Command>
-                <CommandInput placeholder="Search branch..." />
-                <CommandList>
-                  <CommandEmpty>No branch found.</CommandEmpty>
-                  <CommandGroup>
-                    <CommandItem onSelect={() => setSelectedPlan(null)} className="justify-between">
-                      All
-                      {selectedPlan === null && <CheckIcon className="h-4 w-4" />}
-                    </CommandItem>
-                    {plans.map((plan) => (
-                      <CommandItem
-                        key={plan}
-                        onSelect={() => setSelectedPlan(plan)}
-                        className="justify-between"
-                      >
-                        {plan}
-                        {selectedPlan === plan && <CheckIcon className="h-4 w-4" />}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
 
           {/* Status Filter */}
           <Select
-            value={selectedStatus || ""}
-            onValueChange={(value) => setSelectedStatus(value === "all" ? null : value)}
+            value={selectedTypes || ""}
+            onValueChange={(value) => setSelectedTypes(value === "all" ? null : value)}
           >
             <SelectTrigger className="w-[130px] h-10">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              {statuses.map((status) => (
-                <SelectItem key={status} value={status} className="capitalize">
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+              <SelectItem value="all">All Type</SelectItem>
+              {types.map((type) => (
+                <SelectItem key={type} value={type} className="capitalize">
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -226,47 +194,58 @@ export function TableBilling({ data }: { data: Billing[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("invoiceDate")}>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("name")}>
                 <div className="flex items-center">
-                  Date
-                  <SortIcon field="invoiceDate" currentField={sortField} direction={sortDirection} />
+                  Check Clock Name
+                  <SortIcon field="name" currentField={sortField} direction={sortDirection} />
                 </div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("plan")}>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("totalEmployee")}>
                 <div className="flex items-center">
-                  Plan
-                  <SortIcon field="plan" currentField={sortField} direction={sortDirection} />
+                  Total Employee
+                  <SortIcon field="totalEmployee" currentField={sortField} direction={sortDirection} />
                 </div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("ammount")}>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("type")}>
                 <div className="flex items-center">
-                  Ammount
-                  <SortIcon field="ammount" currentField={sortField} direction={sortDirection} />
+                  Type
+                  <SortIcon field="type" currentField={sortField} direction={sortDirection} />
                 </div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("status")}>
-                <div className="flex items-center">
-                  Status
-                  <SortIcon field="status" currentField={sortField} direction={sortDirection} />
-                </div>
-              </TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedData.length === 0 ? (
+            {paginatedDatas.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                  No Billing found.
+                  No employees found.
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedData.map((data) => (
+              paginatedDatas.map((data) => (
                 <TableRow key={data.id}>
-                  <TableCell>{data.invoiceDate}</TableCell>
-                  <TableCell>{data.plan}</TableCell>
-                  <TableCell>{data.ammount}</TableCell>
+                  <TableCell>{data.name}</TableCell>
+                  <TableCell>{data.totalEmployee}</TableCell>
                   <TableCell>
-                    <StatusBadge status={data.status} />
+                    {formatWorkType(data.type)}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Link href={`/dashboard/check-clock/${data.id}`}>
+                        <Button variant="ghost" size="icon">
+                          <EyeIcon className="h-4 w-4" />
+                          <span className="sr-only">View details</span>
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                        <span className="sr-only">Delete</span>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -278,9 +257,9 @@ export function TableBilling({ data }: { data: Billing[] }) {
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing <strong>{paginatedData.length > 0 ? startIndex + 1 : 0}</strong> to{" "}
-          <strong>{Math.min(startIndex + rowsPerPage, filteredData.length)}</strong> of{" "}
-          <strong>{filteredData.length}</strong> Billing
+          Showing <strong>{paginatedDatas.length > 0 ? startIndex + 1 : 0}</strong> to{" "}
+          <strong>{Math.min(startIndex + rowsPerPage, filteredDatas.length)}</strong> of{" "}
+          <strong>{filteredDatas.length}</strong> employees
         </div>
         <div className="flex items-center space-x-2">
           <Select
