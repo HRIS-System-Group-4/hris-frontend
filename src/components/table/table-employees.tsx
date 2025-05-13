@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/use-toast"
 import Link from "next/link"
 
 // Define types
@@ -396,7 +396,7 @@ export function TableEmployees({ data }: { data: Employee[] }) {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Link href={`/dashboard/employee/${employee.id}`}> 
+                      <Link href={`/dashboard/employee/${employee.id}`}>
                         <Button variant="ghost" size="icon" onClick={() => handleViewDetails(employee)}>
                           <EyeIcon className="h-4 w-4" />
                           <span className="sr-only">View details</span>
