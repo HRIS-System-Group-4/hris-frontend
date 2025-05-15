@@ -28,9 +28,41 @@ export default function RegisterForm() {
     },
   })
 
-  function onSubmit(data: RegisterFormData) {
-    console.log("Register Data", data)
-    // TODO: handle registration here
+  // function onSubmit(data: RegisterFormData) {
+  //   console.log("Register Data", data)
+  //   // TODO: handle registration here
+  // }
+  async function onSubmit(data: RegisterFormData) {
+    try {
+      const res = await fetch("http://localhost:8000/api/admin/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+          password: data.password,
+          password_confirmation: data.confirmPassword,
+        }),
+      });
+  
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Registration failed");
+      }
+  
+      const result = await res.json();
+      console.log("Success", result);
+      alert("Registration success!");
+      // Optionally redirect:
+      // router.push("/auth/login");
+    } catch (err: any) {
+      console.error("Error registering:", err);
+      alert("Registration failed: " + err.message);
+    }
   }
 
   return (
