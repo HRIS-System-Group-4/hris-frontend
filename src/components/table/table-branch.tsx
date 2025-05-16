@@ -29,50 +29,44 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
 import Link from "next/link"
+import { formatWorkType } from "@/lib/utils/workType"
+import { toTitleCase } from "@/lib/strings"
 
-// Define types
-type Employee = {
+type Branch = {
   id: string
-  firstName: string
-  lastName: string
-  avatar?: string
-  jobTitle: string
-  grade: string
-  branch: string
-  status: "active" | "inactive" | "pending" | "suspended"
-  email: string
-  phone: string
-  startDate: string
-  department: string
+  name: string
+  address: string
+  city: string
+  country: string
+  status: "active" | "inactive"
 }
 
 type SortDirection = "asc" | "desc" | undefined
-type SortField = keyof Employee | undefined
+type SortField = keyof Branch | undefined
 
-// Status badge component
-const StatusBadge = ({ status }: { status: Employee["status"] }) => {
+const StatusBadge = ({ status }: { status: Branch["status"] }) => {
   const statusConfig = {
-    active: { label: "Active", variant: "outline" as const },
-    inactive: { label: "Inactive", variant: "outline" as const },
-    pending: { label: "Pending", variant: "outline" as const },
-    suspended: { label: "Suspended", variant: "destructive" as const },
+    active: { label: "Active", variant: "secondary" as const , className: "bg-green-50 text-green-500"},
+    inactive: { label: "Inactive", variant: "secondary" as const , className: "bg-red-50 text-red-500"},
   }
 
   const config = statusConfig[status]
 
   return (
-    <Badge variant={config.variant} className="capitalize">
+    <Badge variant={config.variant} className={cn("capitalize", config.className)}>
       {config.label}
     </Badge>
   )
 }
 
-export function TableEmployees({ data }: { data: Employee[] }) {
+export function TableBranch({ data }: { data: Branch[] }) {
   const { toast } = useToast()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedBranch, setSelectedBranch] = useState<string | null>(null)
-  const [selectedJobTitle, setSelectedJobTitle] = useState<string | null>(null)
-  const [selectedGrade, setSelectedGrade] = useState<string | null>(null)
+  // const [selectedBranch, setSelectedBranch] = useState<string | null>(null)
+  // const [selectedJobTitle, setSelectedJobTitle] = useState<string | null>(null)
+  // const [selectedGrade, setSelectedGrade] = useState<string | null>(null)
+  const [selectedCity, setSelectedCity] = useState<string | null>(null)
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [sortField, setSortField] = useState<SortField>(undefined)
   const [sortDirection, setSortDirection] = useState<SortDirection>(undefined)
@@ -81,13 +75,12 @@ export function TableEmployees({ data }: { data: Employee[] }) {
   const [rowsPerPage, setRowsPerPage] = useState(10)
 
   // Get unique values for filters
-  const getUniqueValues = <T extends keyof Employee>(field: T): Employee[T][] => {
-    return Array.from(new Set(data.map((employee) => employee[field])))
+  const getUniqueValues = <T extends keyof Branch>(field: T): Branch[T][] => {
+    return Array.from(new Set(data.map((data) => data[field])))
   }
 
-  const branches = getUniqueValues("branch")
-  const jobTitles = getUniqueValues("jobTitle")
-  const grades = getUniqueValues("grade")
+  const cities = getUniqueValues("city")
+  const countries = getUniqueValues("country")
   const statuses = getUniqueValues("status")
 
   // Handle sorting
@@ -122,44 +115,43 @@ export function TableEmployees({ data }: { data: Employee[] }) {
 
   const toggleAllRows = (checked: boolean) => {
     if (checked) {
-      const allIds = filteredEmployees.map((employee) => employee.id)
+      const allIds = filteredDatas.map((data) => data.id)
       setSelectedRows(new Set(allIds))
     } else {
       setSelectedRows(new Set())
     }
   }
 
-  // Handle view details
-  const handleViewDetails = (employee: Employee) => {
-    toast({
-      title: "View Employee Details",
-      description: `Viewing details for ${employee.firstName} ${employee.lastName}`,
-    })
-  }
+  // // Handle view details
+  // const handleViewDetails = (data: Branch) => {
+  //   toast({
+  //     title: "View Employee Details",
+  //     description: `Viewing details for ${data.firstName} ${employee.lastName}`,
+  //   })
+  // }
 
   // Handle delete
-  const handleDelete = (employee: Employee) => {
+  const handleDelete = (data: Branch) => {
     toast({
-      title: "Delete Employee",
-      description: `Are you sure you want to delete ${employee.firstName} ${employee.lastName}?`,
+      title: "Delete Branch",
+      description: `Are you sure you want to delete ${data.name} ?`,
       variant: "destructive",
     })
   }
 
   // Filter employees based on search and filters
-  const filteredEmployees = data.filter((employee) => {
-    const fullName = `${employee.firstName} ${employee.lastName}`.toLowerCase()
-    const matchesSearch = searchQuery ? fullName.includes(searchQuery.toLowerCase()) : true
-    const matchesBranch = selectedBranch ? employee.branch === selectedBranch : true
-    const matchesJobTitle = selectedJobTitle ? employee.jobTitle === selectedJobTitle : true
-    const matchesGrade = selectedGrade ? employee.grade === selectedGrade : true
-    const matchesStatus = selectedStatus ? employee.status === selectedStatus : true
+  const filteredDatas = data.filter((data) => {
+    const matchesSearch = searchQuery ? data.name.includes(searchQuery.toLowerCase()) : true
 
-    return matchesSearch && matchesBranch && matchesJobTitle && matchesGrade && matchesStatus
+    const matchesCities = selectedCity ? data.city === selectedCity : true
+    const matchesCountries = selectedCountry ? data.country === selectedCountry : true
+    const matchesStatus = selectedStatus ? data.status === selectedStatus : true
+
+    return matchesSearch && matchesCities && matchesCountries && matchesStatus
   })
 
   // Sort employees
-  const sortedEmployees = [...filteredEmployees].sort((a, b) => {
+  const sortedDatas = [...filteredDatas].sort((a, b) => {
     if (!sortField || !sortDirection) return 0
 
     const fieldA = a[sortField] ?? ""
@@ -172,14 +164,14 @@ export function TableEmployees({ data }: { data: Employee[] }) {
 
 
   // Pagination
-  const totalPages = Math.ceil(sortedEmployees.length / rowsPerPage)
+  const totalPages = Math.ceil(sortedDatas.length / rowsPerPage)
   const startIndex = (currentPage - 1) * rowsPerPage
-  const paginatedEmployees = sortedEmployees.slice(startIndex, startIndex + rowsPerPage)
+  const paginatedDatas = sortedDatas.slice(startIndex, startIndex + rowsPerPage)
 
   // Reset to first page when filters change
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, selectedBranch, selectedJobTitle, selectedGrade, selectedStatus])
+  }, [searchQuery, setSelectedCity, selectedCountry, selectedStatus])
 
   return (
 
@@ -190,39 +182,40 @@ export function TableEmployees({ data }: { data: Employee[] }) {
           <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search employees..."
+            placeholder="Search branch..."
             className="pl-8"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {/* Branch Filter */}
+
+          {/* Cities Filter */}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="h-10">
-                {selectedBranch || "Branch"}
+                {selectedCity || "City"}
                 <ChevronDownIcon className="ml-2 h-4 w-4" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[200px] p-0">
               <Command>
-                <CommandInput placeholder="Search branch..." />
+                <CommandInput placeholder="Search city..." />
                 <CommandList>
-                  <CommandEmpty>No branch found.</CommandEmpty>
+                  <CommandEmpty>No city found.</CommandEmpty>
                   <CommandGroup>
-                    <CommandItem onSelect={() => setSelectedBranch(null)} className="justify-between">
+                    <CommandItem onSelect={() => setSelectedCity(null)} className="justify-between">
                       All Branches
-                      {selectedBranch === null && <CheckIcon className="h-4 w-4" />}
+                      {selectedCity === null && <CheckIcon className="h-4 w-4" />}
                     </CommandItem>
-                    {branches.map((branch) => (
+                    {cities.map((city) => (
                       <CommandItem
-                        key={branch}
-                        onSelect={() => setSelectedBranch(branch)}
+                        key={city}
+                        onSelect={() => setSelectedCity(city)}
                         className="justify-between"
                       >
-                        {branch}
-                        {selectedBranch === branch && <CheckIcon className="h-4 w-4" />}
+                        {city}
+                        {selectedCity === city && <CheckIcon className="h-4 w-4" />}
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -231,32 +224,32 @@ export function TableEmployees({ data }: { data: Employee[] }) {
             </PopoverContent>
           </Popover>
 
-          {/* Job Title Filter */}
+          {/* Country Filter */}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="h-10">
-                {selectedJobTitle || "Job Title"}
+                {selectedCountry || "Country"}
                 <ChevronDownIcon className="ml-2 h-4 w-4" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[200px] p-0">
               <Command>
-                <CommandInput placeholder="Search job title..." />
+                <CommandInput placeholder="Search country..." />
                 <CommandList>
-                  <CommandEmpty>No job title found.</CommandEmpty>
+                  <CommandEmpty>No country found.</CommandEmpty>
                   <CommandGroup>
-                    <CommandItem onSelect={() => setSelectedJobTitle(null)} className="justify-between">
-                      All Job Titles
-                      {selectedJobTitle === null && <CheckIcon className="h-4 w-4" />}
+                    <CommandItem onSelect={() => setSelectedCountry(null)} className="justify-between">
+                      All Branches
+                      {selectedCountry === null && <CheckIcon className="h-4 w-4" />}
                     </CommandItem>
-                    {jobTitles.map((title) => (
+                    {countries.map((country) => (
                       <CommandItem
-                        key={title}
-                        onSelect={() => setSelectedJobTitle(title)}
+                        key={country}
+                        onSelect={() => setSelectedCountry(country)}
                         className="justify-between"
                       >
-                        {title}
-                        {selectedJobTitle === title && <CheckIcon className="h-4 w-4" />}
+                        {country}
+                        {selectedCountry === country && <CheckIcon className="h-4 w-4" />}
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -264,24 +257,6 @@ export function TableEmployees({ data }: { data: Employee[] }) {
               </Command>
             </PopoverContent>
           </Popover>
-
-          {/* Grade Filter */}
-          <Select
-            value={selectedGrade || ""}
-            onValueChange={(value) => setSelectedGrade(value === "" ? null : value)}
-          >
-            <SelectTrigger className="w-[100px] h-10">
-              <SelectValue placeholder="Grade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Grades</SelectItem>
-              {grades.map((grade) => (
-                <SelectItem key={grade} value={grade}>
-                  {grade}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
 
           {/* Status Filter */}
           <Select
@@ -300,6 +275,8 @@ export function TableEmployees({ data }: { data: Employee[] }) {
               ))}
             </SelectContent>
           </Select>
+
+
         </div>
       </div>
 
@@ -308,43 +285,32 @@ export function TableEmployees({ data }: { data: Employee[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[40px]">
-                <Checkbox
-                  checked={
-                    paginatedEmployees.length > 0 &&
-                    paginatedEmployees.every((employee) => selectedRows.has(employee.id))
-                  }
-                  onCheckedChange={(checked) => toggleAllRows(!!checked)}
-                  aria-label="Select all"
-                />
-              </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("firstName")}>
-                <div className="flex items-center">
-                  Employee Name
-                  <SortIcon field="firstName" currentField={sortField} direction={sortDirection} />
-                </div>
-              </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("jobTitle")}>
-                <div className="flex items-center">
-                  Job Title
-                  <SortIcon field="jobTitle" currentField={sortField} direction={sortDirection} />
-                </div>
-              </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("grade")}>
-                <div className="flex items-center">
-                  Grade
-                  <SortIcon field="grade" currentField={sortField} direction={sortDirection} />
-                </div>
-              </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("branch")}>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("name")}>
                 <div className="flex items-center">
                   Branch
-                  <SortIcon field="branch" currentField={sortField} direction={sortDirection} />
+                  <SortIcon field="name" currentField={sortField} direction={sortDirection} />
+                </div>
+              </TableHead>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("address")}>
+                <div className="flex items-center">
+                  Address
+                </div>
+              </TableHead>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("city")}>
+                <div className="flex items-center">
+                  City
+                  <SortIcon field="city" currentField={sortField} direction={sortDirection} />
+                </div>
+              </TableHead>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("country")}>
+                <div className="flex items-center">
+                  Country
+                  <SortIcon field="country" currentField={sortField} direction={sortDirection} />
                 </div>
               </TableHead>
               <TableHead className="cursor-pointer" onClick={() => handleSort("status")}>
                 <div className="flex items-center">
-                  Account Status
+                  Status
                   <SortIcon field="status" currentField={sortField} direction={sortDirection} />
                 </div>
               </TableHead>
@@ -352,52 +318,26 @@ export function TableEmployees({ data }: { data: Employee[] }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedEmployees.length === 0 ? (
+            {paginatedDatas.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                  No employees found.
+                  No branches found.
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedEmployees.map((employee) => (
-                <TableRow key={employee.id}>
+              paginatedDatas.map((data) => (
+                <TableRow key={data.id}>
+                  <TableCell>{data.name}</TableCell>
+                  <TableCell>{data.address}</TableCell>
+                  <TableCell>{data.city}</TableCell>
+                  <TableCell>{data.country}</TableCell>
                   <TableCell>
-                    <Checkbox
-                      checked={selectedRows.has(employee.id)}
-                      onCheckedChange={() => toggleRowSelection(employee.id)}
-                      aria-label={`Select ${employee.firstName} ${employee.lastName}`}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage
-                          src={employee.avatar || "/placeholder.svg"}
-                          alt={`${employee.firstName} ${employee.lastName}`}
-                        />
-                        <AvatarFallback>
-                          {employee.firstName[0]}
-                          {employee.lastName[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">
-                          {employee.firstName} {employee.lastName}
-                        </div>
-                        <div className="text-xs text-muted-foreground">{employee.email}</div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{employee.jobTitle}</TableCell>
-                  <TableCell>{employee.grade}</TableCell>
-                  <TableCell>{employee.branch}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={employee.status} />
+                    <StatusBadge status={data.status} />
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Link href={`/dashboard/employee/${employee.id}`}>
-                        <Button variant="ghost" size="icon" onClick={() => handleViewDetails(employee)}>
+                      <Link href={`/dashboard/branch/${data.id}`}>
+                        <Button variant="ghost" size="icon">
                           <EyeIcon className="h-4 w-4" />
                           <span className="sr-only">View details</span>
                         </Button>
@@ -406,7 +346,6 @@ export function TableEmployees({ data }: { data: Employee[] }) {
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => handleDelete(employee)}
                       >
                         <TrashIcon className="h-4 w-4" />
                         <span className="sr-only">Delete</span>
@@ -423,9 +362,9 @@ export function TableEmployees({ data }: { data: Employee[] }) {
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing <strong>{paginatedEmployees.length > 0 ? startIndex + 1 : 0}</strong> to{" "}
-          <strong>{Math.min(startIndex + rowsPerPage, filteredEmployees.length)}</strong> of{" "}
-          <strong>{filteredEmployees.length}</strong> employees
+          Showing <strong>{paginatedDatas.length > 0 ? startIndex + 1 : 0}</strong> to{" "}
+          <strong>{Math.min(startIndex + rowsPerPage, filteredDatas.length)}</strong> of{" "}
+          <strong>{filteredDatas.length}</strong> employees
         </div>
         <div className="flex items-center space-x-2">
           <Select

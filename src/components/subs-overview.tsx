@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
@@ -25,9 +26,11 @@ export default function SubsOverview() {
                 </div>
             </CardContent> */}
             <CardFooter>
-                <Button variant="outline" className="w-full">
-                    Upgrade
-                </Button>
+                <Link href={"/dashboard/pricing"} className="w-full">
+                    <Button variant="outline" className="w-full">
+                        Upgrade
+                    </Button>
+                </Link>
             </CardFooter>
         </Card>
     )

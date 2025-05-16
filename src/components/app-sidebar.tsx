@@ -47,7 +47,7 @@ const data = {
       icon: IconUsers,
     },
     {
-      title: "Check Lock",
+      title: "Check Clock",
       url: "/dashboard/check-clock",
       icon: IconClock,
     },

@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/use-toast"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
 import * as z from "zod"
@@ -337,7 +337,7 @@ export default function EditEmployee() {
                                                     <FormItem>
                                                         <FormLabel>NIK (National ID)</FormLabel>
                                                         <FormControl className="w-full" aria-disabled>
-                                                            <Input placeholder="Enter 16-digit NIK" {...field} disabled/>
+                                                            <Input placeholder="Enter 16-digit NIK" {...field} disabled />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -861,7 +861,7 @@ export default function EditEmployee() {
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle className="text-lg font-semibold">Add Employee</DialogTitle>
+                                <DialogTitle className="text-lg font-semibold">Save Employee</DialogTitle>
                                 <DialogDescription>
                                     Please review the details below before adding the employee. Click Confirm to proceed or Cancel to edit.
                                 </DialogDescription>

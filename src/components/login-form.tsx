@@ -89,12 +89,9 @@ export function LoginTabs({ className }: { className?: string }) {
             <div className="grid gap-3">
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
-                <a
-                  href="#"
-                  className="ml-auto text-sm underline-offset-4 hover:underline"
-                >
+                <Link href="/auth/forgot-password" className="ml-auto text-sm underline-offset-4 hover:underline">
                   Forgot your password?
-                </a>
+                </Link>
               </div>
               <Input
                 id="password"
@@ -156,12 +153,9 @@ export function LoginTabs({ className }: { className?: string }) {
             <div className="grid gap-3">
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
-                <a
-                  href="#"
-                  className="ml-auto text-sm underline-offset-4 hover:underline"
-                >
+                <Link href="/auth/forgot-password" className="ml-auto text-sm underline-offset-4 hover:underline">
                   Forgot your password?
-                </a>
+                </Link>
               </div>
               <Input
                 id="password"

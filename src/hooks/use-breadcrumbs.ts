@@ -1,5 +1,12 @@
 import { usePathname } from "next/navigation"
 
+function toTitleCase(slug: string) {
+  return slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ")
+}
+
 export function useBreadcrumbSegments() {
   const pathname = usePathname()
   const segments = pathname.split("/").filter(Boolean)
@@ -12,11 +19,11 @@ export function useBreadcrumbSegments() {
       if (/^[0-9a-fA-F-]+$/.test(segment)) {
         if (segments[index - 1] === "edit")
           return "Edit"
-        if (segments[index - 1] === "employee")
+        if (segments[index - 1] != null) 
           return "Detail"
       }
       if (segment === "edit") return null
-      return segment.charAt(0).toUpperCase() + segment.slice(1)
+      return toTitleCase(segment)
     })()
 
     const href = "/" + segments.slice(0, index + 1).join("/")

@@ -31,31 +31,24 @@ import { useToast } from "@/components/ui/use-toast"
 import Link from "next/link"
 
 // Define types
-type Employee = {
+type Billing = {
   id: string
-  firstName: string
-  lastName: string
-  avatar?: string
-  jobTitle: string
-  grade: string
-  branch: string
-  status: "active" | "inactive" | "pending" | "suspended"
-  email: string
-  phone: string
-  startDate: string
-  department: string
+  invoiceDate: string
+  plan: string
+  ammount: string
+  status: "pending" | "processing" | "paid" | "failed"
 }
 
 type SortDirection = "asc" | "desc" | undefined
-type SortField = keyof Employee | undefined
+type SortField = keyof Billing | undefined
 
 // Status badge component
-const StatusBadge = ({ status }: { status: Employee["status"] }) => {
+const StatusBadge = ({ status }: { status: Billing["status"] }) => {
   const statusConfig = {
-    active: { label: "Active", variant: "outline" as const },
-    inactive: { label: "Inactive", variant: "outline" as const },
     pending: { label: "Pending", variant: "outline" as const },
-    suspended: { label: "Suspended", variant: "destructive" as const },
+    processing: { label: "Processing", variant: "outline" as const },
+    paid: { label: "Paid", variant: "outline" as const },
+    failed: { label: "Failed", variant: "destructive" as const },
   }
 
   const config = statusConfig[status]
@@ -67,12 +60,11 @@ const StatusBadge = ({ status }: { status: Employee["status"] }) => {
   )
 }
 
-export function TableEmployees({ data }: { data: Employee[] }) {
+
+export function TableBilling({ data }: { data: Billing[] }) {
   const { toast } = useToast()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedBranch, setSelectedBranch] = useState<string | null>(null)
-  const [selectedJobTitle, setSelectedJobTitle] = useState<string | null>(null)
-  const [selectedGrade, setSelectedGrade] = useState<string | null>(null)
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [sortField, setSortField] = useState<SortField>(undefined)
   const [sortDirection, setSortDirection] = useState<SortDirection>(undefined)
@@ -81,13 +73,11 @@ export function TableEmployees({ data }: { data: Employee[] }) {
   const [rowsPerPage, setRowsPerPage] = useState(10)
 
   // Get unique values for filters
-  const getUniqueValues = <T extends keyof Employee>(field: T): Employee[T][] => {
-    return Array.from(new Set(data.map((employee) => employee[field])))
+  const getUniqueValues = <T extends keyof Billing>(field: T): Billing[T][] => {
+    return Array.from(new Set(data.map((data) => data[field])))
   }
 
-  const branches = getUniqueValues("branch")
-  const jobTitles = getUniqueValues("jobTitle")
-  const grades = getUniqueValues("grade")
+  const plans = getUniqueValues("plan")
   const statuses = getUniqueValues("status")
 
   // Handle sorting
@@ -122,44 +112,24 @@ export function TableEmployees({ data }: { data: Employee[] }) {
 
   const toggleAllRows = (checked: boolean) => {
     if (checked) {
-      const allIds = filteredEmployees.map((employee) => employee.id)
+      const allIds = filteredData.map((data) => data.id)
       setSelectedRows(new Set(allIds))
     } else {
       setSelectedRows(new Set())
     }
   }
 
-  // Handle view details
-  const handleViewDetails = (employee: Employee) => {
-    toast({
-      title: "View Employee Details",
-      description: `Viewing details for ${employee.firstName} ${employee.lastName}`,
-    })
-  }
 
-  // Handle delete
-  const handleDelete = (employee: Employee) => {
-    toast({
-      title: "Delete Employee",
-      description: `Are you sure you want to delete ${employee.firstName} ${employee.lastName}?`,
-      variant: "destructive",
-    })
-  }
+  // Filter Billing based on search and filters
+  const filteredData = data.filter((data) => {
+    const matchesPlan = selectedPlan ? data.plan === selectedPlan : true
+    const matchesStatus = selectedStatus ? data.status === selectedStatus : true
 
-  // Filter employees based on search and filters
-  const filteredEmployees = data.filter((employee) => {
-    const fullName = `${employee.firstName} ${employee.lastName}`.toLowerCase()
-    const matchesSearch = searchQuery ? fullName.includes(searchQuery.toLowerCase()) : true
-    const matchesBranch = selectedBranch ? employee.branch === selectedBranch : true
-    const matchesJobTitle = selectedJobTitle ? employee.jobTitle === selectedJobTitle : true
-    const matchesGrade = selectedGrade ? employee.grade === selectedGrade : true
-    const matchesStatus = selectedStatus ? employee.status === selectedStatus : true
-
-    return matchesSearch && matchesBranch && matchesJobTitle && matchesGrade && matchesStatus
+    return matchesPlan && matchesStatus
   })
 
-  // Sort employees
-  const sortedEmployees = [...filteredEmployees].sort((a, b) => {
+  // Sort Billing
+  const sortedData = [...filteredData].sort((a, b) => {
     if (!sortField || !sortDirection) return 0
 
     const fieldA = a[sortField] ?? ""
@@ -172,14 +142,14 @@ export function TableEmployees({ data }: { data: Employee[] }) {
 
 
   // Pagination
-  const totalPages = Math.ceil(sortedEmployees.length / rowsPerPage)
+  const totalPages = Math.ceil(sortedData.length / rowsPerPage)
   const startIndex = (currentPage - 1) * rowsPerPage
-  const paginatedEmployees = sortedEmployees.slice(startIndex, startIndex + rowsPerPage)
+  const paginatedData = sortedData.slice(startIndex, startIndex + rowsPerPage)
 
   // Reset to first page when filters change
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, selectedBranch, selectedJobTitle, selectedGrade, selectedStatus])
+  }, [searchQuery, selectedPlan, selectedStatus])
 
   return (
 
@@ -190,7 +160,7 @@ export function TableEmployees({ data }: { data: Employee[] }) {
           <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search employees..."
+            placeholder="Search Billing..."
             className="pl-8"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -201,7 +171,7 @@ export function TableEmployees({ data }: { data: Employee[] }) {
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="h-10">
-                {selectedBranch || "Branch"}
+                {selectedPlan || "Plan"}
                 <ChevronDownIcon className="ml-2 h-4 w-4" />
               </Button>
             </PopoverTrigger>
@@ -211,18 +181,18 @@ export function TableEmployees({ data }: { data: Employee[] }) {
                 <CommandList>
                   <CommandEmpty>No branch found.</CommandEmpty>
                   <CommandGroup>
-                    <CommandItem onSelect={() => setSelectedBranch(null)} className="justify-between">
-                      All Branches
-                      {selectedBranch === null && <CheckIcon className="h-4 w-4" />}
+                    <CommandItem onSelect={() => setSelectedPlan(null)} className="justify-between">
+                      All
+                      {selectedPlan === null && <CheckIcon className="h-4 w-4" />}
                     </CommandItem>
-                    {branches.map((branch) => (
+                    {plans.map((plan) => (
                       <CommandItem
-                        key={branch}
-                        onSelect={() => setSelectedBranch(branch)}
+                        key={plan}
+                        onSelect={() => setSelectedPlan(plan)}
                         className="justify-between"
                       >
-                        {branch}
-                        {selectedBranch === branch && <CheckIcon className="h-4 w-4" />}
+                        {plan}
+                        {selectedPlan === plan && <CheckIcon className="h-4 w-4" />}
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -230,58 +200,6 @@ export function TableEmployees({ data }: { data: Employee[] }) {
               </Command>
             </PopoverContent>
           </Popover>
-
-          {/* Job Title Filter */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="h-10">
-                {selectedJobTitle || "Job Title"}
-                <ChevronDownIcon className="ml-2 h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
-              <Command>
-                <CommandInput placeholder="Search job title..." />
-                <CommandList>
-                  <CommandEmpty>No job title found.</CommandEmpty>
-                  <CommandGroup>
-                    <CommandItem onSelect={() => setSelectedJobTitle(null)} className="justify-between">
-                      All Job Titles
-                      {selectedJobTitle === null && <CheckIcon className="h-4 w-4" />}
-                    </CommandItem>
-                    {jobTitles.map((title) => (
-                      <CommandItem
-                        key={title}
-                        onSelect={() => setSelectedJobTitle(title)}
-                        className="justify-between"
-                      >
-                        {title}
-                        {selectedJobTitle === title && <CheckIcon className="h-4 w-4" />}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-
-          {/* Grade Filter */}
-          <Select
-            value={selectedGrade || ""}
-            onValueChange={(value) => setSelectedGrade(value === "" ? null : value)}
-          >
-            <SelectTrigger className="w-[100px] h-10">
-              <SelectValue placeholder="Grade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Grades</SelectItem>
-              {grades.map((grade) => (
-                <SelectItem key={grade} value={grade}>
-                  {grade}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
 
           {/* Status Filter */}
           <Select
@@ -308,110 +226,47 @@ export function TableEmployees({ data }: { data: Employee[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[40px]">
-                <Checkbox
-                  checked={
-                    paginatedEmployees.length > 0 &&
-                    paginatedEmployees.every((employee) => selectedRows.has(employee.id))
-                  }
-                  onCheckedChange={(checked) => toggleAllRows(!!checked)}
-                  aria-label="Select all"
-                />
-              </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("firstName")}>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("invoiceDate")}>
                 <div className="flex items-center">
-                  Employee Name
-                  <SortIcon field="firstName" currentField={sortField} direction={sortDirection} />
+                  Date
+                  <SortIcon field="invoiceDate" currentField={sortField} direction={sortDirection} />
                 </div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("jobTitle")}>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("plan")}>
                 <div className="flex items-center">
-                  Job Title
-                  <SortIcon field="jobTitle" currentField={sortField} direction={sortDirection} />
+                  Plan
+                  <SortIcon field="plan" currentField={sortField} direction={sortDirection} />
                 </div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("grade")}>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("ammount")}>
                 <div className="flex items-center">
-                  Grade
-                  <SortIcon field="grade" currentField={sortField} direction={sortDirection} />
-                </div>
-              </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("branch")}>
-                <div className="flex items-center">
-                  Branch
-                  <SortIcon field="branch" currentField={sortField} direction={sortDirection} />
+                  Ammount
+                  <SortIcon field="ammount" currentField={sortField} direction={sortDirection} />
                 </div>
               </TableHead>
               <TableHead className="cursor-pointer" onClick={() => handleSort("status")}>
                 <div className="flex items-center">
-                  Account Status
+                  Status
                   <SortIcon field="status" currentField={sortField} direction={sortDirection} />
                 </div>
               </TableHead>
-              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedEmployees.length === 0 ? (
+            {paginatedData.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                  No employees found.
+                  No Billing found.
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedEmployees.map((employee) => (
-                <TableRow key={employee.id}>
+              paginatedData.map((data) => (
+                <TableRow key={data.id}>
+                  <TableCell>{data.invoiceDate}</TableCell>
+                  <TableCell>{data.plan}</TableCell>
+                  <TableCell>{data.ammount}</TableCell>
                   <TableCell>
-                    <Checkbox
-                      checked={selectedRows.has(employee.id)}
-                      onCheckedChange={() => toggleRowSelection(employee.id)}
-                      aria-label={`Select ${employee.firstName} ${employee.lastName}`}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage
-                          src={employee.avatar || "/placeholder.svg"}
-                          alt={`${employee.firstName} ${employee.lastName}`}
-                        />
-                        <AvatarFallback>
-                          {employee.firstName[0]}
-                          {employee.lastName[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">
-                          {employee.firstName} {employee.lastName}
-                        </div>
-                        <div className="text-xs text-muted-foreground">{employee.email}</div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{employee.jobTitle}</TableCell>
-                  <TableCell>{employee.grade}</TableCell>
-                  <TableCell>{employee.branch}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={employee.status} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Link href={`/dashboard/employee/${employee.id}`}>
-                        <Button variant="ghost" size="icon" onClick={() => handleViewDetails(employee)}>
-                          <EyeIcon className="h-4 w-4" />
-                          <span className="sr-only">View details</span>
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => handleDelete(employee)}
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
-                      </Button>
-                    </div>
+                    <StatusBadge status={data.status} />
                   </TableCell>
                 </TableRow>
               ))
@@ -423,9 +278,9 @@ export function TableEmployees({ data }: { data: Employee[] }) {
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing <strong>{paginatedEmployees.length > 0 ? startIndex + 1 : 0}</strong> to{" "}
-          <strong>{Math.min(startIndex + rowsPerPage, filteredEmployees.length)}</strong> of{" "}
-          <strong>{filteredEmployees.length}</strong> employees
+          Showing <strong>{paginatedData.length > 0 ? startIndex + 1 : 0}</strong> to{" "}
+          <strong>{Math.min(startIndex + rowsPerPage, filteredData.length)}</strong> of{" "}
+          <strong>{filteredData.length}</strong> Billing
         </div>
         <div className="flex items-center space-x-2">
           <Select
