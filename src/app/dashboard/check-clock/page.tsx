@@ -1,47 +1,31 @@
-"use client"
-
+import { Metadata } from "next"
+import path from "path"
+import fs from "fs"
+import { DataTableCheckClock } from "@/components/table/check-clock/admin/data-table";
 import { TableCheckClock } from "@/components/table/table-check-clock";
 import { Button } from "@/components/ui/button";
 import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleButtons, CustomPageTitleContainer } from "@/components/ui/custom-page";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { columns } from "@/components/table/check-clock/admin/columns";
 
-type CheckClock = {
-  id: string
-  name: string
-  totalEmployee: string
-  type: "wfo" | "wfa" | "hybrid"
+export const metadata: Metadata = {
+  title: "Branch",
+  description: "A Expense tracker build using Tanstack Table."
+};
+
+async function getData() {
+  const filePath = path.join(
+    process.cwd(),
+    "src/app/dashboard/check-clock",
+    "data.json"
+  );
+  const data = fs.readFileSync(filePath, "utf8");
+  return JSON.parse(data);
 }
 
-const tableData: CheckClock[] = [
-  {
-    id: "1",
-    name: "Kantor Jakarta",
-    totalEmployee: "120",
-    type: "wfo",
-  },
-  {
-    id: "2",
-    name: "Remote Team Bandung",
-    totalEmployee: "45",
-    type: "wfa",
-  },
-  {
-    id: "3",
-    name: "Divisi Tech Hybrid",
-    totalEmployee: "60",
-    type: "hybrid",
-  },
-  {
-    id: "4",
-    name: "Kantor Surabaya",
-    totalEmployee: "80",
-    type: "wfo",
-  },
-]
-
-
-export default function CheckClockPage() {
+export default async function CheckClockPage() {
+  const data = await getData();
     return (
       <CustomPage>
       <CustomPageHeader>
@@ -57,7 +41,7 @@ export default function CheckClockPage() {
           </Link>
         </CustomPageTitleButtons>
       </CustomPageHeader>
-      <TableCheckClock data={tableData} />
+      <DataTableCheckClock data={data} columns={columns} />
     </CustomPage>
     )
   }

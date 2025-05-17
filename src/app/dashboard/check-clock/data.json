@@ -1,0 +1,26 @@
+[
+    {
+      "id": "1",
+      "name": "Kantor Jakarta",
+      "totalEmployee": "120",
+      "type": "wfo"
+    },
+    {
+      "id": "2",
+      "name": "Remote Team Bandung",
+      "totalEmployee": "45",
+      "type": "wfa"
+    },
+    {
+      "id": "3",
+      "name": "Divisi Tech Hybrid",
+      "totalEmployee": "60",
+      "type": "hybrid"
+    },
+    {
+      "id": "4",
+      "name": "Kantor Surabaya",
+      "totalEmployee": "80",
+      "type": "wfo"
+    }
+  ]
