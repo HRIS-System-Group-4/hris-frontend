@@ -10,7 +10,7 @@ import Link from "next/link";
 import { columns } from "@/components/table/check-clock/admin/columns";
 
 export const metadata: Metadata = {
-  title: "Branch",
+  title: "Check Clock",
   description: "A Expense tracker build using Tanstack Table."
 };
 

@@ -18,7 +18,7 @@ export function DataTableRowActions<TData>({
 
   return (
     <div className="flex justify-end gap-2">
-      <Link href={`/dashboard/branch/${row.original.id}`}>
+      <Link href={`/dashboard/check-clock/${row.original.id}`}>
         <Button variant="ghost" size="icon">
           <EyeIcon className="h-4 w-4" />
           <span className="sr-only">View details</span>
