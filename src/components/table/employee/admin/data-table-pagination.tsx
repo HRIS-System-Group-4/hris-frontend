@@ -36,6 +36,8 @@ export function DataTablePagination<TData>({
         </strong>{" "}
         of <strong>{table.getFilteredRowModel().rows.length}</strong> attendances
       </div>
+
+
       <div className="flex items-center space-x-2">
         <Select
           value={`${table.getState().pagination.pageSize}`}
