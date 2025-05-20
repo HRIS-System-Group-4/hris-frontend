@@ -1,5 +1,6 @@
 "use client"
 
+import { PdfGallery } from "@/components/pdf-card-gallery"
 import { AttendanceAdmin } from "@/components/table/attendance/admin/schema"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"

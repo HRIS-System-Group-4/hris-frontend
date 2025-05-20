@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Dialog,
   DialogTrigger,
@@ -8,31 +8,70 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog"
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
-import { DatePicker } from "@/components/date-picker"
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { DatePicker } from "@/components/date-picker";
+import { toast } from "@/components/ui/use-toast";
 
 export function AttendanceModal() {
-  const [attendanceType, setAttendanceType] = useState("Clock In")
-  const [attendanceDate, setAttendanceDate] = useState<Date | undefined>(undefined)
-  const [leaveStartDate, setLeaveStartDate] = useState<Date | undefined>(undefined)
-  const [leaveEndDate, setLeaveEndDate] = useState<Date | undefined>(undefined)
-  const [file, setFile] = useState<File | null>(null)
+  const [attendanceType, setAttendanceType] = useState("Clock In");
+  const [attendanceDate, setAttendanceDate] = useState<Date | undefined>(
+    undefined
+  );
+  const [leaveStartDate, setLeaveStartDate] = useState<Date | undefined>(
+    undefined
+  );
+  const [leaveEndDate, setLeaveEndDate] = useState<Date | undefined>(undefined);
+  const [file, setFile] = useState<File | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!attendanceDate) {
-      alert("Please select attendance date")
-      return
+      alert("Please select attendance date");
+      return;
     }
+
+    const messages: Record<string, { title: string; description: string }> = {
+      "Clock In": {
+        title: "Clock In Successful",
+        description: "Your attendance has been recorded.",
+      },
+      "Clock Out": {
+        title: "Clock Out Successful",
+        description: "Your work session has ben recorded.",
+      },
+      Absent: {
+        title: "Absence Recorded Successfully",
+        description: "Your absence has been logged.",
+      },
+      "Annual Leave": {
+        title: "Annual Leave Request Sent",
+        description: "Waiting for admin approval. See all request here.",
+      },
+      "Sick Leave": {
+        title: "Sick Leave Request Sent",
+        description: "Waiting for admin approval. See all request here.",
+      },
+    };
+
+    const message = messages[attendanceType];
+
+    if (message) {
+    toast({
+      title: message.title,
+      description: message.description,
+      variant: "default",
+    });
+  }
 
     // Handle submission logic here (e.g., send to backend)
     console.log({
@@ -41,8 +80,8 @@ export function AttendanceModal() {
       leaveStartDate,
       leaveEndDate,
       file,
-    })
-  }
+    });
+  };
 
   return (
     <Dialog>
@@ -81,16 +120,20 @@ export function AttendanceModal() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full">
-                {["Clock In", "Clock Out", "Absent", "Annual Leave", "Sick Leave"].map(
-                  (type) => (
-                    <DropdownMenuItem
-                      key={type}
-                      onSelect={() => setAttendanceType(type)}
-                    >
-                      {type}
-                    </DropdownMenuItem>
-                  )
-                )}
+                {[
+                  "Clock In",
+                  "Clock Out",
+                  "Absent",
+                  "Annual Leave",
+                  "Sick Leave",
+                ].map((type) => (
+                  <DropdownMenuItem
+                    key={type}
+                    onSelect={() => setAttendanceType(type)}
+                  >
+                    {type}
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -142,13 +185,17 @@ export function AttendanceModal() {
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline">
-              Cancel
-            </Button>
-            <Button type="submit">Add</Button>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
+            <DialogClose asChild>
+              <Button type="submit">Add</Button>
+            </DialogClose>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
