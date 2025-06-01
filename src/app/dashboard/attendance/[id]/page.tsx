@@ -1,6 +1,7 @@
 
 import { getLocalAttendanceById } from "@/lib/getAttendanceLocal"
-import AttendanceDetailsPage from "./_components/AttendanceAdminDetailPage"
+// import AttendanceDetailsPage from "./_components/AttendanceAdminDetailPage"
+import AttendanceDetailsPage from "./_components/AttendanceEmployeeDetailPage"
 import { notFound } from "next/navigation"
 
 
