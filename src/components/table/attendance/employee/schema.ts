@@ -1,4 +1,3 @@
-import { start } from "repl";
 import { z } from "zod";
 
 // We're keeping a simple non-relational schema here.
@@ -8,7 +7,6 @@ const EmployeeSchema = z.object({
   avatar: z.string().url(),
   firstName: z.string(),
   lastName: z.string(),
-  email: z.string().email(),
 });
 
 const WorkHoursSchema = z
@@ -27,8 +25,6 @@ export const AttendanceAdminSchema = z.object({
   workHours: WorkHoursSchema,
   attendanceType: z.enum(["ontime", "annual leave", "late", "sick leave", "absent"]),
   approval: z.enum(["approve", "rejected", "waiting"]).nullable(),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
 });
 
 export type AttendanceAdmin = z.infer<typeof AttendanceAdminSchema>;
