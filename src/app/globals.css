@@ -235,3 +235,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.mapboxgl-popup-content {
+  padding: 0 !important;
+}
