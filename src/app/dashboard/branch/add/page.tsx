@@ -28,6 +28,7 @@ import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, Cust
 import { count } from "console"
 import { Textarea } from "@/components/ui/textarea"
 import { DetailContainer, DetailGroup, DetailItem } from "@/components/ui/custom-detail"
+import MapSearchComponent from "@/components/map/map-search"
 
 // Sample data for dropdowns
 const statuses = [
@@ -54,8 +55,22 @@ const formSchema = z.object({
     status: z.string({
         required_error: "Please select a country",
     }),
-    latitude: z.string().min(2, "Branch latitude must be at least 2 characters"),
-    longitude: z.string().min(2, "Branch longitude must be at least 2 characters"),
+    latitude: z
+        .string()
+        .regex(/^-?\d+(\.\d+)?$/, 'Invalid latitude')
+        .optional()
+        .or(z.literal(''))
+        .refine((val) => val !== '' && val !== undefined, {
+            message: "Please select a location",
+        }),
+    longitude: z
+        .string()
+        .regex(/^-?\d+(\.\d+)?$/, 'Invalid longitude')
+        .optional()
+        .or(z.literal(''))
+        .refine((val) => val !== '' && val !== undefined, {
+            message: "Please select a location",
+        }),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -81,6 +96,16 @@ export default function AddBranchPage() {
             longitude: "",
         },
     })
+
+    const handleLocationSelect = (latitude?: number, longitude?: number) => {
+        if (latitude && longitude) {
+            form.setValue('latitude', latitude.toString(), { shouldValidate: true });
+            form.setValue('longitude', longitude.toString(), { shouldValidate: true });
+        } else {
+            form.setValue('latitude', "", { shouldValidate: true });
+            form.setValue('longitude', "", { shouldValidate: true });
+        }
+    };
 
     // Form submission
     const handleConfirm = async () => {
@@ -324,6 +349,7 @@ export default function AddBranchPage() {
                                 <AccordionItem value="location">
                                     <AccordionTrigger className="text-lg font-medium">Location Information</AccordionTrigger>
                                     <AccordionContent className="space-y-4">
+                                        <MapSearchComponent onLocationSelect={handleLocationSelect} />
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                                             {/* Bank */}
                                             <FormField
@@ -333,7 +359,7 @@ export default function AddBranchPage() {
                                                     <FormItem>
                                                         <FormLabel>Latitude</FormLabel>
                                                         <FormControl className="w-full">
-                                                            <Input placeholder="Enter latitude" {...field} />
+                                                            <Input placeholder="Please select a location" readOnly {...field} />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -346,7 +372,7 @@ export default function AddBranchPage() {
                                                     <FormItem>
                                                         <FormLabel>Longitude</FormLabel>
                                                         <FormControl className="w-full">
-                                                            <Input placeholder="Enter longitude" {...field} />
+                                                            <Input placeholder="Please select a location" readOnly {...field} />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>

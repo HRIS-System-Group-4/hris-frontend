@@ -14,6 +14,8 @@ import { formatDayWorkType } from "@/lib/utils/dayWorkType"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { parse } from "path"
+import MapComponent from "@/components/map/map-component"
+
 
 type BranchDetail = {
   id: string
@@ -96,6 +98,7 @@ const StatusBadge = ({ status }: { status: BranchDetail["status"] }) => {
 
 
 export default function DetailCheckClockPage() {
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   const params = useParams()
   const router = useRouter()
   const [checkClock, setcheckClock] = useState<BranchDetail | null>(null)
@@ -246,10 +249,8 @@ export default function DetailCheckClockPage() {
                     <div className="font-medium text-black">{checkClock.longitude}</div>
                   </DetailItem>
                 </DetailContainer>
-                {/* <MapComponent lat={Number(checkClock.latitude)} lng={Number(checkClock.longitude)} /> */}
+                <MapComponent />
               </DetailGroup>
-
-
             </CardContent>
           </Card>
         )
