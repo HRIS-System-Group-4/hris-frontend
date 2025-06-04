@@ -35,7 +35,7 @@
 //     return res.json(); // { access_token: ..., token_type: "Bearer" }
 //   }
 
-const API_URL = "http://localhost:8000/api/admin/login"; // ganti sesuai URL backend-mu
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}`
 
 export async function loginAdmin(login: string, password: string) {
 
@@ -48,7 +48,7 @@ export async function loginAdmin(login: string, password: string) {
     headers: {
       "Content-Type": "application/json",
       "accept" : "application/json",
-      'X-CSRF-TOKEN': csrfToken,
+      // 'X-CSRF-TOKEN': csrfToken,
     },
     credentials: 'include',
     body: JSON.stringify({ login, password }),

@@ -13,6 +13,23 @@ export default function MapComponent({ }: IProps) {
     const mapRef = useRef<MapRef | null>(null);
     const markersRef = useRef<mapboxgl.Marker[]>([]);
 
+    useEffect(() => {
+        // This will run if the map loads before the useEffect
+        if (mapRef.current) {
+            const map = mapRef.current.getMap();
+            if (map.loaded()) {
+                addMarkers();
+            }
+        }
+    }, []);
+
+    // Cleanup markers on unmount
+    useEffect(() => {
+        return () => {
+            markersRef.current.forEach(marker => marker.remove());
+        };
+    }, []);
+
     const handleMarkerClick = (longitude: number, latitude: number, zoomLevel: number = 20) => {
         setViewState(prev => ({
             ...prev,
@@ -20,7 +37,7 @@ export default function MapComponent({ }: IProps) {
             latitude,
             zoom: zoomLevel,
         }));
-        
+
         // Alternative: Use map.flyTo for smooth animation
         if (mapRef.current) {
             mapRef.current.flyTo({
@@ -44,13 +61,13 @@ export default function MapComponent({ }: IProps) {
     const addMarkers = () => {
         if (mapRef.current) {
             const map = mapRef.current.getMap();
-            
+
             // Clear existing markers
             markersRef.current.forEach(marker => marker.remove());
             markersRef.current = [];
 
             // Create new marker with your specified styling
-            const marker = new mapboxgl.Marker({ 
+            const marker = new mapboxgl.Marker({
                 color: '#3b82f6',
                 scale: 1.2 // Make it slightly larger
             })
@@ -66,23 +83,6 @@ export default function MapComponent({ }: IProps) {
             markersRef.current.push(marker);
         }
     };
-
-    useEffect(() => {
-        // This will run if the map loads before the useEffect
-        if (mapRef.current) {
-            const map = mapRef.current.getMap();
-            if (map.loaded()) {
-                addMarkers();
-            }
-        }
-    }, []);
-
-    // Cleanup markers on unmount
-    useEffect(() => {
-        return () => {
-            markersRef.current.forEach(marker => marker.remove());
-        };
-    }, []);
 
     return (
         <div className="text-black relative">

@@ -25,6 +25,9 @@ import { DetailContainer, DetailGroup, DetailItem } from "@/components/ui/custom
 import { off } from "process";
 import { toTitleCase } from "@/lib/strings";
 
+// Days array for mapping
+const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
+
 // Work type options
 const types = [
   { label: "WFO", value: "wfo" },
@@ -330,13 +333,7 @@ export default function EditCheckClockPage() {
                 </AccordionItem>
 
                 {/* Daily Settings */}
-                {renderDailySettings("monday", "Monday")}
-                {renderDailySettings("tuesday", "Tuesday")}
-                {renderDailySettings("wednesday", "Wednesday")}
-                {renderDailySettings("thursday", "Thursday")}
-                {renderDailySettings("friday", "Friday")}
-                {renderDailySettings("saturday", "Saturday")}
-                {renderDailySettings("sunday", "Sunday")}
+                {DAYS.map((day) => renderDailySettings(day, toTitleCase(day)))}
               </Accordion>
 
               <div className="flex justify-end space-x-2">
@@ -366,11 +363,15 @@ export default function EditCheckClockPage() {
                     </DetailItem>
                   </DetailContainer>
                 </DetailGroup>
-                {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => (
+                {DAYS.map((day) => {
+                  const dayData = form.getValues(day as keyof FormValues);
+                  const workType = typeof dayData === 'object' && dayData && 'type' in dayData ? dayData.type : 'wfo';
+                  
+                  return (
                     <DetailGroup key={day} title={(toTitleCase(day) as string)} className="pt-4">
                       <DetailContainer>
                         <DetailItem label="Work Type" layout={"column"} >
-                          <div className="font-medium text-black">{typeLabelMap[form.getValues(`${day}.type`)]}</div>
+                          <div className="font-medium text-black">{typeLabelMap[workType as keyof typeof typeLabelMap]}</div>
                         </DetailItem>
                       </DetailContainer>
                       <DetailContainer>
@@ -390,13 +391,8 @@ export default function EditCheckClockPage() {
                         </DetailItem>
                       </DetailContainer>
                     </DetailGroup>
-                    // {/* <p><strong>{day.charAt(0).toUpperCase() + day.slice(1)} Type:</strong> {form.getValues(`${day}.type`)}</p>
-                    // <p><strong>Start Time:</strong> {form.getValues(`${day}.startTime`) ? format(form.getValues(`${day}.startTime`), "HH:mm") : "N/A"}</p>
-                    // <p><strong>End Time:</strong> {form.getValues(`${day}.endTime`) ? format(form.getValues(`${day}.endTime`), "HH:mm") : "N/A"}</p>
-                    // <p><strong>Break Duration:</strong> {form.getValues(`${day}.breakDuration`)} minutes</p>
-                    // <p><strong>Late Tolerance:</strong> {form.getValues(`${day}.lateTolerance`)} minutes</p> */}
-                  
-                ))}
+                  )
+                })}
               </ScrollArea>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>

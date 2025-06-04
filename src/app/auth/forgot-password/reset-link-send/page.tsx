@@ -7,13 +7,14 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card"
+import Image from "next/image"
 
 export default function ForgotPasswordRedirectPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-2xl text-center p-10 shadow-lg border border-gray-200">
         <CardHeader className="flex flex-col items-center">
-          <img
+          <Image
             src="/logo.png"
             alt="HRIS Logo"
             className="h-12 w-12 mb-4 object-contain"

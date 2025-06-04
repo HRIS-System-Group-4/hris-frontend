@@ -19,10 +19,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { CustomPage, CustomPageHeader, CustomPageTitle, CustomPageTitleContainer } from "@/components/ui/custom-page";
 import { TimePickerDemo } from "@/components/time-picker-demo";
 import { format } from "date-fns/format";
-import { log } from "console";
-import { Separator } from "@/components/ui/separator"
 import { DetailContainer, DetailGroup, DetailItem } from "@/components/ui/custom-detail";
-import { off } from "process";
 import { toTitleCase } from "@/lib/strings";
 
 // Work type options
@@ -30,13 +27,17 @@ const types = [
   { label: "WFO", value: "wfo" },
   { label: "WFA", value: "wfa" },
   { label: "Off-day", value: "off-day" },
-];
+] as const;
 
 const typeLabelMap = {
   wfo: "WFO",
   wfa: "WFA",
   "off-day": "Off-day",
 } as const;
+
+// Define the days array with proper typing
+const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
+type DayKey = typeof DAYS[number];
 
 // Schema for daily settings
 const dailySettingSchema = z.object({
@@ -98,13 +99,11 @@ export default function AddCheckClockPage() {
       sunday: { type: "off-day", startTime: new Date(0, 0, 0, 0, 0), endTime: new Date(0, 0, 0, 0, 0), breakDuration: 60, lateTolerance: 10 },
     },
   });
-  // const [formData, setFormData] = useState<FormValues | null>(null);
 
   // Handle form submission
   const onSubmit = async (data: FormValues) => {
     console.log("onSubmit data:", data);
     if (form.formState.isValid) {
-      // setFormData(data);
       setIsDialogOpen(true);
     } else {
       toast({
@@ -116,13 +115,11 @@ export default function AddCheckClockPage() {
   };
 
   const handleConfirm = async () => {
-    // if (!formData) return;
     setIsSubmitting(true);
     setIsDialogOpen(false);
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      // console.log("Form data:", formData);
 
       toast({
         title: "Check clock added successfully",
@@ -144,8 +141,6 @@ export default function AddCheckClockPage() {
   const handleSubmitCheck = async () => {
     const isValid = await form.trigger();
     if (isValid) {
-      // setFormData(data);
-      // console.log("handleSubmitCheck formData:", formData);
       setIsDialogOpen(true);
     } else {
       toast({
@@ -156,11 +151,15 @@ export default function AddCheckClockPage() {
     }
   };
 
+  // Type guard to check if a key is a day key
+  const isDayKey = (key: string): key is DayKey => {
+    return DAYS.includes(key as DayKey);
+  };
+
   // Render daily settings for a given day
-  const renderDailySettings = (day: keyof FormValues, label: string) => {
-    if (day === "name") return null;
+  const renderDailySettings = (day: DayKey, label: string) => {
     return (
-      <AccordionItem value={day}>
+      <AccordionItem value={day} key={day}>
         <AccordionTrigger className="text-lg font-medium">{label}</AccordionTrigger>
         <AccordionContent className={cn("space-y-4 animate-fade-slide")}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
@@ -260,7 +259,7 @@ export default function AddCheckClockPage() {
                     <Input
                       type="number"
                       {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       min={0}
                     />
                   </FormControl>
@@ -278,7 +277,7 @@ export default function AddCheckClockPage() {
                     <Input
                       type="number"
                       {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       min={0}
                     />
                   </FormControl>
@@ -288,7 +287,8 @@ export default function AddCheckClockPage() {
             />
           </div>
         </AccordionContent>
-      </AccordionItem>)
+      </AccordionItem>
+    );
   };
 
   return (
@@ -330,13 +330,7 @@ export default function AddCheckClockPage() {
                 </AccordionItem>
 
                 {/* Daily Settings */}
-                {renderDailySettings("monday", "Monday")}
-                {renderDailySettings("tuesday", "Tuesday")}
-                {renderDailySettings("wednesday", "Wednesday")}
-                {renderDailySettings("thursday", "Thursday")}
-                {renderDailySettings("friday", "Friday")}
-                {renderDailySettings("saturday", "Saturday")}
-                {renderDailySettings("sunday", "Sunday")}
+                {DAYS.map((day) => renderDailySettings(day, toTitleCase(day)))}
               </Accordion>
 
               <div className="flex justify-end space-x-2">
@@ -366,36 +360,36 @@ export default function AddCheckClockPage() {
                     </DetailItem>
                   </DetailContainer>
                 </DetailGroup>
-                {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => (
-                    <DetailGroup key={day} title={(toTitleCase(day) as string)} className="pt-4">
-                      <DetailContainer>
-                        <DetailItem label="Work Type" layout={"column"} >
-                          <div className="font-medium text-black">{typeLabelMap[form.getValues(`${day}.type`)]}</div>
-                        </DetailItem>
-                      </DetailContainer>
-                      <DetailContainer>
-                        <DetailItem label="Start Time" layout={"column"} >
-                          <div className="font-medium text-black">{form.getValues(`${day}.startTime`) ? format(form.getValues(`${day}.startTime`), "HH:mm") : "N/A"}</div>
-                        </DetailItem>
-                        <DetailItem label="End Time" layout={"column"} >
-                          <div className="font-medium text-black">{form.getValues(`${day}.endTime`) ? format(form.getValues(`${day}.endTime`), "HH:mm") : "N/A"}</div>
-                        </DetailItem>
-                      </DetailContainer>
-                      <DetailContainer>
-                        <DetailItem label="Break Duration" layout={"column"} >
-                          <div className="font-medium text-black">{form.getValues(`${day}.breakDuration`)} minutes</div>
-                        </DetailItem>
-                        <DetailItem label="Late Tolerance" layout={"column"} >
-                          <div className="font-medium text-black">{form.getValues(`${day}.lateTolerance`)} minutes</div>
-                        </DetailItem>
-                      </DetailContainer>
-                    </DetailGroup>
-                    // {/* <p><strong>{day.charAt(0).toUpperCase() + day.slice(1)} Type:</strong> {form.getValues(`${day}.type`)}</p>
-                    // <p><strong>Start Time:</strong> {form.getValues(`${day}.startTime`) ? format(form.getValues(`${day}.startTime`), "HH:mm") : "N/A"}</p>
-                    // <p><strong>End Time:</strong> {form.getValues(`${day}.endTime`) ? format(form.getValues(`${day}.endTime`), "HH:mm") : "N/A"}</p>
-                    // <p><strong>Break Duration:</strong> {form.getValues(`${day}.breakDuration`)} minutes</p>
-                    // <p><strong>Late Tolerance:</strong> {form.getValues(`${day}.lateTolerance`)} minutes</p> */}
-                  
+                {DAYS.map((day) => (
+                  <DetailGroup key={day} title={toTitleCase(day)} className="pt-4">
+                    <DetailContainer>
+                      <DetailItem label="Work Type" layout={"column"} >
+                        <div className="font-medium text-black">
+                          {typeLabelMap[form.getValues(`${day}.type`) as keyof typeof typeLabelMap]}
+                        </div>
+                      </DetailItem>
+                    </DetailContainer>
+                    <DetailContainer>
+                      <DetailItem label="Start Time" layout={"column"} >
+                        <div className="font-medium text-black">
+                          {form.getValues(`${day}.startTime`) ? format(form.getValues(`${day}.startTime`), "HH:mm") : "N/A"}
+                        </div>
+                      </DetailItem>
+                      <DetailItem label="End Time" layout={"column"} >
+                        <div className="font-medium text-black">
+                          {form.getValues(`${day}.endTime`) ? format(form.getValues(`${day}.endTime`), "HH:mm") : "N/A"}
+                        </div>
+                      </DetailItem>
+                    </DetailContainer>
+                    <DetailContainer>
+                      <DetailItem label="Break Duration" layout={"column"} >
+                        <div className="font-medium text-black">{form.getValues(`${day}.breakDuration`)} minutes</div>
+                      </DetailItem>
+                      <DetailItem label="Late Tolerance" layout={"column"} >
+                        <div className="font-medium text-black">{form.getValues(`${day}.lateTolerance`)} minutes</div>
+                      </DetailItem>
+                    </DetailContainer>
+                  </DetailGroup>
                 ))}
               </ScrollArea>
               <DialogFooter>
