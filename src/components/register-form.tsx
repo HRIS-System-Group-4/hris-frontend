@@ -5,7 +5,7 @@ import { z } from "zod"
 import { registerSchema } from "@/schemas/register-schema"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
-
+import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 type RegisterFormData = z.infer<typeof registerSchema>
 
 export default function RegisterForm() {
+   const router = useRouter() // ← Inisialisasi router
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -34,6 +35,8 @@ export default function RegisterForm() {
   // }
   async function onSubmit(data: RegisterFormData) {
     try {
+      
+      const employeeId = `${data.firstName}${data.lastName}`.toLowerCase(); // generate otomatis
       const res = await fetch("http://localhost:8000/api/admin/register", {
         method: "POST",
         headers: {
@@ -46,6 +49,7 @@ export default function RegisterForm() {
           email: data.email,
           password: data.password,
           password_confirmation: data.confirmPassword,
+          employee_id: employeeId, // tambahkan employeeId
         }),
       });
   
@@ -58,7 +62,7 @@ export default function RegisterForm() {
       console.log("Success", result);
       alert("Registration success!");
       // Optionally redirect:
-      // router.push("/auth/login");
+      router.push("/auth/setup-company"); // Ganti dengan rute yang sesuai
     } catch (err: any) {
       console.error("Error registering:", err);
       alert("Registration failed: " + err.message);

@@ -76,7 +76,7 @@ export function LoginTabs({ className }: { className?: string }) {
           </div>
           <div className="grid gap-6">
             <div className="grid gap-3">
-              <Label htmlFor="email">Email or Phone Number</Label>
+              <Label htmlFor="email">Email or Employee ID</Label>
               <Input
                 id="email"
                 type="text"
