@@ -17,7 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 type RegisterFormData = z.infer<typeof registerSchema>
 
 export default function RegisterForm() {
-   const router = useRouter() // ← Inisialisasi router
+  const router = useRouter() // ← Inisialisasi router
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -35,7 +35,7 @@ export default function RegisterForm() {
   // }
   async function onSubmit(data: RegisterFormData) {
     try {
-      
+
       const employeeId = `${data.firstName}${data.lastName}`.toLowerCase(); // generate otomatis
       const res = await fetch("http://localhost:8000/api/admin/register", {
         method: "POST",
@@ -52,16 +52,23 @@ export default function RegisterForm() {
           employee_id: employeeId, // tambahkan employeeId
         }),
       });
-  
+
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.message || "Registration failed");
       }
-  
+
       const result = await res.json();
       console.log("Success", result);
+
+      // ✅ Simpan token ke localStorage
+      if (result.access_token) {
+        localStorage.setItem("token", result.access_token)
+      } else {
+        console.warn("No token received from registration response")
+      }
+
       alert("Registration success!");
-      // Optionally redirect:
       router.push("/auth/setup-company"); // Ganti dengan rute yang sesuai
     } catch (err: any) {
       console.error("Error registering:", err);
