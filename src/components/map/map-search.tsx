@@ -38,11 +38,47 @@ export default function MapSearchComponent({ onLocationSelect, locationSelected 
     const [isLoading, setIsLoading] = useState(false);
     const [showResults, setShowResults] = useState(false);
     const [sessionToken, setSessionToken] = useState(uuidv4());
+    
+    // Add internal state to track current marker position
+    const [currentMarkerPosition, setCurrentMarkerPosition] = useState<[number, number] | null>(
+        locationSelected && locationSelected[0] !== undefined && locationSelected[1] !== undefined
+            ? [locationSelected[0], locationSelected[1]]
+            : null
+    );
+    
     const [coordinates, setCoordinates] = useState<string[] | null>(
         locationSelected && locationSelected[0] !== undefined && locationSelected[1] !== undefined
             ? [`Longitude: ${locationSelected[1].toFixed(6)}`, `Latitude: ${locationSelected[0].toFixed(6)}`]
             : null
     );
+
+    // Helper function to create/update marker
+    const createOrUpdateMarker = useCallback((latitude: number, longitude: number) => {
+        if (!mapRef.current) return;
+
+        if (markerRef.current) {
+            markerRef.current.setLngLat([longitude, latitude]);
+        } else {
+            markerRef.current = new mapboxgl.Marker({ color: '#3b82f6' })
+                .setLngLat([longitude, latitude])
+                .addTo(mapRef.current);
+        }
+
+        setCurrentMarkerPosition([latitude, longitude]);
+        setCoordinates([`Longitude: ${longitude.toFixed(6)}`, `Latitude: ${latitude.toFixed(6)}`]);
+    }, []);
+
+    // Helper function to remove marker
+    const removeMarker = useCallback(() => {
+        if (markerRef.current) {
+            markerRef.current.remove();
+            markerRef.current = null;
+        }
+        setCurrentMarkerPosition(null);
+        setCoordinates(null);
+        setSelectedLocation(null);
+        setSearchQuery('');
+    }, []);
 
     // Initialize map and marker
     useEffect(() => {
@@ -59,35 +95,27 @@ export default function MapSearchComponent({ onLocationSelect, locationSelected 
             maxZoom: 18,
         });
 
-        // Initialize marker if locationSelected is provided
-        if (locationSelected && locationSelected[0] !== undefined && locationSelected[1] !== undefined) {
-            const [latitude, longitude] = locationSelected;
-            markerRef.current = new mapboxgl.Marker({ color: '#3b82f6' })
-                .setLngLat([longitude, latitude])
-                .addTo(mapRef.current!);
+        // Restore marker from current state (either from props or internal state)
+        const markerPosition = locationSelected && locationSelected[0] !== undefined && locationSelected[1] !== undefined
+            ? [locationSelected[0], locationSelected[1]] as [number, number]
+            : currentMarkerPosition;
+
+        if (markerPosition) {
+            const [latitude, longitude] = markerPosition;
+            createOrUpdateMarker(latitude, longitude);
             mapRef.current.flyTo({
                 center: [longitude, latitude],
                 zoom: 14,
                 duration: 1000,
             });
-            setCoordinates([`Longitude: ${longitude.toFixed(6)}`, `Latitude: ${latitude.toFixed(6)}`]);
         }
 
         // Handle map click to place marker
         mapRef.current.on('click', (e) => {
             const { lng, lat } = e.lngLat;
 
-            // Update or create marker
-            if (markerRef.current) {
-                markerRef.current.setLngLat([lng, lat]);
-            } else {
-                markerRef.current = new mapboxgl.Marker({ color: '#3b82f6' })
-                    .setLngLat([lng, lat])
-                    .addTo(mapRef.current!);
-            }
+            createOrUpdateMarker(lat, lng);
 
-            // Update coordinates and form fields
-            setCoordinates([`Longitude: ${lng.toFixed(6)}`, `Latitude: ${lat.toFixed(6)}`]);
             if (onLocationSelect) {
                 onLocationSelect(lat, lng);
             }
@@ -100,15 +128,9 @@ export default function MapSearchComponent({ onLocationSelect, locationSelected 
 
         // Handle remove button click
         const handleRemoveClick = () => {
-            if (markerRef.current) {
-                markerRef.current.remove();
-                markerRef.current = null;
-                setCoordinates(null);
-                setSelectedLocation(null);
-                setSearchQuery('');
-                if (onLocationSelect) {
-                    onLocationSelect(undefined, undefined);
-                }
+            removeMarker();
+            if (onLocationSelect) {
+                onLocationSelect(undefined, undefined);
             }
         };
 
@@ -121,35 +143,25 @@ export default function MapSearchComponent({ onLocationSelect, locationSelected 
         return () => {
             mapRef.current?.remove();
         };
-    }, [onLocationSelect]);
+    }, []); // Remove dependencies to prevent unnecessary re-initialization
 
-    // Sync marker with locationSelected changes
+    // Sync with locationSelected prop changes
     useEffect(() => {
         if (!mapRef.current) return;
 
         if (locationSelected && locationSelected[0] !== undefined && locationSelected[1] !== undefined) {
             const [latitude, longitude] = locationSelected;
-            if (markerRef.current) {
-                markerRef.current.setLngLat([longitude, latitude]);
-            } else {
-                markerRef.current = new mapboxgl.Marker({ color: '#3b82f6' })
-                    .setLngLat([longitude, latitude])
-                    .addTo(mapRef.current!);
-            }
+            createOrUpdateMarker(latitude, longitude);
             mapRef.current.flyTo({
                 center: [longitude, latitude],
                 zoom: 14,
                 duration: 1000,
             });
-            setCoordinates([`Longitude: ${longitude.toFixed(6)}`, `Latitude: ${latitude.toFixed(6)}`]);
-        } else {
-            if (markerRef.current) {
-                markerRef.current.remove();
-                markerRef.current = null;
-                setCoordinates(null);
-            }
+        } else if (!currentMarkerPosition) {
+            // Only remove marker if there's no internal state to maintain
+            removeMarker();
         }
-    }, [locationSelected]);
+    }, [locationSelected, createOrUpdateMarker, removeMarker, currentMarkerPosition]);
 
     // Search function using /suggest
     const searchLocations = useCallback(
@@ -272,16 +284,7 @@ export default function MapSearchComponent({ onLocationSelect, locationSelected 
             });
         }
 
-        // Update or create marker
-        if (markerRef.current) {
-            markerRef.current.setLngLat([longitude, latitude]);
-        } else {
-            markerRef.current = new mapboxgl.Marker({ color: '#3b82f6' })
-                .setLngLat([longitude, latitude])
-                .addTo(mapRef.current!);
-        }
-
-        setCoordinates([`Longitude: ${longitude.toFixed(6)}`, `Latitude: ${latitude.toFixed(6)}`]);
+        createOrUpdateMarker(latitude, longitude);
         setSelectedLocation(detailedResult);
         setShowResults(false);
         setSearchQuery(detailedResult.name);
@@ -297,12 +300,7 @@ export default function MapSearchComponent({ onLocationSelect, locationSelected 
         setSearchQuery('');
         setSearchResults([]);
         setShowResults(false);
-        setSelectedLocation(null);
-        if (markerRef.current) {
-            markerRef.current.remove();
-            markerRef.current = null;
-        }
-        setCoordinates(null);
+        removeMarker();
         setSessionToken(uuidv4());
         if (onLocationSelect) {
             onLocationSelect(undefined, undefined);

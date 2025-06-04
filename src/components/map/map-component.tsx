@@ -1,3 +1,5 @@
+"use client"
+
 import { useRef, useState, useEffect } from "react"
 import Link from "next/link"
 import Map, { MapRef } from 'react-map-gl/mapbox';
