@@ -4,11 +4,14 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Stepper, type Step } from "@/components/ui/stepper"
 import { CompanyForm } from "@/components/setup-company/company-form"
-import { LocationForm, type LocationFormData } from "@/components/setup-company/location-form"
+// import { LocationForm, type LocationFormData } from "@/components/setup-company/location-form"
+import { LocationForm } from "@/components/setup-company/location-form"
 import { useToast } from "@/components/ui/use-toast"
 import { CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { CompanyFormData } from "@/schemas/company-schema"
+// import { CompanyFormData } from "@/schemas/company-schema"
+import { CompanyInfoFormData, LocationFormData } from "@/schemas/company-schema"
+
 import Image from "next/image"
 import { Router } from "next/router"
 import Link from "next/link"
@@ -26,11 +29,15 @@ const steps: Step[] = [
   },
 ]
 
+// interface SetupData {
+//   company?: CompanyFormData
+//   location?: LocationFormData
+// }
+
 interface SetupData {
-  company?: CompanyFormData
+  company?: CompanyInfoFormData & { id?: string }
   location?: LocationFormData
 }
-
 interface SetupStepperCardProps {
   onComplete?: (data: SetupData) => void
   className?: string
@@ -43,65 +50,68 @@ export function SetupCompanyCard({ onComplete, className }: SetupStepperCardProp
   const [setupData, setSetupData] = useState<SetupData>({})
   const [isCompleted, setIsCompleted] = useState(false)
 
-  const handleCompanySubmit = async (data: CompanyFormData) => {
-    setIsLoading(true)
-
-    // Just save data locally and move to next step - no API call yet
+  const handleCompanySubmit = (data: CompanyInfoFormData) => {
     setSetupData((prev) => ({ ...prev, company: data }))
     setCurrentStep(2)
-    setIsLoading(false)
-
     toast({
-      title: "Company information saved",
-      description: "Moving to location setup...",
+      title: "Company information saved locally",
+      description: "Please enter location info.",
     })
   }
 
-  const handleLocationSubmit = async (data: LocationFormData) => {
+  const handleLocationSubmit = async (locationData: LocationFormData) => {
     setIsLoading(true)
-
     try {
-      // Combine both company and location data for single API call
-      const completeSetupData = {
-        company: setupData.company!,
-        location: data,
+      const companyData = setupData.company
+      if (!companyData) throw new Error("Company data is missing")
+
+      // Gabungkan company + location data ke payload
+      const payload = {
+        company_name: companyData.companyName,
+        company_username: companyData.companyUsername,
+        latitude: parseFloat(locationData.latitude),
+        longitude: parseFloat(locationData.longitude),
+        location_radius: 200, // bisa kamu ambil dari form jika ada
       }
+      console.log("PAYLOAD YANG DIKIRIM:", payload)
+      console.log("TOKEN YANG DIKIRIM:", localStorage.getItem("token"));
 
-      // // Single API call with combined data
-      // const response = await fetch("/api/setup-company", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(completeSetupData),
-      // })
-
-      // if (!response.ok) {
-      //   throw new Error("Setup failed")
-      // }
-
-      // const result = await response.json()
-
-      // const finalData = { ...setupData, location: data }
-      // setSetupData(finalData)
-      setIsCompleted(true)
-
-      toast({
-        title: "Setup completed successfully!",
-        description: "Your company has been set up and is ready to use.",
+      const response = await fetch("http://localhost:8000/api/company", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
       })
 
-      // onComplete?.(finalData)
+      if (!response.ok) {
+        let errorMessage = "Failed to save company data"
+        try {
+          const err = await response.json()
+          errorMessage = err.message || errorMessage
+        } catch (_) {
+          // respons bukan JSON (mungkin HTML), biarkan pakai pesan default
+        }
+        throw new Error(errorMessage)
+      }
+
+      setIsCompleted(true)
+      toast({
+        title: "Setup completed successfully!",
+        description: "Your company has been set up.",
+      })
     } catch (error) {
       toast({
         title: "Setup failed",
-        description: "There was an error setting up your company. Please try again.",
+        description: error instanceof Error ? error.message : "Unknown error",
         variant: "destructive",
       })
     } finally {
       setIsLoading(false)
     }
   }
+
 
   const handleBack = () => {
     if (currentStep > 1) {
