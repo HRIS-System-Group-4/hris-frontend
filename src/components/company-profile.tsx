@@ -59,7 +59,7 @@ export function CompanyProfile() {
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={form.control}
               name="companyUsername"
