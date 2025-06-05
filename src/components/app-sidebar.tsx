@@ -28,6 +28,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import Image from "next/image"
+import Link from "next/link"
 
 const data = {
   user: {
@@ -153,10 +155,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
-              <a href={"/dashboard/"}>
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">HRIS</span>
-              </a>
+              <Link href={"/dashboard/"} className="w-fit">
+                <Image src="/logo/Logo HRIS-1.png" alt="Logo" height={0} width={52}/>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
