@@ -7,11 +7,15 @@ import { IconDots } from "@tabler/icons-react";
 import Link from "next/link";
 import { EyeIcon, TrashIcon } from "lucide-react";
 
-interface DataTableRowActionsProps<TData> {
+interface CheckClockData {
+  id: string | number;
+}
+
+interface DataTableRowActionsProps<TData extends CheckClockData> {
   row: Row<TData>;
 }
 
-export function DataTableRowActions<TData>({
+export function DataTableRowActions<TData extends CheckClockData>({
   row
 }: DataTableRowActionsProps<TData>) {
   // const task = taskSchema.parse(row.original);

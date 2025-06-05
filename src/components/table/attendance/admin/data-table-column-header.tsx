@@ -22,12 +22,12 @@ export function DataTableColumnHeader<TData, TValue>({
   title,
   className
 }: DataTableColumnHeaderProps<TData, TValue>) {
+  // const [sortField, setSortField] = useState<SortField>(undefined)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(undefined)
+
   if (!column.getCanSort()) {
     return <div className={cn(className)}>{title}</div>;
   }
-
-  // const [sortField, setSortField] = useState<SortField>(undefined)
-  const [sortDirection, setSortDirection] = useState<SortDirection>(undefined)
 
   const handleSort = () => {
     if (sortDirection === "asc") {

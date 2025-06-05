@@ -1,41 +1,4 @@
-// export async function loginAdmin(login: string, password: string) {
-//     const res = await fetch("http://localhost:8000/api/admin/login", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({ login, password }),
-//       credentials: "include", // <- sangat penting
-//     });
-  
-//     const data = await res.json();
-  
-//     if (!res.ok) {
-//       throw new Error(data.message || "Login gagal");
-//     }
-  
-//     return data; // { access_token: ..., token_type: "Bearer" }
-//   }
-  
-  
-//   export async function loginEmployee(company: string, employee_id: string, password: string) {
-//     const res = await fetch("http://localhost:8000/api/login/employee", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({ company, employee_id, password }),
-//     });
-  
-//     if (!res.ok) {
-//       const error = await res.json();
-//       throw new Error(error.message || "Login gagal");
-//     }
-  
-//     return res.json(); // { access_token: ..., token_type: "Bearer" }
-//   }
-
-const API_URL = "http://localhost:8000/api/admin/login"; // ganti sesuai URL backend-mu
+const API_URL = `${process.env.NEXT_PUBLIC_BASE_API_URL}`
 
 export async function loginAdmin(login: string, password: string) {
 
@@ -43,12 +6,12 @@ export async function loginAdmin(login: string, password: string) {
   .find(cookie => cookie.trim().startsWith('XSRF-TOKEN='))
   ?.split('=')[1];
 
-  const res = await fetch(API_URL, {
+  const res = await fetch(`${API_URL}/admin/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "accept" : "application/json",
-      'X-CSRF-TOKEN': csrfToken,
+      // 'X-CSRF-TOKEN': csrfToken,
     },
     credentials: 'include',
     body: JSON.stringify({ login, password }),
@@ -71,7 +34,7 @@ export async function loginAdmin(login: string, password: string) {
 }
 
 export async function loginEmployee(company: string, employee_id: string, password: string) {
-  const res = await fetch(`${API_URL}/login`, {
+  const res = await fetch(`${API_URL}/employee/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -90,7 +53,7 @@ export async function registerUser(data: {
   password: string;
   confirmPassword: string;
 }) {
-  const res = await fetch(`${API_URL}/register`, {
+  const res = await fetch(`${API_URL}/admin/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader } 
 import { DialogTitle } from "@radix-ui/react-dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleContainer } from "@/components/ui/custom-page"
+import Image from "next/image"
 
 // Sample data for dropdowns
 const branches = [
@@ -282,7 +283,7 @@ export default function EditEmployee() {
                                             <div className="flex items-center gap-3">
                                                 <div className="relative h-24 w-24 rounded-full overflow-hidden bg-muted mb-2">
                                                     {avatarPreview ? (
-                                                        <img
+                                                        <Image
                                                             src={avatarPreview || "/placeholder.svg"}
                                                             alt="Avatar preview"
                                                             className="h-full w-full object-cover"
@@ -874,7 +875,7 @@ export default function EditEmployee() {
                                             {formData.avatar && (
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-medium">Avatar:</span>
-                                                    <img
+                                                    <Image
                                                         src={avatarPreview || ""}
                                                         alt="Avatar preview"
                                                         className="h-12 w-12 rounded-full object-cover"

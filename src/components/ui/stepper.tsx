@@ -29,6 +29,7 @@ export function Stepper({ steps, currentStep, className, variant = "default" }: 
                 return "bg-background/50 backdrop-blur-sm border border-border/20 rounded-lg p-4"
         }
     }
+    const isMobile = useIsMobile();
 
     return (
         <nav
@@ -49,7 +50,7 @@ export function Stepper({ steps, currentStep, className, variant = "default" }: 
                     return (
                         <li
                             key={step.id}
-                            className={cn("flex items-center flex-1 last:flex-none group", useIsMobile() ? isCurrent ? "" : "hidden" : "")} 
+                            className={cn("flex items-center flex-1 last:flex-none group", isMobile ? isCurrent ? "" : "hidden" : "")} 
                         >
                             {/* Step Content */}
                             <div className="flex items-center min-w-0">
@@ -90,8 +91,7 @@ export function Stepper({ steps, currentStep, className, variant = "default" }: 
                                             className={cn(
                                                 "text-sm font-semibold leading-tight transition-all duration-200",
                                                 {
-                                                    "text-black": isCompleted,
-                                                    "text-black": isCurrent,
+                                                    "text-black": isCompleted || isCurrent,
                                                     "text-gray-600": isUpcoming,
                                                 }
                                             )}
@@ -109,8 +109,7 @@ export function Stepper({ steps, currentStep, className, variant = "default" }: 
                                             className={cn(
                                                 "text-xs leading-relaxed mt-1 transition-all duration-200",
                                                 {
-                                                    "text-neutral-600": isCompleted,
-                                                    "text-neutral-600": isCurrent,
+                                                    "text-neutral-600": isCompleted || isCurrent,
                                                     "text-gray-500": isUpcoming,
                                                 }
                                             )}
@@ -144,8 +143,7 @@ export function Stepper({ steps, currentStep, className, variant = "default" }: 
                                             className={cn(
                                                 "ml-2 h-4 w-4 transition-all duration-200",
                                                 {
-                                                    "text-primary-500": isCompleted,
-                                                    "text-primary-500": isCurrent,
+                                                    "text-primary-500": isCompleted || isCurrent,
                                                     "text-gray-400": isUpcoming,
                                                 }
                                             )}

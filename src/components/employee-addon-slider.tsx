@@ -82,7 +82,7 @@ export function EmployeeAddonSlider({
     setIsAnimating(true)
     const timer = setTimeout(() => setIsAnimating(false), 10)
     return () => clearTimeout(timer)
-  }, [newLimit, additionalEmployees])
+  }, [newLimit, additionalEmployees, isAnimatingOpen])
 
   return (
     <Card className={cn("w-full", className)}>

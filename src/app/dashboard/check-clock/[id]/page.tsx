@@ -33,6 +33,10 @@ type CheckClockDay = {
   lateTolerance: number
 }
 
+// Define the days array with proper typing
+const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const
+type DayKey = typeof DAYS[number]
+
 const tableData: CheckClockDetail[] = [
   {
     id: "1",
@@ -144,7 +148,6 @@ const tableData: CheckClockDetail[] = [
   },
 ]
 
-
 export default function DetailCheckClockPage() {
   const params = useParams()
   const router = useRouter()
@@ -187,6 +190,12 @@ export default function DetailCheckClockPage() {
       fetchCheckClockDetails()
     }
   }, [params.id])
+
+  // Helper function to get day data with proper typing
+  const getDayData = (day: string): CheckClockDay | null => {
+    if (!checkClock) return null
+    return checkClock[day as DayKey] || null
+  }
 
   // Function to format date
   const formatDate = (dateString: string) => {
@@ -274,36 +283,47 @@ export default function DetailCheckClockPage() {
                   </DetailItem>
                 </DetailContainer>
               </DetailGroup>
-              {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => (
-                <div key={day}>
-                  <Separator />
-                  <DetailGroup key={day} title={(toTitleCase(day) as string)} className="pt-5">
-                    <DetailContainer>
-                      <DetailItem label="Work Type" layout={"column"} >
-                        <div className="font-medium text-black">{formatDayWorkType(checkClock[day as keyof typeof checkClock]?.type)}</div>
-                      </DetailItem>
-                    </DetailContainer>
-                    <DetailContainer>
-                      <DetailItem label="Start Time" layout={"column"} >
-                        <div className="font-medium text-black">{(checkClock[day as keyof typeof checkClock]?.startTime)}</div>
-                      </DetailItem>
-                      <DetailItem label="End Time" layout={"column"} >
-                        <div className="font-medium text-black">{(checkClock[day as keyof typeof checkClock]?.endTime)}</div>
-                      </DetailItem>
-                    </DetailContainer>
-                    <DetailContainer>
-                      <DetailItem label="Break Duration" layout={"column"} >
-                        <div className="font-medium text-black">{(checkClock[day as keyof typeof checkClock]?.breakDuration)} minutes</div>
-                      </DetailItem>
-                      <DetailItem label="Late Tolerance" layout={"column"} >
-                        <div className="font-medium text-black">{(checkClock[day as keyof typeof checkClock]?.lateTolerance)} minutes</div>
-                      </DetailItem>
-                    </DetailContainer>
-                  </DetailGroup>
-                </div>
-
-              ))}
-
+              {DAYS.map((day) => {
+                const dayData = getDayData(day)
+                return (
+                  <div key={day}>
+                    <Separator />
+                    <DetailGroup title={toTitleCase(day) as string} className="pt-5">
+                      <DetailContainer>
+                        <DetailItem label="Work Type" layout={"column"} >
+                          <div className="font-medium text-black">
+                            {dayData ? formatDayWorkType(dayData.type) : 'N/A'}
+                          </div>
+                        </DetailItem>
+                      </DetailContainer>
+                      <DetailContainer>
+                        <DetailItem label="Start Time" layout={"column"} >
+                          <div className="font-medium text-black">
+                            {dayData?.startTime || 'N/A'}
+                          </div>
+                        </DetailItem>
+                        <DetailItem label="End Time" layout={"column"} >
+                          <div className="font-medium text-black">
+                            {dayData?.endTime || 'N/A'}
+                          </div>
+                        </DetailItem>
+                      </DetailContainer>
+                      <DetailContainer>
+                        <DetailItem label="Break Duration" layout={"column"} >
+                          <div className="font-medium text-black">
+                            {dayData ? `${dayData.breakDuration} minutes` : 'N/A'}
+                          </div>
+                        </DetailItem>
+                        <DetailItem label="Late Tolerance" layout={"column"} >
+                          <div className="font-medium text-black">
+                            {dayData ? `${dayData.lateTolerance} minutes` : 'N/A'}
+                          </div>
+                        </DetailItem>
+                      </DetailContainer>
+                    </DetailGroup>
+                  </div>
+                )
+              })}
             </CardContent>
           </Card>
         )

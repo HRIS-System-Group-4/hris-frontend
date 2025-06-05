@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import Link from "next/link"
+import Image from "next/image"
 
 export function ResetPasswordForm() {
   const [password, setPassword] = useState("")
@@ -25,7 +26,7 @@ export function ResetPasswordForm() {
         <form onSubmit={handleSubmit}>
           <CardHeader className="text-center">
             <div className="mx-auto mb-2 h-10 w-10">
-              <img
+              <Image
                 src="/logo.png"
                 alt="HRIS Logo"
                 className="h-full w-full object-contain"

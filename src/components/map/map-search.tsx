@@ -143,7 +143,7 @@ export default function MapSearchComponent({ onLocationSelect, locationSelected 
         return () => {
             mapRef.current?.remove();
         };
-    }, []); // Remove dependencies to prevent unnecessary re-initialization
+    }, [createOrUpdateMarker, currentMarkerPosition, locationSelected, onLocationSelect, removeMarker]); // Remove dependencies to prevent unnecessary re-initialization
 
     // Sync with locationSelected prop changes
     useEffect(() => {

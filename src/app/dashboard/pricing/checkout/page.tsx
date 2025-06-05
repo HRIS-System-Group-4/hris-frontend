@@ -1,54 +1,64 @@
-"use client"
+// /components/checkout-content.tsx
+"use client";
 
-import { EmployeeAddonCompact } from "@/components/employee-addon-compact"
-import PricingCard from "@/components/pricing-card"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleContainer } from "@/components/ui/custom-page"
-import Link from "next/link"
-import { useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import PricingCard from "@/components/pricing-card";
+import { EmployeeAddonCompact } from "@/components/employee-addon-compact";
+import Link from "next/link";
 
-
-
-export default function CheckOutPage() {
-    const searchParams = useSearchParams()
-    const planParam = searchParams.get("plan") || 1
-    const additionalEmployeesParam = Number(searchParams.get("additionalEmployees")) || 0
-    const [additionalEmployees, setAdditionalEmployees] = useState(additionalEmployeesParam)
+export default function CheckoutContent() {
+    const searchParams = useSearchParams();
+    const planParam = searchParams.get("plan") || "1";
+    const additionalEmployeesParam = Number(searchParams.get("additionalEmployees")) || 0;
+    const [additionalEmployees, setAdditionalEmployees] = useState(additionalEmployeesParam);
+    const [error, setError] = useState<string | null>(null);
 
     const handleOutputChange = (newData: number) => {
         setAdditionalEmployees(newData);
-    }
+    };
 
-    // In checkout/page.tsx
+    // Plan mapping
     const planMapping: { [key: string]: number } = {
         "1": 0, // Free
         "2": 1, // Starter
         "3": 2, // Growth
+    };
+
+    // Validate planParam
+    const selectedPlan = planParam && planMapping[planParam] !== undefined ? planMapping[planParam] : 1;
+    if (!planMapping[planParam]) {
+        setError("Invalid plan selected. Defaulting to Starter Plan.");
     }
-    const selectedPlan = planParam && planMapping[planParam] !== undefined ? planMapping[planParam] : 1
+
+    // Validate additionalEmployeesParam
+    if (isNaN(additionalEmployeesParam) || additionalEmployeesParam < 0) {
+        setError("Invalid number of additional employees.");
+    }
 
     return (
-        <CustomPage>
-            <CustomPageHeader>
-                <CustomPageTitleContainer>
-                    <CustomPageTitle>Checkout Page</CustomPageTitle>
-                    <CustomPageSubtitle>Review your current plan, explore upgrades, and access your payment records.</CustomPageSubtitle>
-                </CustomPageTitleContainer>
-            </CustomPageHeader>
+        <div>
+            {error && (
+                <Alert variant="destructive" className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                 <Card className="col-span-7">
                     <CardHeader>
-                        <CardTitle>
-                            Pricing Breakdown
-                        </CardTitle>
+                        <CardTitle>Pricing Breakdown</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col gap-2">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-base font-semibold">Selected Plan</h3>
-                                <Button variant="link" size={"sm"} className="text-sm">
+                                <Button variant="link" size="sm" className="text-sm">
                                     Change Plan
                                 </Button>
                             </div>
@@ -57,14 +67,15 @@ export default function CheckOutPage() {
                                 description="Simple and affordable HR tools for small teams."
                                 price="Rp100.000"
                                 duration="per month"
-                                features={[
-                                    "Up to *20 employees*",
-                                    "*Advanced Attendance Tracking* (Location-based)",
-                                ]}
-                            >
-                            </PricingCard>
-                            <EmployeeAddonCompact onAdditionalEmployeesChange={handleOutputChange} additionalEmployeesParam={additionalEmployeesParam} currentLimit={500} activeUser={400} monthlyPricePerEmployee={1.5} />
-                            {/* <span>Additional Employees: {additionalEmployees}</span> */}
+                                features={["Up to *20 employees*", "*Advanced Attendance Tracking* (Location-based)"]}
+                            />
+                            <EmployeeAddonCompact
+                                onAdditionalEmployeesChange={handleOutputChange}
+                                additionalEmployeesParam={additionalEmployeesParam}
+                                currentLimit={500}
+                                activeUser={400}
+                                monthlyPricePerEmployee={1.5}
+                            />
                         </div>
                     </CardContent>
                 </Card>
@@ -76,11 +87,10 @@ export default function CheckOutPage() {
                         <div className="flex justify-between items-baseline pt-2">
                             <span className="font-medium">Current Plan</span>
                             <div className="text-right">
-                                <div className="font-bold text-lg">Rp{additionalEmployees * 5000}</div>
-
+                                <div className="font-bold text-lg">Rp100.000</div>
                             </div>
                         </div>
-                        <div className="flex justify-between items-baseline pt-2 ">
+                        <div className="flex justify-between items-baseline pt-2">
                             <span className="font-medium">Add-on Employee</span>
                             <div className="text-right">
                                 <div className="font-bold text-lg">Rp{additionalEmployees * 5000}</div>
@@ -92,12 +102,12 @@ export default function CheckOutPage() {
                         <div className="flex justify-between items-baseline pt-2 border-t">
                             <span className="font-medium">Total</span>
                             <div className="text-right">
-                                <div className="font-bold text-lg">Rp{additionalEmployees * 5000}</div>
+                                <div className="font-bold text-lg">Rp{100000 + additionalEmployees * 5000}</div>
                             </div>
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Link href={""} className="w-full">
+                        <Link href="/dashboard/payment" className="w-full">
                             <Button variant="default" className="w-full">
                                 Pay Now
                             </Button>
@@ -105,6 +115,6 @@ export default function CheckOutPage() {
                     </CardFooter>
                 </Card>
             </div>
-        </CustomPage>
-    )
+        </div>
+    );
 }

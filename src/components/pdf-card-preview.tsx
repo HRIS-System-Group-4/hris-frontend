@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import Image from "next/image"
 
 interface PdfCardPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
@@ -136,7 +137,7 @@ export function PdfCardPreview({
           {isLoading ? (
             <Skeleton className="h-full w-full" />
           ) : thumbnailUrl ? (
-            <img
+            <Image
               src={thumbnailUrl || "/placeholder.svg"}
               alt={`Preview of ${fileName}`}
               className="object-cover w-full h-full"
