@@ -35,7 +35,7 @@
 //     return res.json(); // { access_token: ..., token_type: "Bearer" }
 //   }
 
-const API_URL = "http://localhost:8000/api/admin/login"; // ganti sesuai URL backend-mu
+const API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api`; // ganti sesuai URL backend-mu
 
 export async function loginAdmin(login: string, password: string) {
 
@@ -43,7 +43,7 @@ export async function loginAdmin(login: string, password: string) {
   .find(cookie => cookie.trim().startsWith('XSRF-TOKEN='))
   ?.split('=')[1];
 
-  const res = await fetch(API_URL, {
+  const res = await fetch(`${API_URL}/admin/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -71,7 +71,7 @@ export async function loginAdmin(login: string, password: string) {
 }
 
 export async function loginEmployee(company: string, employee_id: string, password: string) {
-  const res = await fetch(`${API_URL}/login`, {
+  const res = await fetch(`${API_URL}/employee/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
