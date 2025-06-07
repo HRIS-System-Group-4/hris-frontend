@@ -35,7 +35,7 @@ interface DataTableProps<TData, TValue> {
 
 export function DataTableAttendanceEmployee<TData, TValue>({
   columns,
-  data
+  data = [],
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -44,7 +44,7 @@ export function DataTableAttendanceEmployee<TData, TValue>({
     []
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
-
+  console.log("Render table with data:", data);
   const table = useReactTable({
     data,
     columns,
@@ -54,7 +54,7 @@ export function DataTableAttendanceEmployee<TData, TValue>({
       rowSelection,
       columnFilters
     },
-    enableRowSelection: true,
+    enableRowSelection: false, // Tidak perlu selection di employee view
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -75,23 +75,21 @@ export function DataTableAttendanceEmployee<TData, TValue>({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} colSpan={header.colSpan}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} colSpan={header.colSpan}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -111,9 +109,9 @@ export function DataTableAttendanceEmployee<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-muted-foreground"
                 >
-                  No results.
+                  Tidak ada data presensi.
                 </TableCell>
               </TableRow>
             )}
