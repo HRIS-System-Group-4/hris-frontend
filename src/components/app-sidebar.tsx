@@ -120,6 +120,7 @@ const data = {
       title: "Settings",
       url: "/dashboard/settings",
       icon: IconSettings,
+      onlyAdmin: false,
     },
     // {
     //   title: "Get Help",
