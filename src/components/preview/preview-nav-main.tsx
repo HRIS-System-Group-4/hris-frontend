@@ -24,7 +24,7 @@ interface NavMainProps extends React.HTMLAttributes<HTMLDivElement> {
   }[]
 }
 
-export function NavMain({ items, className, ...props }: NavMainProps) {
+export function PreviewNavMain({ items, className, ...props }: NavMainProps) {
   const pathname = usePathname()
   const user = useSelector((state: RootState) => state.auth.user);
 
@@ -33,14 +33,14 @@ export function NavMain({ items, className, ...props }: NavMainProps) {
       <SidebarGroupLabel>Main</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {items.filter(item => user?.is_admin ? true : !item.onlyAdmin).map((item) => (
+          {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
                 // Check if the current path starts with the item URL or is exactly the item URL
-                isActive={pathname === item.url}
+                isActive={false}
               >
-                <Link href={item.url}>
+                <Link href={"#"}>
                   <item.icon className="size-4" />
                   <span>{item.title}</span>
                 </Link>

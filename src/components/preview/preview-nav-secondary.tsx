@@ -2,51 +2,48 @@
 
 import type * as React from "react"
 import { usePathname } from "next/navigation"
+import { Progress } from "@/components/ui/progress"
 
 import {
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { useSelector } from "react-redux"
-import { RootState } from "@/lib/store"
-import Link from "next/link"
+import SubsOverview from "../subs-overview"
+import PreviewSubsOverview from "./preview-subs-overview"
 
-interface NavMainProps extends React.HTMLAttributes<HTMLDivElement> {
+interface NavSecondaryProps extends React.HTMLAttributes<HTMLDivElement> {
   items: {
     title: string
     url: string
     icon: React.ComponentType<any>
-    onlyAdmin: boolean
   }[]
 }
 
-export function NavMain({ items, className, ...props }: NavMainProps) {
+export function PreviewNavSecondary({ items, className, ...props }: NavSecondaryProps) {
   const pathname = usePathname()
-  const user = useSelector((state: RootState) => state.auth.user);
 
   return (
     <SidebarGroup className={className} {...props}>
-      <SidebarGroupLabel>Main</SidebarGroupLabel>
       <SidebarGroupContent>
-        <SidebarMenu>
-          {items.filter(item => user?.is_admin ? true : !item.onlyAdmin).map((item) => (
+        <SidebarMenu >
+          {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
                 // Check if the current path starts with the item URL or is exactly the item URL
-                isActive={pathname === item.url}
+                isActive={pathname === item.url || (item.url !== "/" && pathname.startsWith(item.url))}
               >
-                <Link href={item.url}>
+                <div>
                   <item.icon className="size-4" />
                   <span>{item.title}</span>
-                </Link>
+                </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
+          <PreviewSubsOverview />
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

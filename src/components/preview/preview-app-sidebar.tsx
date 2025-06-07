@@ -30,9 +30,8 @@ import {
 } from "@/components/ui/sidebar"
 import Image from "next/image"
 import Link from "next/link"
-import { useSelector } from "react-redux"
-import { RootState } from "@/lib/store"
-import { SkeletonNavMain } from "./skeletons/skeleton-nav-main"
+import { PreviewNavMain } from "./preview-nav-main"
+import { PreviewNavSecondary } from "./preview-nav-secondary"
 
 const data = {
   navMain: [
@@ -67,70 +66,12 @@ const data = {
       onlyAdmin: true,
     },
   ],
-  // navClouds: [
-  //   {
-  //     title: "Capture",
-  //     icon: IconCamera,
-  //     isActive: true,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: "Proposal",
-  //     icon: IconFileDescription,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: "Prompts",
-  //     icon: IconFileAi,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  // ],
   navSecondary: [
     {
       title: "Settings",
       url: "/dashboard/settings",
       icon: IconSettings,
     },
-    // {
-    //   title: "Get Help",
-    //   url: "/dashboard/help",
-    //   icon: IconHelp,
-    // },
-    // {
-    //   title: "Search",
-    //   url: "/dashboard/search",
-    //   icon: IconSearch,
-    // },
   ],
   documents: [
     {
@@ -151,9 +92,7 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const user = useSelector((state: RootState) => state.auth.user);
-
+export function PreviewAppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -168,15 +107,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {!user ? (
-          <SkeletonNavMain />
-        ) : (
-          <>
-            <NavMain items={data.navMain} />
-            <NavSecondary items={data.navSecondary} className="mt-auto" />
-          </>
-        )}
+        <PreviewNavMain items={data.navMain} />
+        {/* <NavDocuments items={data.documents} /> */}
+        <PreviewNavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-    </Sidebar >
+      {/* <SidebarFooter>
+        <NavUser user={data.user} />
+      </SidebarFooter> */}
+    </Sidebar>
   )
 }
