@@ -20,6 +20,7 @@ interface NavSecondaryProps extends React.HTMLAttributes<HTMLDivElement> {
     title: string
     url: string
     icon: React.ComponentType<any>
+    onlyAdmin: boolean
   }[]
 }
 

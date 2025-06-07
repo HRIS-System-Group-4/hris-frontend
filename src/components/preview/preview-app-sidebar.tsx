@@ -71,6 +71,7 @@ const data = {
       title: "Settings",
       url: "/dashboard/settings",
       icon: IconSettings,
+      onlyAdmin: false,
     },
   ],
   documents: [
@@ -108,12 +109,8 @@ export function PreviewAppSidebar({ ...props }: React.ComponentProps<typeof Side
       </SidebarHeader>
       <SidebarContent>
         <PreviewNavMain items={data.navMain} />
-        {/* <NavDocuments items={data.documents} /> */}
         <PreviewNavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      {/* <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter> */}
     </Sidebar>
   )
 }
