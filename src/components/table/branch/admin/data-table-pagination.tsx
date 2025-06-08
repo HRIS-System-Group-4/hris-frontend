@@ -34,7 +34,7 @@ export function DataTablePagination<TData>({
             table.getFilteredRowModel().rows.length
           )}
         </strong>{" "}
-        of <strong>{table.getFilteredRowModel().rows.length}</strong> branches
+        of <strong>{table.getFilteredRowModel().rows.length}</strong> attendances
       </div>
       <div className="flex items-center space-x-2">
         <Select
