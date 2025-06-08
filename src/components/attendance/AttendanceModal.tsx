@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { DatePicker } from "@/components/date-picker";
 import { toast } from "@/components/ui/use-toast";
+import { clockInEmployee } from "@/services/attendanceService";
 
 export function AttendanceModal() {
   // State untuk menyimpan jenis absensi, default "Clock In"
@@ -86,13 +87,13 @@ export function AttendanceModal() {
       return;
     }
 
-    const baseUrl = "http://127.0.0.1:8000";
+    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}`;
     const endpoint =
       attendanceType === "Clock In"
-        ? `${baseUrl}/api/clock-in`
+        ? `/api/clock-in`
         : attendanceType === "Clock Out"
-        ? `${baseUrl}/api/clock-out`
-        : null;
+          ? `/api/clock-out`
+          : null;
 
     if (!endpoint) {
       toast({
@@ -108,6 +109,7 @@ export function AttendanceModal() {
     // Format jam dari attendanceDate, misal "14:30:00"
     const timeString = attendanceDate.toTimeString().split(" ")[0];
     formData.append("check_clock_time", timeString);
+    console.log("timeString", timeString);
 
     // Kirim latitude dan longitude sebagai string
     formData.append("latitude", lat.toString());
@@ -116,13 +118,19 @@ export function AttendanceModal() {
     if (file) formData.append("proof", file);
 
     try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
-        },
-        body: formData,
-      });
+
+      let response
+
+      if (attendanceType === "Clock In") {
+        response = await clockInEmployee(formData);
+      }
+      // await fetch(endpoint, {
+      //   method: "POST",
+      //   headers: {
+      //     Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+      //   },
+      //   body: formData,
+      // });
 
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || "Gagal mengirim data absensi.");

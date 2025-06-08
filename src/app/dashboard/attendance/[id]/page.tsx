@@ -8,14 +8,20 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const data = await getLocalAttendanceById(id)
   if (!data) return { title: "Not Found" }
   return {
-    title: `Attendance: ${data.employee.firstName}`,
+    title: `Attendance: ${id}`,
     description: "Detailed view of employee attendance",
   }
 }
 
 export default async function DetailAttendancePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const data = await getLocalAttendanceById(id)
-  if (!data) return notFound()
-  return <AttendanceDetailsPage data={data} />
+  // const data = await getLocalAttendanceById(id)
+  // if (!data) return notFound()
+  return (
+    // <AttendanceDetailsPage data={data} />
+    <div>
+      {id}
+    </div>
+
+  )
 }

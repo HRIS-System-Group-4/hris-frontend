@@ -5,7 +5,7 @@ import { Table } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { approval, attendanceType } from "./data";
+import { status, attendance_type } from "./data";
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 // import { DataTableViewOptions } from "@/components/ui/data-table-view-options";
 import { CalendarDatePicker } from "@/components/calendar-date-picker";
@@ -37,25 +37,25 @@ export function DataTableToolbar<TData>({
     <div className="flex flex-wrap items-center justify-between">
       <div className="flex flex-1 flex-wrap items-center gap-2">
         <Input
-          placeholder="Filter name..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter employee name..."
+          value={(table.getColumn("employee_name")?.getFilterValue() as string) ?? ""}
           onChange={(event) => {
-            table.getColumn("name")?.setFilterValue(event.target.value);
+            table.getColumn("employee_name")?.setFilterValue(event.target.value);
           }}
           className="h-8 w-[150px] lg:w-[250px]"
         />
-        {table.getColumn("attendanceType") && (
+        {table.getColumn("attendance_type") && (
           <DataTableFacetedFilter
-            column={table.getColumn("attendanceType")}
+            column={table.getColumn("attendance_type")}
             title="Attendance Type"
-            options={attendanceType}
+            options={attendance_type}
           />
         )}
-        {table.getColumn("approval") && (
+        {table.getColumn("status") && (
           <DataTableFacetedFilter
-            column={table.getColumn("approval")}
-            title="Approval"
-            options={approval}
+            column={table.getColumn("status")}
+            title="Status"
+            options={status}
           />
         )}
         {isFiltered && (
