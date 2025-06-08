@@ -30,38 +30,41 @@ import {
 } from "@/components/ui/sidebar"
 import Image from "next/image"
 import Link from "next/link"
+import { useSelector } from "react-redux"
+import { RootState } from "@/lib/store"
+import { SkeletonNavMain } from "./skeletons/skeleton-nav-main"
 
 const data = {
-  user: {
-    name: "Taufiq Hidayatulloh",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
       url: "/dashboard",
       icon: IconHome,
+      onlyAdmin: false,
     },
     {
       title: "Employee",
       url: "/dashboard/employee",
       icon: IconUsers,
+      onlyAdmin: true,
     },
     {
       title: "Check Clock",
       url: "/dashboard/check-clock",
       icon: IconClock,
+      onlyAdmin: true,
     },
     {
       title: "Attendance",
       url: "/dashboard/attendance",
       icon: IconCalendarEvent,
+      onlyAdmin: false,
     },
     {
       title: "Branch",
       url: "/dashboard/branch",
       icon: IconBuildings,
+      onlyAdmin: true,
     },
   ],
   // navClouds: [
@@ -117,6 +120,7 @@ const data = {
       title: "Settings",
       url: "/dashboard/settings",
       icon: IconSettings,
+      onlyAdmin: false,
     },
     // {
     //   title: "Get Help",
@@ -149,6 +153,8 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const user = useSelector((state: RootState) => state.auth.user);
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -156,20 +162,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <Link href={"/dashboard/"} className="w-fit">
-                <Image src="/logo/Logo HRIS-1.png" alt="Logo" height={0} width={52}/>
+                <Image src="/logo/Logo HRIS-1.png" alt="Logo" height={0} width={52} />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        {/* <NavDocuments items={data.documents} /> */}
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {!user ? (
+          <SkeletonNavMain />
+        ) : (
+          <>
+            <NavMain items={data.navMain} />
+            <NavSecondary items={data.navSecondary} className="mt-auto" />
+          </>
+        )}
       </SidebarContent>
-      {/* <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter> */}
-    </Sidebar>
+    </Sidebar >
   )
 }

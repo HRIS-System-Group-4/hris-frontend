@@ -2,20 +2,20 @@
 
 import type * as React from "react"
 import { usePathname } from "next/navigation"
-import { Progress } from "@/components/ui/progress"
 
 import {
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
-import { Badge } from "./ui/badge"
-import SubsOverview from "./subs-overview"
+import { useSelector } from "react-redux"
+import { RootState } from "@/lib/store"
+import Link from "next/link"
 
-interface NavSecondaryProps extends React.HTMLAttributes<HTMLDivElement> {
+interface NavMainProps extends React.HTMLAttributes<HTMLDivElement> {
   items: {
     title: string
     url: string
@@ -24,28 +24,29 @@ interface NavSecondaryProps extends React.HTMLAttributes<HTMLDivElement> {
   }[]
 }
 
-export function NavSecondary({ items, className, ...props }: NavSecondaryProps) {
+export function PreviewNavMain({ items, className, ...props }: NavMainProps) {
   const pathname = usePathname()
+  const user = useSelector((state: RootState) => state.auth.user);
 
   return (
     <SidebarGroup className={className} {...props}>
+      <SidebarGroupLabel>Main</SidebarGroupLabel>
       <SidebarGroupContent>
-        <SidebarMenu >
+        <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
                 // Check if the current path starts with the item URL or is exactly the item URL
-                isActive={pathname === item.url || (item.url !== "/" && pathname.startsWith(item.url))}
+                isActive={false}
               >
-                <a href={item.url}>
+                <Link href={"#"}>
                   <item.icon className="size-4" />
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
-          <SubsOverview />
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
