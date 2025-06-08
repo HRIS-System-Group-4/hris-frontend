@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const statusConfig = (status: Branch["status"]) => {
+    status = status.toLowerCase() as Branch["status"];
     const statusConfig = {
         "active": { label: "Active", className: "bg-green-100 text-green-600" },
         "inactive": { label: "Inactive", className: "bg-gray-100 text-gray-950" },

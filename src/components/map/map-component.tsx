@@ -88,7 +88,7 @@ export default function MapComponent({ }: IProps) {
         <div className="text-black relative">
             <Map
                 {...viewState}
-                style={{ width: '100%', height: 'calc(100vh - 64px)' }}
+                style={{ width: '100%', height: 'calc(50vh - 64px)' }}
                 mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
                 onMove={(evt) => setViewState(evt.viewState)}
                 onLoad={addMarkers} // Add markers when map loads
