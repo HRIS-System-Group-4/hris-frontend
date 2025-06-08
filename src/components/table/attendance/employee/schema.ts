@@ -3,11 +3,11 @@ import { z } from "zod";
 // We're keeping a simple non-relational schema here.
 // IRL, you will have a schema for your data models.
 
-const EmployeeSchema = z.object({
-  avatar: z.string().url(),
-  firstName: z.string(),
-  lastName: z.string(),
-});
+// const EmployeeSchema = z.object({
+//   avatar: z.string().url(),
+//   firstName: z.string(),
+//   lastName: z.string(),
+// });
 
 const WorkHoursSchema = z
   .object({
@@ -16,9 +16,9 @@ const WorkHoursSchema = z
   })
   .nullable();
 
-export const AttendanceAdminSchema = z.object({
+export const AttendanceEmployeeSchema = z.object({
   id: z.number(),
-  employee: EmployeeSchema,
+  // employee: EmployeeSchema,
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // format YYYY-MM-DD
   clockIn: z.string().regex(/^\d{2}:\d{2}$/).nullable(),
   clockOut: z.string().regex(/^\d{2}:\d{2}$/).nullable(),
@@ -27,4 +27,4 @@ export const AttendanceAdminSchema = z.object({
   approval: z.enum(["approve", "rejected", "waiting"]).nullable(),
 });
 
-export type AttendanceAdmin = z.infer<typeof AttendanceAdminSchema>;
+export type AttendanceEmployee = z.infer<typeof AttendanceEmployeeSchema>;
