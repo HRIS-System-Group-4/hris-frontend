@@ -14,7 +14,7 @@ export function useBreadcrumbSegments() {
   return segments.map((segment, index) => {
     // Kustomisasi label breadcrumb
     const label = (() => {
-      if (segment === "dashboard") return null
+      if (segment === "dashboard" && segments[index + 1] != null) return null
       if (segment === "add") return "Add"
       if (/^[0-9a-fA-F-]+$/.test(segment)) {
         if (segments[index - 1] === "edit")
