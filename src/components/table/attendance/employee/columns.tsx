@@ -1,11 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-<<<<<<< Updated upstream
-import { AttendanceAdmin } from "./schema";
-=======
 import { AttendanceEmployee } from "./schema"
->>>>>>> Stashed changes
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,28 +10,7 @@ import {
   Loader,
 } from "lucide-react";
 
-<<<<<<< Updated upstream
-const approvalConfig = (approval?: AttendanceAdmin["approval"]) => {
-  const statusConfig = {
-    approve: {
-      label: "Approve",
-      className: "bg-green-100 text-green-600",
-      icon: CheckCircle2,
-    },
-    rejected: {
-      label: "Rejected",
-      className: "bg-red-100 text-red-600",
-      icon: CircleX,
-    },
-    waiting: {
-      label: "Waiting",
-      className: "bg-gray-100 text-gray-500",
-      icon: Loader,
-    },
-  } as const;
 
-  const config = approval ? statusConfig[approval] : null;
-=======
 const approvalConfig = (approval?: AttendanceEmployee["approval"]) => {
     const statusConfig = {
         "approve": { label: "Approved", className: "bg-green-100 text-green-600", icon: CheckCircle2 },
@@ -53,23 +28,13 @@ const approvalConfig = (approval?: AttendanceEmployee["approval"]) => {
         </div>
     );
 
->>>>>>> Stashed changes
+    if (!config)
+      return (
+        <div className="flex w-[100px] items-center text-muted-foreground">-</div>
+      );
+  }
 
-  if (!config)
-    return (
-      <div className="flex w-[100px] items-center text-muted-foreground">-</div>
-    );
 
-<<<<<<< Updated upstream
-  // Employee hanya lihat badge tanpa tombol
-  return (
-    <Badge variant="secondary" className={config.className}>
-      <config.icon className="h-4 w-4 mr-1" />
-      {config.label}
-    </Badge>
-  );
-};
-=======
 export const columns: ColumnDef<AttendanceEmployee>[] = [
     // {
     //     accessorKey: "name",
@@ -209,15 +174,15 @@ export const columns: ColumnDef<AttendanceEmployee>[] = [
             <DataTableColumnHeader column={column} title="Approval" />
         ),
         cell: ({ row }) => {
-            const status = row.original.approval
-            const statusConfig = {
-                "approve": { label: "Approve", className: "bg-green-100 text-green-500", icon: Check },
-                "rejected": { label: "Rejected", className: "bg-red-100 text-red-500", icon: X },
-                "waiting": { label: "Waiting", className: "bg-gray-100 text-gray-500", icon: Loader },
-            } as const
->>>>>>> Stashed changes
+            const status = row.original.approval;
+            return (
+                <div className="flex w-[140px] items-center">{approvalConfig(status)}</div>
+            );
+        },
+    },
+];
 
-export const employeeColumns: ColumnDef<AttendanceAdmin>[] = [
+export const employeeColumns: ColumnDef<AttendanceEmployee>[] = [
   {
     accessorKey: "date",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
