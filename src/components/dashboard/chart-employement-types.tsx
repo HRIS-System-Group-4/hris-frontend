@@ -1,92 +1,115 @@
-"use client"
+"use client";
 
-import { TrendingUp } from "lucide-react"
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts"
-
+import { useEffect, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-]
+} from "@/components/ui/chart";
+
+import { getAdminDashboardStats } from "@/services/dashboardService"; // pastikan path-nya sesuai
 
 const chartConfig = {
   desktop: {
-    label: "Desktop",
+    label: "Total",
     color: "hsl(var(--chart-1))",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "hsl(var(--chart-2))",
   },
   label: {
     color: "hsl(var(--background))",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
-export function ChartEmployementTypes() {
+export function ChartEmploymentTypes() {
+  const [employmentData, setEmploymentData] = useState<
+    { type: string; total: number }[]
+  >([]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await getAdminDashboardStats();
+
+        const employmentTypes = data.employment_types || {};
+
+        const transformedData = Object.entries(employmentTypes).map(
+          ([type, total]) => ({
+            type,
+            total: Number(total),
+          })
+        );
+
+        setEmploymentData(transformedData);
+      } catch (err) {
+        console.error("Error fetching dashboard stats:", err);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  const totalEmployees = employmentData.reduce(
+    (sum, item) => sum + item.total,
+    0
+  );
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Employment Types</CardTitle>
-        <CardDescription>128 Employees</CardDescription>
+        <CardDescription>{totalEmployees} Employees</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="w-full max-h-[200px]">
           <BarChart
             accessibilityLayer
-            data={chartData}
+            data={employmentData}
             layout="vertical"
-            margin={{
-              right: 16,
-            }}
+            margin={{ right: 16 }}
           >
             <CartesianGrid horizontal={false} />
             <YAxis
-              dataKey="month"
+              dataKey="type"
               type="category"
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value) => value.slice(0, 3)}
-              hide
             />
-            <XAxis dataKey="desktop" type="number" hide />
+            <XAxis dataKey="total" type="number" hide />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent indicator="line" />}
             />
             <Bar
-              dataKey="desktop"
+              dataKey="total"
               layout="vertical"
               fill="var(--color-primary)"
               radius={4}
             >
               <LabelList
-                dataKey="month"
+                dataKey="type"
                 position="insideLeft"
                 offset={8}
                 className="fill-white"
                 fontSize={12}
               />
               <LabelList
-                dataKey="desktop"
+                dataKey="total"
                 position="right"
                 offset={8}
                 className="fill-foreground"
@@ -96,14 +119,6 @@ export function ChartEmployementTypes() {
           </BarChart>
         </ChartContainer>
       </CardContent>
-      {/* <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter> */}
     </Card>
-  )
+  );
 }
