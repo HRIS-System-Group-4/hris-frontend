@@ -1,3 +1,4 @@
+
 // src/components/table/attendance/schema.ts
 
 export interface AttendanceRecord {

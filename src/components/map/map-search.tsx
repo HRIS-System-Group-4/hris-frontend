@@ -31,6 +31,7 @@ export default function MapSearchComponent({ onLocationSelect, locationSelected 
     const mapRef = useRef<mapboxgl.Map | null>(null);
     const markerRef = useRef<mapboxgl.Marker | null>(null);
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isInitializedRef = useRef(false);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -80,9 +81,9 @@ export default function MapSearchComponent({ onLocationSelect, locationSelected 
         setSearchQuery('');
     }, []);
 
-    // Initialize map and marker
+    // Initialize map once
     useEffect(() => {
-        if (!mapContainerRef.current) return;
+        if (!mapContainerRef.current || isInitializedRef.current) return;
 
         mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
 
@@ -94,21 +95,6 @@ export default function MapSearchComponent({ onLocationSelect, locationSelected 
             minZoom: 5,
             maxZoom: 18,
         });
-
-        // Restore marker from current state (either from props or internal state)
-        const markerPosition = locationSelected && locationSelected[0] !== undefined && locationSelected[1] !== undefined
-            ? [locationSelected[0], locationSelected[1]] as [number, number]
-            : currentMarkerPosition;
-
-        if (markerPosition) {
-            const [latitude, longitude] = markerPosition;
-            createOrUpdateMarker(latitude, longitude);
-            mapRef.current.flyTo({
-                center: [longitude, latitude],
-                zoom: 14,
-                duration: 1000,
-            });
-        }
 
         // Handle map click to place marker
         mapRef.current.on('click', (e) => {
@@ -140,28 +126,41 @@ export default function MapSearchComponent({ onLocationSelect, locationSelected 
             }
         });
 
+        isInitializedRef.current = true;
+
         return () => {
             mapRef.current?.remove();
+            isInitializedRef.current = false;
         };
-    }, [createOrUpdateMarker, currentMarkerPosition, locationSelected, onLocationSelect, removeMarker]); // Remove dependencies to prevent unnecessary re-initialization
+    }, []); // Empty dependency array - only run once
 
-    // Sync with locationSelected prop changes
+    // Handle initial marker placement and prop changes
     useEffect(() => {
-        if (!mapRef.current) return;
+        if (!mapRef.current || !isInitializedRef.current) return;
 
+        // Handle initial marker placement from props
         if (locationSelected && locationSelected[0] !== undefined && locationSelected[1] !== undefined) {
             const [latitude, longitude] = locationSelected;
-            createOrUpdateMarker(latitude, longitude);
-            mapRef.current.flyTo({
-                center: [longitude, latitude],
-                zoom: 14,
-                duration: 1000,
-            });
-        } else if (!currentMarkerPosition) {
-            // Only remove marker if there's no internal state to maintain
+            
+            // Only update if the position is different from current
+            if (!currentMarkerPosition || 
+                currentMarkerPosition[0] !== latitude || 
+                currentMarkerPosition[1] !== longitude) {
+                
+                createOrUpdateMarker(latitude, longitude);
+                mapRef.current.flyTo({
+                    center: [longitude, latitude],
+                    zoom: 14,
+                    duration: 1000,
+                });
+            }
+        } else if (locationSelected && 
+                   (locationSelected[0] === undefined || locationSelected[1] === undefined) &&
+                   currentMarkerPosition) {
+            // Clear marker if locationSelected is explicitly cleared
             removeMarker();
         }
-    }, [locationSelected, createOrUpdateMarker, removeMarker, currentMarkerPosition]);
+    }, [locationSelected]); // Only depend on locationSelected
 
     // Search function using /suggest
     const searchLocations = useCallback(

@@ -1,33 +1,16 @@
 import { Metadata } from "next"
-import path from "path"
-import fs from "fs"
-import { Button } from "@/components/ui/button"
 import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleButtons, CustomPageTitleContainer } from "@/components/ui/custom-page"
-import { Plus, Table } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
 import Link from "next/link"
-import { columns } from "@/components/table/branch/admin/columns"
-import { DataTableBranch } from "@/components/table/branch/admin/data-table"
+import BranchClientComponent from "./_components/branch-client-component"
 
 export const metadata: Metadata = {
   title: "Branch",
-  description: "A Expense tracker build using Tanstack Table."
-};
-
-async function getData() {
-  const filePath = path.join(
-    process.cwd(),
-    "src/app/dashboard/branch",
-    "data.json"
-  );
-  const data = fs.readFileSync(filePath, "utf8");
-  return JSON.parse(data);
+  description: "A Expense tracker built using Tanstack Table."
 }
 
-
-export default async function BranchPage() {
-  const data = await getData();
-  console.log("data", data);
-
+export default function BranchPage() {
   return (
     <CustomPage>
       <CustomPageHeader>
@@ -39,12 +22,14 @@ export default async function BranchPage() {
           <Link href={'/dashboard/branch/add'}>
             <Button variant="default" size={"lg"}>
               <Plus />
-              Add Branch</Button>
+              Add Branch
+            </Button>
           </Link>
         </CustomPageTitleButtons>
       </CustomPageHeader>
-      <DataTableBranch data={data} columns={columns} />
-      {/* <h2 className="text-lg font-medium mb-4">Employee Management</h2> */}
+
+      {/* Client-side data fetching handled here */}
+      <BranchClientComponent />
     </CustomPage>
   )
 }

@@ -1,7 +1,7 @@
 // /components/checkout-content.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -11,7 +11,8 @@ import PricingCard from "@/components/pricing-card";
 import { EmployeeAddonCompact } from "@/components/employee-addon-compact";
 import Link from "next/link";
 
-export default function CheckoutContent() {
+// Separate component that uses useSearchParams
+function CheckoutForm() {
     const searchParams = useSearchParams();
     const planParam = searchParams.get("plan") || "1";
     const additionalEmployeesParam = Number(searchParams.get("additionalEmployees")) || 0;
@@ -116,5 +117,45 @@ export default function CheckoutContent() {
                 </Card>
             </div>
         </div>
+    );
+}
+
+// Loading fallback component
+function CheckoutLoading() {
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <Card className="col-span-7">
+                <CardHeader>
+                    <CardTitle>Loading pricing breakdown...</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="animate-pulse space-y-4">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-32 bg-gray-200 rounded"></div>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card className="col-span-5 h-fit">
+                <CardHeader>
+                    <CardTitle>Plan Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="animate-pulse space-y-4">
+                        <div className="h-4 bg-gray-200 rounded"></div>
+                        <div className="h-4 bg-gray-200 rounded"></div>
+                        <div className="h-4 bg-gray-200 rounded"></div>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
+
+// Main component with Suspense boundary
+export default function CheckoutContent() {
+    return (
+        <Suspense fallback={<CheckoutLoading />}>
+            <CheckoutForm />
+        </Suspense>
     );
 }
