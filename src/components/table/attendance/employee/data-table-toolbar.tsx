@@ -44,9 +44,9 @@ export function DataTableToolbar<TData>({
           }}
           className="h-8 w-[150px] lg:w-[250px]"
         /> */}
-        {table.getColumn("attendanceType") && (
+        {table.getColumn("attendance_type") && (
           <DataTableFacetedFilter
-            column={table.getColumn("attendanceType")}
+            column={table.getColumn("attendance_type")}
             title="Attendance Type"
             options={attendanceType}
           />
