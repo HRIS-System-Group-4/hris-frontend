@@ -127,6 +127,12 @@ export function LoginTabs({ className }: { className?: string }) {
       onValueChange={handleTabChange}
       className={cn("w-full max-w-md", className)}
     >
+      <div className="flex flex-col items-center text-center mb-4">
+        <h1 className="text-2xl font-bold">Login to your account</h1>
+        <p className="text-muted-foreground text-sm text-balance">
+          Enter your details below to login to your account
+        </p>
+      </div>
       <TabsList className="grid w-full grid-cols-2 mb-6">
         <TabsTrigger value="admin">Admin</TabsTrigger>
         <TabsTrigger value="employee">Employee</TabsTrigger>
@@ -134,12 +140,6 @@ export function LoginTabs({ className }: { className?: string }) {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
-          <div className="flex flex-col items-center text-center">
-            <h1 className="text-2xl font-bold leading-4">Login to your account</h1>
-            <p className="text-muted-foreground text-sm text-balance">
-              Enter your details below to login to your account
-            </p>
-          </div>
 
           {errorMessage && (
             <Alert variant="destructive">

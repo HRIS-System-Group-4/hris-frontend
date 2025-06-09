@@ -28,104 +28,51 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import Image from "next/image"
+import Link from "next/link"
+import { PreviewNavMain } from "./preview-nav-main"
+import { PreviewNavSecondary } from "./preview-nav-secondary"
 
 const data = {
-  user: {
-    name: "Taufiq Hidayatulloh",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
       url: "/dashboard",
       icon: IconHome,
+      onlyAdmin: false,
     },
     {
       title: "Employee",
       url: "/dashboard/employee",
       icon: IconUsers,
+      onlyAdmin: true,
     },
     {
       title: "Check Clock",
       url: "/dashboard/check-clock",
       icon: IconClock,
+      onlyAdmin: true,
     },
     {
       title: "Attendance",
       url: "/dashboard/attendance",
       icon: IconCalendarEvent,
+      onlyAdmin: false,
     },
     {
       title: "Branch",
       url: "/dashboard/branch",
       icon: IconBuildings,
+      onlyAdmin: true,
     },
   ],
-  // navClouds: [
-  //   {
-  //     title: "Capture",
-  //     icon: IconCamera,
-  //     isActive: true,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: "Proposal",
-  //     icon: IconFileDescription,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: "Prompts",
-  //     icon: IconFileAi,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  // ],
   navSecondary: [
     {
       title: "Settings",
       url: "/dashboard/settings",
       icon: IconSettings,
+      onlyAdmin: false,
     },
-    // {
-    //   title: "Get Help",
-    //   url: "/dashboard/help",
-    //   icon: IconHelp,
-    // },
-    // {
-    //   title: "Search",
-    //   url: "/dashboard/search",
-    //   icon: IconSearch,
-    // },
   ],
   documents: [
     {
@@ -146,29 +93,24 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function PreviewAppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
-              <a href={"/dashboard/"}>
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">HRIS</span>
-              </a>
+              <Link href={"/dashboard/"} className="w-fit">
+                <Image src="/logo/Logo HRIS-1.png" alt="Logo" height={0} width={52} />
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        {/* <NavDocuments items={data.documents} /> */}
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <PreviewNavMain items={data.navMain} />
+        <PreviewNavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      {/* <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter> */}
     </Sidebar>
   )
 }

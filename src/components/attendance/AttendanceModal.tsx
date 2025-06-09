@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 
 import { useState } from "react";
 import {
@@ -20,138 +21,135 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { DatePicker } from "@/components/date-picker";
 import { toast } from "@/components/ui/use-toast";
-import { clockInEmployee } from "@/services/attendanceService";
 
 export function AttendanceModal() {
-  // State untuk menyimpan jenis absensi, default "Clock In"
   const [attendanceType, setAttendanceType] = useState("Clock In");
-
-  // State untuk tanggal dan waktu absensi
   const [attendanceDate, setAttendanceDate] = useState<Date | undefined>(undefined);
-
-  // State untuk menyimpan file bukti presensi (optional)
+  const [leaveStartDate, setLeaveStartDate] = useState<Date | undefined>(undefined);
+  const [leaveEndDate, setLeaveEndDate] = useState<Date | undefined>(undefined);
   const [file, setFile] = useState<File | null>(null);
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const getLocation = (): Promise<{ lat: number; lng: number }> =>
+    new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => {
+          reject(error);
+        },
+        { enableHighAccuracy: true }
+      );
+    });
 
-  // State untuk lokasi yang diambil otomatis dari device (latitude dan longitude)
-  const [lat, setLat] = useState<number | null>(null);
-  const [lng, setLng] = useState<number | null>(null);
-
-  // State loading lokasi (tunggu proses pengambilan lokasi device)
-  const [loadingLocation, setLoadingLocation] = useState(false);
-
-  // Fungsi untuk mengambil lokasi device menggunakan Geolocation API
-  const fetchLocation = () => {
-    setLoadingLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLoadingLocation(false);
-        setLat(position.coords.latitude);
-        setLng(position.coords.longitude);
-        toast({
-          title: "Lokasi berhasil didapatkan",
-          description: `Latitude: ${position.coords.latitude.toFixed(6)}, Longitude: ${position.coords.longitude.toFixed(6)}`,
-        });
-      },
-      (error) => {
-        setLoadingLocation(false);
-        toast({
-          title: "Gagal mendapatkan lokasi",
-          description:
-            "Mohon izinkan akses lokasi pada browser Anda agar absensi dengan lokasi otomatis dapat dilakukan.",
-          variant: "destructive",
-        });
-      },
-      { enableHighAccuracy: true }
-    );
-  };
-
-  // Fungsi submit form absensi
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoadingSubmit(true);
 
-    if (!attendanceDate) {
+    const isClockType = attendanceType === "Clock In" || attendanceType === "Clock Out";
+    const isLeaveType = ["Absent", "Annual Leave", "Sick Leave"].includes(attendanceType);
+
+    if (isLeaveType && (!leaveStartDate || !leaveEndDate)) {
       toast({
         title: "Validation Error",
-        description: "Please select attendance date.",
+        description: "Please select start and end date.",
         variant: "destructive",
       });
+      setLoadingSubmit(false);
       return;
     }
 
-    if (lat === null || lng === null) {
-      toast({
-        title: "Location Error",
-        description: "Lokasi belum tersedia. Klik tombol 'Ambil Lokasi' terlebih dahulu.",
-        variant: "destructive",
-      });
-      return;
+    let lat: number | null = null;
+    let lng: number | null = null;
+
+    if (isClockType) {
+      try {
+        const location = await getLocation();
+        lat = location.lat;
+        lng = location.lng;
+      } catch {
+        toast({
+          title: "Gagal mendapatkan lokasi",
+          description: "Mohon izinkan akses lokasi pada browser Anda.",
+          variant: "destructive",
+        });
+        setLoadingSubmit(false);
+        return;
+      }
     }
 
-    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}`;
-    const endpoint =
-      attendanceType === "Clock In"
-        ? `/api/clock-in`
-        : attendanceType === "Clock Out"
-          ? `/api/clock-out`
-          : null;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    const endpointMap: Record<string, string> = {
+      "Clock In": `${baseUrl}/api/clock-in`,
+      "Clock Out": `${baseUrl}/api/clock-out`,
+      "Absent": `${baseUrl}/api/absent`,
+      "Annual Leave": `${baseUrl}/api/leave`,
+      "Sick Leave": `${baseUrl}/api/leave`,
+    };
 
-    if (!endpoint) {
-      toast({
-        title: "Error",
-        description: "Jenis absensi belum terhubung ke backend.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    const endpoint = endpointMap[attendanceType];
     const formData = new FormData();
 
-    // Format jam dari attendanceDate, misal "14:30:00"
-    const timeString = attendanceDate.toTimeString().split(" ")[0];
-    formData.append("check_clock_time", timeString);
-    console.log("timeString", timeString);
+    if (isClockType && lat !== null && lng !== null) {
+      formData.append("latitude", lat.toString());
+      formData.append("longitude", lng.toString());
+    }
 
-    // Kirim latitude dan longitude sebagai string
-    formData.append("latitude", lat.toString());
-    formData.append("longitude", lng.toString());
+    if (isLeaveType && leaveStartDate && leaveEndDate) {
+      formData.append("start_date", leaveStartDate.toISOString().split("T")[0]);
+      formData.append("end_date", leaveEndDate.toISOString().split("T")[0]);
+
+      formData.append("start_date", leaveStartDate.toISOString().split("T")[0]);
+      formData.append("end_date", leaveEndDate.toISOString().split("T")[0]);
+
+      // ⬇️ Tambahkan bagian ini di dalam blok ini
+      const clockTypeMap: Record<string, string> = {
+        "Annual Leave": "3",
+        "Sick Leave": "4",
+      };
+
+      if (attendanceType in clockTypeMap) {
+        formData.append("check_clock_type", clockTypeMap[attendanceType]);
+      }
+    }
 
     if (file) formData.append("proof", file);
 
     try {
-
-      let response
-
-      if (attendanceType === "Clock In") {
-        response = await clockInEmployee(formData);
-      }
-      // await fetch(endpoint, {
-      //   method: "POST",
-      //   headers: {
-      //     Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
-      //   },
-      //   body: formData,
-      // });
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+        },
+        body: formData,
+      });
 
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || "Gagal mengirim data absensi.");
+      if (!response.ok) throw new Error(result.message || "Gagal mengirim data.");
 
-      toast({
-        title: "Success",
-        description: result.message,
-      });
+      toast({ title: "Success", description: result.message });
+      setOpen(false);
+      router.refresh();
     } catch (error) {
       toast({
         title: "Submission Error",
-        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        description: error instanceof Error ? error.message : "Unknown error occurred.",
         variant: "destructive",
       });
+    } finally {
+      setLoadingSubmit(false);
     }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default" size="lg">
+        <Button variant="default" size="lg" onClick={() => setOpen(true)}>
           <Plus className="mr-2" /> Add Attendance
         </Button>
       </DialogTrigger>
@@ -159,19 +157,11 @@ export function AttendanceModal() {
         <DialogHeader>
           <DialogTitle>Add Attendance</DialogTitle>
           <DialogDescription>
-            Fill in the form below to add a new attendance record. Use the button below to get your current location.
+            Fill in the form below to add a new attendance record.
           </DialogDescription>
         </DialogHeader>
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <label className="text-sm font-medium">Attendance Date</label>
-            <DatePicker
-              value={attendanceDate}
-              onChange={setAttendanceDate}
-              placeholder="Select attendance date"
-            />
-          </div>
-
+          {/* Attendance Type */}
           <div>
             <label className="text-sm font-medium">Type</label>
             <DropdownMenu>
@@ -181,7 +171,7 @@ export function AttendanceModal() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full">
-                {["Clock In", "Clock Out"].map((type) => (
+                {["Clock In", "Clock Out", "Absent", "Annual Leave", "Sick Leave"].map((type) => (
                   <DropdownMenuItem key={type} onSelect={() => setAttendanceType(type)}>
                     {type}
                   </DropdownMenuItem>
@@ -190,6 +180,29 @@ export function AttendanceModal() {
             </DropdownMenu>
           </div>
 
+          {/* Leave Dates */}
+          {["Absent", "Annual Leave", "Sick Leave"].includes(attendanceType) && (
+            <>
+              <div>
+                <label className="text-sm font-medium">Start Date</label>
+                <DatePicker
+                  value={leaveStartDate}
+                  onChange={setLeaveStartDate}
+                  placeholder="Select start date"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">End Date</label>
+                <DatePicker
+                  value={leaveEndDate}
+                  onChange={setLeaveEndDate}
+                  placeholder="Select end date"
+                />
+              </div>
+            </>
+          )}
+
+          {/* File Upload */}
           <div>
             <label className="text-sm font-medium">Proof of Attendance</label>
             <label
@@ -206,34 +219,16 @@ export function AttendanceModal() {
             />
           </div>
 
-          <div>
-            <label className="text-sm font-medium">Attendance Location</label>
-            <div className="flex items-center gap-4">
-              <Button
-                type="button"
-                onClick={fetchLocation}
-                disabled={loadingLocation}
-                variant="outline"
-              >
-                {loadingLocation ? "Mengambil Lokasi..." : "Ambil Lokasi"}
-              </Button>
-              {lat !== null && lng !== null && (
-                <p>
-                  Lat: {lat.toFixed(6)}, Lng: {lng.toFixed(6)}
-                </p>
-              )}
-            </div>
-          </div>
-
+          {/* Submit */}
           <div className="flex justify-end gap-2 mt-6">
             <DialogClose asChild>
               <Button type="button" variant="outline">
                 Cancel
               </Button>
             </DialogClose>
-            <DialogClose asChild>
-              <Button type="submit">Add</Button>
-            </DialogClose>
+            <Button type="submit" disabled={loadingSubmit}>
+              {loadingSubmit ? "Submitting..." : "Add"}
+            </Button>
           </div>
         </form>
       </DialogContent>

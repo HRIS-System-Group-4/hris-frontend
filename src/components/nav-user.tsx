@@ -66,8 +66,12 @@ export function NavUser({
       }
     }
 
+
     if (!user && !isLoggingOut!) {
       loadUser()
+    }
+    if (user) {
+      setIsLoading(false)
     }
   }, [dispatch, user, isLoggingOut])
 
