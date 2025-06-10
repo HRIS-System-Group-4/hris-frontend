@@ -11,6 +11,7 @@ import { CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 // import { CompanyFormData } from "@/schemas/company-schema"
 import { CompanyInfoFormData, LocationFormData } from "@/schemas/company-schema"
+import { setupCompany } from "@/services/authService";
 
 import Image from "next/image"
 import { Router } from "next/router"
@@ -60,57 +61,39 @@ export function SetupCompanyCard({ onComplete, className }: SetupStepperCardProp
   }
 
   const handleLocationSubmit = async (locationData: LocationFormData) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const companyData = setupData.company
-      if (!companyData) throw new Error("Company data is missing")
+      const companyData = setupData.company;
+      if (!companyData) throw new Error("Company data is missing");
 
-      // Gabungkan company + location data ke payload
       const payload = {
         company_name: companyData.companyName,
         company_username: companyData.companyUsername,
         latitude: parseFloat(locationData.latitude),
         longitude: parseFloat(locationData.longitude),
-        location_radius: 200, // bisa kamu ambil dari form jika ada
-      }
-      console.log("PAYLOAD YANG DIKIRIM:", payload)
+        location_radius: 200,
+      };
+
+      console.log("PAYLOAD YANG DIKIRIM:", payload);
       console.log("TOKEN YANG DIKIRIM:", localStorage.getItem("token"));
 
-      const response = await fetch("http://localhost:8000/api/company", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      })
+      await setupCompany(payload);
 
-      if (!response.ok) {
-        let errorMessage = "Failed to save company data"
-        try {
-          const err = await response.json()
-          errorMessage = err.message || errorMessage
-        } catch (_) {
-          // respons bukan JSON (mungkin HTML), biarkan pakai pesan default
-        }
-        throw new Error(errorMessage)
-      }
-
-      setIsCompleted(true)
+      setIsCompleted(true);
       toast({
         title: "Setup completed successfully!",
         description: "Your company has been set up.",
-      })
-    } catch (error) {
+      });
+    } catch (error: any) {
       toast({
         title: "Setup failed",
-        description: error instanceof Error ? error.message : "Unknown error",
+        description: error?.response?.data?.message || error.message || "Unknown error",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
 
   const handleBack = () => {

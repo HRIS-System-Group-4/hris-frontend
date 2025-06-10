@@ -54,3 +54,49 @@ export async function logoutUser() {
         });
     return response.data;
 }
+export async function registerAdmin(data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+}) {
+    await getCsrfCookie(); // Pastikan CSRF Cookie aktif
+
+    const employeeId = `${data.firstName}${data.lastName}`.toLowerCase();
+
+    const response = await axiosInstance.post("/api/admin/register", {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        email: data.email,
+        password: data.password,
+        password_confirmation: data.confirmPassword,
+        employee_id: employeeId,
+    }, {
+        withCredentials: true,
+        headers: {
+            Accept: "application/json",
+        }
+    });
+
+    return response.data;
+}
+
+export async function setupCompany(data: {
+    company_name: string;
+    company_username: string;
+    latitude: number;
+    longitude: number;
+    location_radius: number;
+}) {
+    const token = localStorage.getItem("token");
+
+    const response = await axiosInstance.post("/api/company", data, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+    });
+
+    return response.data;
+}
