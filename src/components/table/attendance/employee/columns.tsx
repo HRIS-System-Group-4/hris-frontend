@@ -5,6 +5,7 @@ import { AttendanceRecord } from "./schema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, CircleX, Loader } from "lucide-react";
+import { DataTableRowActions } from "./data-table-row-actions";
 
 // Konfigurasi approval
 const approvalConfig = (approval?: AttendanceRecord["approval"]) => {
@@ -124,4 +125,10 @@ export const employeeColumns: ColumnDef<AttendanceRecord>[] = [
       <div className="flex items-center">{approvalConfig(row.original.approval)}</div>
     ),
   },
+  {
+      id: "actions",
+      cell: ({ row }) => {
+          return <DataTableRowActions row={row} />
+      }
+  }
 ];
