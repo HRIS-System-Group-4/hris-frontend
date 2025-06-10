@@ -1,16 +1,18 @@
 import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
 
 
-export const attendanceType = [
-  { value: "ontime", label: "On Time"},
-  { value: "late", label: "Late" },
-  { value: "sick leave", label: "Sick Leave" },
-  { value: "absent", label: "Absent" },
-  { value: "annual leave", label: "Annual Leave" },
+
+
+export const attendance_type = [
+  { value: "On Time", label: "On Time"},
+  { value: "Late", label: "Late" },
+  { value: "Sick Leave", label: "Sick Leave" },
+  { value: "Absent", label: "Absent" },
+  { value: "Annual Leave", label: "Annual Leave" },
 
 ];
 
-export const approval = [
+export const status = [
   { value: "approve", label: "Approve"},
   { value: "rejected", label: "Rejected"},
   { value: "waiting", label: "Waiting"},

@@ -27,15 +27,22 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
+import { SkeletonDataTable } from "@/components/skeletons/table/skeleton-data-table";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  isLoading: boolean;
+  skeletonRowCount: number;
+  onRefresh?: () => void;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTableAttendanceAdmin<TData, TValue>({
   columns,
-  data
+  data,
+  isLoading = false,
+  skeletonRowCount = 5,
+  onRefresh,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -45,9 +52,31 @@ export function DataTable<TData, TValue>({
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
+  // Pass onRefresh through column meta
+  const columnsWithRefresh = React.useMemo(() =>
+    columns.map(col => ({
+      ...col,
+      meta: {
+        ...col.meta,
+        onRefresh // This will be accessible in the cell renderer
+      }
+    })), [columns, onRefresh]
+  );
+
+  if (isLoading) {
+    return (
+      <SkeletonDataTable
+        columnCount={columns.length}
+        rowCount={skeletonRowCount}
+        showToolbar={true}
+        showPagination={true}
+      />
+    );
+  }
+
   const table = useReactTable({
     data,
-    columns,
+    columns: columnsWithRefresh,
     state: {
       sorting,
       columnVisibility,
@@ -64,7 +93,11 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues()
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    // Add meta to table options
+    meta: {
+      onRefresh
+    }
   });
 
   return (
@@ -81,9 +114,9 @@ export function DataTable<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}
