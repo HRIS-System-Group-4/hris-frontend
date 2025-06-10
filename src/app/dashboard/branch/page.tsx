@@ -3,7 +3,6 @@ import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, Cust
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
-import BranchClientComponent from "./_components/branch-client-component"
 import BranchSection from "./_components/BranchSection"
 
 export const metadata: Metadata = {
