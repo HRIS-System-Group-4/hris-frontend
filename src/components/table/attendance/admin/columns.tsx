@@ -112,7 +112,7 @@ export const columns: ColumnDef<AttendanceAdmin>[] = [
         cell: ({ row }) => (
             <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
-                    {row.getValue("avatar") === null ? (
+                    {row.getValue("avatar") ? (
                         <AvatarImage
                             src={row.getValue("avatar")}
                             alt={row.getValue("employee_name")}

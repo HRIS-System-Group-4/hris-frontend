@@ -27,15 +27,20 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
+import { SkeletonDataTable } from "@/components/skeletons/table/skeleton-data-table";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  isLoading: boolean;
+  skeletonRowCount: number;
 }
 
 export function DataTableBranch<TData, TValue>({
   columns,
-  data
+  data,
+  isLoading = false,
+  skeletonRowCount = 5
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -44,6 +49,17 @@ export function DataTableBranch<TData, TValue>({
     []
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
+
+  if (isLoading) {
+    return (
+      <SkeletonDataTable
+        columnCount={columns.length}
+        rowCount={skeletonRowCount}
+        showToolbar={true}
+        showPagination={true}
+      />
+    );
+  }
 
   const table = useReactTable({
     data,
@@ -81,9 +97,9 @@ export function DataTableBranch<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}

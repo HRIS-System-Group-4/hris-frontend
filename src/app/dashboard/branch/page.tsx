@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 import BranchClientComponent from "./_components/branch-client-component"
+import BranchSection from "./_components/BranchSection"
 
 export const metadata: Metadata = {
   title: "Branch",
@@ -12,24 +13,6 @@ export const metadata: Metadata = {
 
 export default function BranchPage() {
   return (
-    <CustomPage>
-      <CustomPageHeader>
-        <CustomPageTitleContainer>
-          <CustomPageTitle>Branch Management</CustomPageTitle>
-          <CustomPageSubtitle>Manage and organize all your branch offices</CustomPageSubtitle>
-        </CustomPageTitleContainer>
-        <CustomPageTitleButtons>
-          <Link href={'/dashboard/branch/add'}>
-            <Button variant="default" size={"lg"}>
-              <Plus />
-              Add Branch
-            </Button>
-          </Link>
-        </CustomPageTitleButtons>
-      </CustomPageHeader>
-
-      {/* Client-side data fetching handled here */}
-      <BranchClientComponent />
-    </CustomPage>
+    <BranchSection />
   )
 }
