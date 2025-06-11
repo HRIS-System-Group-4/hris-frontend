@@ -10,8 +10,9 @@ import { employeeColumns } from "../table/attendance/employee/columns";
 import { DataTableAttendanceAdmin } from "../table/attendance/admin/data-table";
 import { columns as columnsAdmin } from "../table/attendance/admin/columns";
 import { useEffect, useState } from "react";
-import { getClockRequest } from "@/services/attendanceService";
+import { attendanceService, getClockRequest } from "@/services/attendanceService";
 import { toast } from "sonner";
+import { DataTableAttendanceEmployee } from "../table/attendance/employee/data-table";
 
 export default function AttendanceSection() {
     const user = useSelector((state: RootState) => state.auth.user);
@@ -20,11 +21,18 @@ export default function AttendanceSection() {
 
     async function fetchData() {
         try {
-            console.log("Fetching data...", user);
-            const response = user?.is_admin ? await getClockRequest() : null
-            const data = response?.data
-            console.log("Data", data)
-            setData(data)
+            if (user?.is_admin) {
+                const response = await getClockRequest()
+                const data = response?.data
+                setData(data)
+            } else {
+                const attendanceData = await attendanceService.getAttendanceRecords();
+
+                // Jika API mengembalikan array langsung, pakai langsung
+                // Jika hanya satu record, bungkus jadi array
+                const formattedData = Array.isArray(attendanceData) ? attendanceData : [attendanceData];
+                setData(formattedData);
+            }
             setIsLoading(false)
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -44,7 +52,7 @@ export default function AttendanceSection() {
         fetchData()
     }
 
-    if (!user) {
+    if (!user || isLoading) {
         return <SkeletonDashboardTable />
     }
 
@@ -66,9 +74,10 @@ export default function AttendanceSection() {
             {/* Komponen client yang akan fetch data dan render tabel */}
 
             {user.is_admin ? (
-                <DataTableAttendanceAdmin columns={columnsAdmin} data={data} isLoading={false} skeletonRowCount={5} onRefresh={refreshData}/>
+                <DataTableAttendanceAdmin columns={columnsAdmin} data={data} isLoading={false} skeletonRowCount={5} onRefresh={refreshData} />
             ) : (
-                <AttendanceTableClient columns={employeeColumns} />
+                // <div></div>
+                <DataTableAttendanceEmployee columns={employeeColumns} data={data} isLoading={false} skeletonRowCount={5} onRefresh={refreshData}/>
             )}
 
         </CustomPage>

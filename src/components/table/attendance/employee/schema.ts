@@ -5,8 +5,7 @@ import { z } from "zod";
 
 const EmployeeSchema = z.object({
   avatar: z.string().url(),
-  firstName: z.string(),
-  lastName: z.string(),
+  name: z.string(),
   email: z.string().email(),
 });
 export interface AttendanceRecord {

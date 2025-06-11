@@ -44,6 +44,11 @@ interface Employee {
   status?: string;
 }
 
+import axios from "axios";
+import { getEmployees } from "@/services/employeeService";
+import EmployeeSection from "@/components/employee/EmployeeSection";
+export default function EmployeePage() {
+  return (
 
 
   // useEffect(() => {
@@ -193,5 +198,7 @@ interface Employee {
         <p className="text-center text-muted-foreground">No data available</p>
       )}
     </CustomPage>
+    <EmployeeSection />
+
   );
 }

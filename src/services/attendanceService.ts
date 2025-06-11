@@ -1,4 +1,5 @@
 import axiosInstance from "@/lib/axios";
+import { AttendanceRecord } from "@/components/table/attendance/employee/schema";
 
 export async function getAttendanceEmployee() {
     const response = await axiosInstance.get('/api/check-clocks/records', {
@@ -61,3 +62,46 @@ export async function rejectClockRequest(id: string) {
     console.log("response", response);
     return response;
 }
+
+export async function getAttendanceDetail(id: string, isCheckClock: boolean) {
+    const endpoint = isCheckClock ? `/api/clock-requests/${id}/detail?source=check_clock` : `/api/clock-requests/${id}/detail`;
+    console.log("Endpoint:", endpoint);
+    const response = await axiosInstance.get(endpoint, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        withCredentials: true,
+    });
+    console.log("response", response);
+    return response.data;
+}
+
+export const attendanceService = {
+    async getAttendanceRecords(): Promise<AttendanceRecord[]> {
+        const token = localStorage.getItem("token");
+        const response = await axiosInstance.get("/api/check-clocks/records", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return Array.isArray(response.data.data)
+            ? response.data.data
+            : [response.data.data];
+    },
+
+    async getAttendanceById(id: string): Promise<AttendanceRecord | null> {
+        const token = localStorage.getItem("token");
+        try {
+            const response = await axiosInstance.get(`/api/detail-check-clock?date=${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log("Attendance by ID response:", response.data);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching attendance by ID:", error);
+            return null;
+        }
+    }
+};

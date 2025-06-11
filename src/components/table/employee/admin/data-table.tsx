@@ -27,6 +27,7 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
+import { SkeletonDataTable } from "@/components/skeletons/table/skeleton-data-table";
 
 // interface DataTableProps<TData, TValue> {
 //   columns: ColumnDef<TData, TValue>[];
@@ -52,6 +53,49 @@ interface DataTableProps<TData extends { id: number | string }, TValue> {
   currentPage: number;
   onPageChange: (page: number) => void;
 }
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  currentPage: number;
+  pageCount: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  isLoading?: boolean;
+}
+
+interface DataTableProps<TData extends { id: number | string }, TValue> {
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  pageCount: number;
+  total: number;
+  currentPage: number;
+  onPageChange: (page: number) => void;
+}
+
+export function DataTableEmployee<TData extends { id: number | string }, TValue>({
+  columns,
+  data,
+  currentPage,
+  pageCount,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange,
+  isLoading = false,
+}: DataTableEmployeeProps<TData, TValue>) {
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+
+  if (isLoading) {
+    return (
+      <SkeletonDataTable
+        columnCount={columns.length}
+        rowCount={5}
+        showToolbar={true}
+        showPagination={true}
+      />
+    );
+  }
 
 export function DataTableEmployee<TData extends { id: number | string }, TValue>({
   columns,
@@ -108,9 +152,9 @@ export function DataTableEmployee<TData extends { id: number | string }, TValue>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}
