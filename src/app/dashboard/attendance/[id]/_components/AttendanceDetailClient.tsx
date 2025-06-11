@@ -52,16 +52,18 @@ export function AttendanceDetailClient({ id, checkClock = false }: AttendanceDet
   };
 
   useEffect(() => {
+    setError(null);
     if (user) fetchData();
+    if (error) toast({
+      title: "Error",
+      description: error,
+      variant: "destructive",
+    })
+
   }, [user, id]);
 
   if (loading && user === null) return <SkeletonDetail />
   if (!data) return <SkeletonDetail />;
-  if (error) return toast({
-    title: "Error",
-    description: error,
-    variant: "destructive",
-  });
 
   return (
     <AttendanceDetailsPage rawData={data} isAdmin={user!.is_admin} id={id} />

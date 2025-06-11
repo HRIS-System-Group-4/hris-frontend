@@ -8,7 +8,9 @@ export default function DetailAttendancePage({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
 
-  console.log("Search params:", searchParams.checkClock);
+  const checkClock = searchParams.checkClock
+    ? Boolean(String(searchParams.checkClock))
+    : false;
 
-  return <AttendanceDetailClient id={params.id} checkClock={searchParams.checkClock ? Boolean(searchParams.checkClock) : false} />
+  return <AttendanceDetailClient id={params.id} checkClock={checkClock} />
 }
