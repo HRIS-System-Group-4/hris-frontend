@@ -28,18 +28,29 @@ import {
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { AttendanceRecord } from "./schema";
+import { SkeletonDataTable } from "@/components/skeletons/table/skeleton-data-table";
 
 interface DataTableProps {
   columns: ColumnDef<AttendanceRecord>[];
   data: AttendanceRecord[];
+  isLoading: boolean;
+  skeletonRowCount: number;
+  onRefresh?: () => void;
 }
 
-export function DataTableAttendanceEmployee({ columns, data = [] }: DataTableProps) {
+export function DataTableAttendanceEmployee({
+  columns,
+  data = [],
+  isLoading = false,
+  skeletonRowCount = 5,
+  onRefresh,
+}: DataTableProps) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   console.log("Render table with data:", data);
+
   const table = useReactTable({
     data,
     columns,
@@ -62,6 +73,17 @@ export function DataTableAttendanceEmployee({ columns, data = [] }: DataTablePro
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
+  if (isLoading) {
+    return (
+      <SkeletonDataTable
+        columnCount={columns.length}
+        rowCount={skeletonRowCount}
+        showToolbar={true}
+        showPagination={true}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
       <DataTableToolbar table={table} />
@@ -70,18 +92,23 @@ export function DataTableAttendanceEmployee({ columns, data = [] }: DataTablePro
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} colSpan={header.colSpan}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id} colSpan={header.colSpan}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length ? (
+            {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -89,15 +116,21 @@ export function DataTableAttendanceEmployee({ columns, data = [] }: DataTablePro
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                  Tidak ada data presensi.
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  No results.
                 </TableCell>
               </TableRow>
             )}

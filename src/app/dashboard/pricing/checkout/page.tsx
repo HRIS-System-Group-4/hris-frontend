@@ -35,7 +35,6 @@ export default function CheckOutPage() {
         "2": 1, // Starter
         "3": 2, // Growth
     }
-
     // const handleActivate = async () => {
     //     try {
     //         const planName = planNameMapping[planParam] || "Starter";

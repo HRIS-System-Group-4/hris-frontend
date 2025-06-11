@@ -31,7 +31,7 @@ export function NavSecondary({ items, className, ...props }: NavSecondaryProps) 
     <SidebarGroup className={className} {...props}>
       <SidebarGroupContent>
         <SidebarMenu >
-          {items.map((item) => (
+          {/* {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
@@ -44,7 +44,7 @@ export function NavSecondary({ items, className, ...props }: NavSecondaryProps) 
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          ))}
+          ))} */}
           <SubsOverview />
         </SidebarMenu>
       </SidebarGroupContent>

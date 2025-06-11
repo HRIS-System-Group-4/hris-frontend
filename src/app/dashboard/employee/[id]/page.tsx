@@ -15,6 +15,7 @@ import { DetailContainer, DetailGroup, DetailItem } from "@/components/ui/custom
 import { PdfGallery } from "@/components/pdf-card-gallery"
 import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleButtons, CustomPageTitleContainer } from "@/components/ui/custom-page"
 import Link from "next/link"
+import { SkeletonDetail } from "@/components/skeletons/skeleton-detail"
 import axios from "axios";
 import { getEmployeeById } from "@/services/employeeService"
 
@@ -110,8 +111,11 @@ export default function EmployeeDetailsPage() {
   }
 
   useEffect(() => {
-    if (params.id) {
-      fetchEmployeeDetails(params.id)
+    if (typeof params.id === "string") {
+      fetchEmployeeDetails(params.id);
+    } else {
+      setError("Invalid employee ID");
+      setLoading(false);
     }
   }, [params.id])
 
@@ -164,37 +168,7 @@ export default function EmployeeDetailsPage() {
       </CustomPageHeader>
 
       {loading ? (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-16 w-16 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-6 w-48" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-8">
-            <div className="space-y-4">
-              <Skeleton className="h-5 w-32" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
-            </div>
-            <div className="space-y-4">
-              <Skeleton className="h-5 w-32" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <SkeletonDetail />
       ) : error ? (
         <Card>
           <CardContent className="p-6">

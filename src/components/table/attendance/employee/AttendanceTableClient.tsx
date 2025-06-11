@@ -59,7 +59,7 @@
 import React, { useEffect, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableAttendanceEmployee } from "./data-table";
-import { attendanceService } from "@/services/attendanceServices";
+import { attendanceService } from "@/services/attendanceService";
 import { AttendanceRecord } from "./schema";
 
 interface AttendanceTableClientProps {
@@ -101,5 +101,5 @@ export function AttendanceTableClient({ columns, refreshKey }: AttendanceTableCl
   if (loading) return <p>Loading attendance data...</p>;
   if (error) return <p className="text-red-500">Error: {error}</p>;
 
-  return <DataTableAttendanceEmployee data={data} columns={columns} />;
+  return <DataTableAttendanceEmployee data={data} columns={columns} isLoading={false} skeletonRowCount={5}/>;
 }
