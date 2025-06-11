@@ -244,7 +244,6 @@ export function TableBilling({ data }: { data: Billing[] }) {
               </TableHead>
               <TableHead className="cursor-pointer" onClick={() => handleSort("amount")}>
                 <div className="flex items-center">
-                  Amount
                   Ammount
                   <SortIcon field="amount" currentField={sortField} direction={sortDirection} />
                 </div>

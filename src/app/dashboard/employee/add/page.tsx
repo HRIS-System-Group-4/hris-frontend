@@ -25,14 +25,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader } 
 import { DialogTitle } from "@radix-ui/react-dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleContainer } from "@/components/ui/custom-page"
-
-import {
-  fetchBranches as fetchBranchesService,
-  fetchCheckClockSettings as fetchCheckClockSettingsService,
-  createEmployee,
-} from "@/services/employeeService"
-import axios from "axios"
-
 import axios from "axios"
 import { addEmployee } from "@/services/employeeService"
 import { indexBranch } from "@/services/branchService"
@@ -120,9 +112,6 @@ const formSchema = z.object({
     birthDate: z.date({
         required_error: "Birth date is required",
     }),
-
-    email: z.string().email("Invalid email address"),
-
     // Employment Details
     branch: z.string({
         required_error: "Please select a branch",
@@ -193,7 +182,6 @@ export default function AddEmployeeCard() {
             email: "",
             birthPlace: "",
             birthDate: undefined,
-            email: "",
             branch: "",
             jobTitle: "",
             grade: "",
@@ -212,58 +200,6 @@ export default function AddEmployeeCard() {
         control: form.control,
         name: "letters",
     })
-
-        //     const fetchCheckClockSettings = async () => {
-        //     try {
-        //     const token = localStorage.getItem("token");
-        //     const res = await axios.get("http://localhost:8000/api/check-clock-settings", {
-        //         headers: {
-        //         Accept: "application/json",
-        //         Authorization: `Bearer ${token}`,
-        //         },
-        //     });
-
-        //     const data = res.data;
-        //     const formatted = data.map((item:any) => ({
-        //         label: item.name,
-        //         value: String(item.id),
-        //     }));
-        //     setCheckClockSettings(formatted);
-        //     } catch (error:any) {
-        //     toast({
-        //         title: "Error fetching check clock settings",
-        //         description: error.message,
-        //         variant: "destructive",
-        //     });
-        //     }
-        // };
-        const fetchCheckClockSettings = async () => {
-        try {
-            const formatted = await fetchCheckClockSettingsService()
-            setCheckClockSettings(formatted)
-        } catch (error: any) {
-            toast({ 
-                title: "Error fetching check clock settings",
-                description: error.message,
-                variant: "destructive",
-             })
-        }
-        }
-
-        useEffect(() => {
-        const fetchBranches = async () => {
-            try {
-            const formatted = await fetchBranchesService()
-            setBranches(formatted)
-            } catch (err) {
-            console.error("Failed to fetch branches:", err)
-            } finally {
-            setBranchesLoading(false)
-            }
-        }
-
-        fetchBranches()
-        }, [])
 
     // const fetchCheckClockSettings = async () => {
     //     try {
@@ -454,47 +390,6 @@ export default function AddEmployeeCard() {
             formPayload.forEach((value, key) => {
                 console.log(`${key}: ${value}`);
             });
-   
-            formPayload.append("sp_type", formData.spType);
-
-            // Bank info
-            formPayload.append("bank", formData.bank);
-            formPayload.append("bank_account_number", formData.accountNumber);
-            formPayload.append("account_holder_name", formData.accountHolderName);
-
-            const employmentTypeMap: Record<string, string> = {
-                permanent: "Pegawai Tetap",
-                contract: "contract",
-                intern: "magang",
-                honorer: "honorer",
-                pkwt: "PKWt",
-            };
-
-            const mappedType = employmentTypeMap[formData.contractType];
-            console.log("contractType:", formData.contractType);
-            console.log("Mapped value:", employmentTypeMap[formData.contractType]);
-            console.log("contractType raw value:", formData.contractType);
-
-            // Personal info
-            formPayload.append("first_name", formData.firstName);
-            formPayload.append("last_name", formData.lastName);
-            formPayload.append("gender", formData.gender === "male" ? "L" : "P");
-            formPayload.append("nik", formData.nik);
-            formPayload.append("phone_number", formData.phoneNumber);
-            formPayload.append("birth_place", formData.birthPlace);
-            formPayload.append("birth_date", formData.birthDate.toISOString().split("T")[0]);
-
-            // Employment details
-            formPayload.append("branch_id", formData.branch.toString());
-            formPayload.append("job_title", formData.jobTitle);
-            formPayload.append("grade", formData.grade);
-            // formPayload.append("contract_type", formData.contractType);
-            formPayload.append("contract_type", formData.contractType);
-            formPayload.append("employment_type", employmentTypeMap[formData.contractType] ?? "");
-            console.log("Form Payload Values:");
-            formPayload.forEach((value, key) => {
-                console.log(`${key}: ${value}`);
-            });
             // formPayload.append(
             // "contract_type",                                   
             // employmentTypeMap[formData.contractType] ?? ""
@@ -518,18 +413,6 @@ export default function AddEmployeeCard() {
             }
 
             // Dummy email & password (sementara)
-            // formPayload.append("email", `${formData.firstName.toLowerCase()}_${Date.now()}@gmail.com`);
-            formPayload.append("email", formData.email)
-            formPayload.append("password", "default123");
-
-            const token = localStorage.getItem("token")
-
-            const res = await createEmployee(formPayload)
-            toast({
-                title: "Success!",
-                description: `${formData.firstName} ${formData.lastName} berhasil ditambahkan.`,
-            });
-
             formPayload.append("email", formData.email);
 
             const token = localStorage.getItem("authToken")
@@ -637,8 +520,6 @@ export default function AddEmployeeCard() {
                                             <div className="flex items-center gap-3">
                                                 <div className="relative h-24 w-24 rounded-full overflow-hidden bg-muted mb-2">
                                                     {avatarPreview ? (
-                                                        <img
-                                                            src={avatarPreview || "/placeholder.svg"}
                                                         <Image
                                                             width={48}
                                                             height={48}
@@ -846,21 +727,6 @@ export default function AddEmployeeCard() {
                                                     </FormItem>
                                                 )}
                                             />
-
-                                            <FormField
-                                            control={form.control}
-                                            name="email"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                <FormLabel>Email</FormLabel>
-                                                <FormControl className="w-full">
-                                                    <Input placeholder="Enter email address" type="email" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                                </FormItem>
-                                            )}
-                                            />
-
                                             {/* <FormField
                                                 control={form.control}
                                                 name="email"
@@ -912,7 +778,6 @@ export default function AddEmployeeCard() {
                                                             <PopoverContent className="w-full p-0">
                                                                 <Command className="w-full">
                                                                     <CommandInput placeholder="Search branch..." />
-
                                                                     {/* <CommandList>
                                                                         <CommandEmpty>No branch found.</CommandEmpty>
                                                                         <CommandGroup>
@@ -1313,7 +1178,6 @@ export default function AddEmployeeCard() {
                                             {formData.avatar && (
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-medium">Avatar:</span>
-                                                    <img
                                                     <Image
                                                         width={48}
                                                         height={48}
@@ -1327,7 +1191,6 @@ export default function AddEmployeeCard() {
                                             <p><span className="font-medium">Name:</span> {formData.firstName} {formData.lastName}</p>
                                             <p><span className="font-medium">Gender:</span> {formData.gender}</p>
                                             <p><span className="font-medium">Phone Number:</span> {formData.phoneNumber}</p>
-                                            <p><span className="font-medium">Email:</span> {formData.email}</p>
                                             <p><span className="font-medium">Birth Place:</span> {formData.birthPlace}</p>
                                             <p><span className="font-medium">Birth Date:</span> {formData.birthDate ? format(formData.birthDate, "PPP") : "N/A"}</p>
 

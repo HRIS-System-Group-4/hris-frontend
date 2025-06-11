@@ -1,8 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useParams } from "next/navigation"
 import { format, set } from "date-fns"
 import { CalendarIcon, Check, ChevronsUpDown, Loader2, Plus, Trash2, Upload } from "lucide-react"
 
@@ -26,16 +25,15 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader } 
 import { DialogTitle } from "@radix-ui/react-dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleContainer } from "@/components/ui/custom-page"
-import { updateEmployee, fetchEmployeeDetails, fetchBranches, fetchCheckClockSettings } from "@/services/employeeService"
 import Image from "next/image"
 
 // Sample data for dropdowns
-// const branches = [
-//     { label: "Jakarta HQ", value: "jakarta-hq" },
-//     { label: "Surabaya Branch", value: "surabaya" },
-//     { label: "Bandung Branch", value: "bandung" },
-//     { label: "Bali Branch", value: "bali" },
-// ]
+const branches = [
+    { label: "Jakarta HQ", value: "jakarta-hq" },
+    { label: "Surabaya Branch", value: "surabaya" },
+    { label: "Bandung Branch", value: "bandung" },
+    { label: "Bali Branch", value: "bali" },
+]
 
 const jobTitles = [
     { label: "Software Engineer", value: "software-engineer" },
@@ -74,32 +72,6 @@ const banks = [
     { label: "Bank Negara Indonesia (BNI)", value: "bni" },
     { label: "CIMB Niaga", value: "cimb" },
 ]
-    type EmployeeDetail = {
-    id: string
-    nik: string
-    first_name: string
-    last_name: string
-    gender: string
-    birth_place: string
-    birth_date: string
-    avatar_path?: string
-    job_title: string
-    grade: string
-    employment_type: string
-    bank_name: string
-    bank_account_no: string
-    bank_account_owner: string
-    sp_type: string
-    branch_name: string
-    branch_id: string
-    check_clock_settings_name: string
-    ck_settings_id: string
-    email: string
-    phone_number: string
-    start_date?: string
-    department?: string
-    }
-
 
 // Form schema using zod
 const formSchema = z.object({
@@ -114,7 +86,6 @@ const formSchema = z.object({
     birthDate: z.date({
         required_error: "Birth date is required",
     }),
-    email: z.string().email("Invalid email address"),
 
     // Employment Details
     branch: z.string({
@@ -157,12 +128,6 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
-type Option = {
-  label: string
-  value: string
-}
-
-
 export default function EditEmployee() {
     const { toast } = useToast()
     const router = useRouter()
@@ -170,54 +135,18 @@ export default function EditEmployee() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [formData, setFormData] = useState<FormValues | null>(null)
-    const [employee, setEmployee] = useState<EmployeeDetail | null>(null)
-    const [branches, setBranches] = useState<Option[]>([])
-    const [checkClockSettings, setCheckClockSettings] = useState<Option[]>([])
-
-    useEffect(() => {
-    const loadDropdownData = async () => {
-        try {
-        const [branchOptions, clockOptions] = await Promise.all([
-            fetchBranches(),
-            fetchCheckClockSettings(),
-        ])
-        setBranches(branchOptions)
-        setCheckClockSettings(clockOptions)
-        } catch (err) {
-        console.error("Failed to fetch dropdown data:", err)
-        }
-    }
-
-    loadDropdownData()
-    }, [])
-
-    useEffect(() => {
-    const loadCheckClockSettings = async () => {
-        try {
-        const settings = await fetchCheckClockSettings()
-        setCheckClockSettings(settings)
-        } catch (err) {
-        console.error("❌ Gagal fetch check clock settings:", err)
-        }
-    }
-
-    loadCheckClockSettings()
-    }, [])
-
-
 
     // Initialize form
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema as any),
         defaultValues: {
-            nik: "",
-            firstName: "",
-            lastName: "",
+            nik: "1234567890123456",
+            firstName: "John",
+            lastName: "Doe",
             gender: "male",
-            phoneNumber: "",
+            phoneNumber: "08123456789",
             birthPlace: "",
             birthDate: undefined,
-            email: "",
             branch: "",
             jobTitle: "",
             grade: "",
@@ -230,62 +159,6 @@ export default function EditEmployee() {
             letters: [],
         },
     })
-    const { setValue } = form
-    const { id } = useParams() as { id: string }
-
-    useEffect(() => {
-    const load = async () => {
-        try {
-        const res = await fetchEmployeeDetails(id)
-        const emp = res.data 
-        const genderMap: Record<string, "male" | "female"> = {
-            L: "male",
-            P: "female",
-        }
-
-        setValue("firstName", emp.first_name)
-        setValue("lastName", emp.last_name)
-        setValue("email", emp.email)
-        setValue("nik", emp.nik)
-        setValue("phoneNumber", emp.phone_number)
-        // setValue("gender", emp.gender)
-        // setValue("gender", genderMap[employee.gender] || "male")
-        if (employee) {
-        const genderMap: Record<string, "male" | "female"> = {
-            L: "male",
-            P: "female",
-        }
-
-        setValue("gender", genderMap[employee.gender] || "male")
-        }
-        setValue("birthPlace", emp.birth_place)
-        setValue("birthDate", new Date(emp.birth_date))
-        setValue("branch", emp.branch_id)
-        setValue("jobTitle", emp.job_title)
-        setValue("grade", emp.grade)
-        setValue("contractType", emp.employment_type)
-        setValue("spType", emp.sp_type)
-        setValue("bank", emp.bank_name)
-        setValue("accountNumber", emp.bank_account_no)
-        setValue("accountHolderName", emp.bank_account_owner)
-        setValue("checkClockSetting", emp.ck_settings_id)
-        } catch (err) {
-        console.error("❌ Gagal fetch employee:", err)
-        }
-    }
-
-    load()
-    }, [id])
-
-    useEffect(() => {
-    if (!employee || branches.length === 0 || checkClockSettings.length === 0) return
-
-    setValue("branch", employee.branch_id)
-    setValue("checkClockSetting", employee.ck_settings_id)
-    setValue("bank", employee.bank_name)
-    setValue("spType", employee.sp_type)
-    setValue("grade", employee.grade)
-    }, [employee, branches, checkClockSettings])
 
     // Initialize useFieldArray for letters
     const { fields, append, remove } = useFieldArray({
@@ -327,94 +200,32 @@ export default function EditEmployee() {
     }
 
     // Form submission
-    // const handleConfirm = async () => {
-    //     if (!form) return
-    //     setIsSubmitting(true)
-    //     setIsDialogOpen(false)
-    //     try {
-    //         // Simulate API call
-    //         await new Promise((resolve) => setTimeout(resolve, 1500))
-    //         console.log("Form data:", form)
-
-    //         toast({
-    //             title: "Employee added successfully",
-    //             description: `${form.getValues("firstName")} ${form.getValues("lastName")} has been added to the system.`,
-    //         })
-
-    //         // Navigate to employee list or detail page
-    //         router.push("/dashboard/employee")
-    //     } catch (error) {
-    //         toast({
-    //             title: "Error adding employee",
-    //             description: "There was an error adding the employee. Please try again.",
-    //             variant: "destructive",
-    //         })
-    //     } finally {
-    //         setIsSubmitting(false)
-    //     }
-    // }
-    // const { id } = useParams() as { id: string }
-
     const handleConfirm = async () => {
-    if (!formData || !id) return
-    setIsSubmitting(true)
-    setIsDialogOpen(false)
+        if (!form) return
+        setIsSubmitting(true)
+        setIsDialogOpen(false)
+        try {
+            // Simulate API call
+            await new Promise((resolve) => setTimeout(resolve, 1500))
+            console.log("Form data:", form)
 
-    try {
-        const formPayload = new FormData()
+            toast({
+                title: "Employee added successfully",
+                description: `${form.getValues("firstName")} ${form.getValues("lastName")} has been added to the system.`,
+            })
 
-        // Avatar
-        if (formData.avatar) {
-        formPayload.append("avatar", formData.avatar)
+            // Navigate to employee list or detail page
+            router.push("/dashboard/employee")
+        } catch (error) {
+            toast({
+                title: "Error adding employee",
+                description: "There was an error adding the employee. Please try again.",
+                variant: "destructive",
+            })
+        } finally {
+            setIsSubmitting(false)
         }
-
-        // Personal Info
-        formPayload.append("nik", formData.nik)
-        formPayload.append("first_name", formData.firstName)
-        formPayload.append("last_name", formData.lastName)
-        formPayload.append("gender", formData.gender)
-        formPayload.append("phone_number", formData.phoneNumber)
-        formPayload.append("birth_place", formData.birthPlace)
-        formPayload.append("birth_date", formData.birthDate.toISOString().split("T")[0])
-        formPayload.append("email", form.getValues("email"))
-
-        // Employment
-        formPayload.append("branch_id", formData.branch)
-        formPayload.append("job_title", formData.jobTitle)
-        formPayload.append("grade", formData.grade)
-        formPayload.append("employment_type", formData.contractType)
-        formPayload.append("sp_type", formData.spType)
-
-        // Bank
-        formPayload.append("bank", formData.bank)
-        formPayload.append("bank_account_number", formData.accountNumber)
-        formPayload.append("account_holder_name", formData.accountHolderName)
-
-        // Check Clock
-        if (formData.checkClockSetting) {
-        formPayload.append("check_clock_setting_id", formData.checkClockSetting)
-        }
-
-        // Submit ke API
-        const res = await updateEmployee(id, formPayload)
-
-        toast({
-        title: "Employee updated successfully",
-        description: `${res.data.first_name} ${res.data.last_name} has been updated.`,
-        })
-
-        router.push("/dashboard/employee")
-    } catch (error: any) {
-        toast({
-        title: "Error updating employee",
-        description: error.response?.data?.message || error.message || "Something went wrong",
-        variant: "destructive",
-        })
-    } finally {
-        setIsSubmitting(false)
     }
-    }
-
 
     // Handle form submission
     const onSubmit = async (data: FormValues) => {
@@ -662,19 +473,6 @@ export default function EditEmployee() {
                                                     </FormItem>
                                                 )}
                                             />
-                                            <FormField
-                                            control={form.control}
-                                            name="email"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                <FormLabel>Email</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Email address" type="email" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                                </FormItem>
-                                            )}
-                                            />
                                         </div>
                                     </AccordionContent>
                                 </AccordionItem>
@@ -915,7 +713,7 @@ export default function EditEmployee() {
                                 <AccordionItem value="checkclock">
                                     <AccordionTrigger className="text-lg font-medium">Check Clock</AccordionTrigger>
                                     <AccordionContent className="pt-4 pb-2">
-                                        {/* <FormField
+                                        <FormField
                                             control={form.control}
                                             name="checkClockSetting"
                                             render={({ field }) => (
@@ -938,30 +736,6 @@ export default function EditEmployee() {
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
-                                        /> */}
-                                        <FormField
-                                        control={form.control}
-                                        name="checkClockSetting"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                            <FormLabel>Check Clock Setting</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                <FormControl className="w-full">
-                                                <SelectTrigger>
-                                                <SelectValue placeholder="Pilih check clock setting" />
-                                                </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                {checkClockSettings.map((item) => (
-                                                    <SelectItem key={item.value} value={item.value}>
-                                                    {item.label}
-                                                    </SelectItem>
-                                                ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                            </FormItem>
-                                        )}
                                         />
                                     </AccordionContent>
                                 </AccordionItem>
@@ -1150,10 +924,6 @@ export default function EditEmployee() {
                                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                                     Cancel
                                 </Button>
-                                {/* <Button onClick={handleConfirm} disabled={isSubmitting}>
-                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Confirm
-                                </Button> */}
                                 <Button onClick={handleConfirm} disabled={isSubmitting}>
                                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Confirm
