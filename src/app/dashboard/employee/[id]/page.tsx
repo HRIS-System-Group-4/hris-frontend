@@ -16,6 +16,7 @@ import { PdfGallery } from "@/components/pdf-card-gallery"
 import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleButtons, CustomPageTitleContainer } from "@/components/ui/custom-page"
 import Link from "next/link"
 import axios from "axios";
+import { getEmployeeById } from "@/services/employeeService"
 
 type EmployeeDetail = {
   id: string
@@ -64,10 +65,10 @@ function getGradeLabel(value: string): string {
 }
 
 const sp_types = [
-    { label: "Full-time", value: "full-time" },
-    { label: "Part-time", value: "part-time" },
-    { label: "Remote", value: "remote" },
-    { label: "Hybrid", value: "hybrid" },
+  { label: "Full-time", value: "full-time" },
+  { label: "Part-time", value: "part-time" },
+  { label: "Remote", value: "remote" },
+  { label: "Hybrid", value: "hybrid" },
 ]
 
 function getSPLabel(value: string): string {
@@ -75,11 +76,11 @@ function getSPLabel(value: string): string {
 }
 
 const bank_name = [
-    { label: "Bank Central Asia (BCA)", value: "bca" },
-    { label: "Bank Mandiri", value: "mandiri" },
-    { label: "Bank Rakyat Indonesia (BRI)", value: "bri" },
-    { label: "Bank Negara Indonesia (BNI)", value: "bni" },
-    { label: "CIMB Niaga", value: "cimb" },
+  { label: "Bank Central Asia (BCA)", value: "bca" },
+  { label: "Bank Mandiri", value: "mandiri" },
+  { label: "Bank Rakyat Indonesia (BRI)", value: "bri" },
+  { label: "Bank Negara Indonesia (BNI)", value: "bni" },
+  { label: "CIMB Niaga", value: "cimb" },
 ]
 
 function getBankLabel(value: string): string {
@@ -93,67 +94,24 @@ export default function EmployeeDetailsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-//   useEffect(() => {
-//   const fetchEmployeeDetails = async () => {
-//     try {
-//       setLoading(true)
+  async function fetchEmployeeDetails(id: string) {
+    try {
+      setLoading(true)
+      const response = await getEmployeeById(id)
 
-//       const token = localStorage.getItem("authToken")
-
-//       const response = await fetch(`http://localhost:8000/api/employees/${params.id}`, {
-//         credentials: "include", // jika pakai sanctum/session
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${token}`,
-//         }
-//       })
-
-//       if (!response.ok) {
-//         throw new Error(`Failed to fetch employee data: ${response.status} ${response.statusText}`)
-//       }
-
-//       const result = await response.json()
-//       setEmployee(result.data) 
-//       setError(null)
-//     } catch (err) {
-//       console.error("Error fetching employee details:", err)
-//       setError(err instanceof Error ? err.message : "Failed to load employee details")
-//     } finally {
-//       setLoading(false)
-//     }
-//   }
-
-//   if (params.id) {
-//     fetchEmployeeDetails()
-//   }
-// }, [params.id])
-
-useEffect(() => {
-    const fetchEmployeeDetails = async () => {
-      try {
-        setLoading(true)
-        const token = localStorage.getItem("authToken")
-
-        const response = await axios.get(`http://localhost:8000/api/employees/${params.id}`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        });
-
-        setEmployee(response.data.data)
-        setError(null)
-      } catch (err) {
-        console.error("Error fetching employee details:", err)
-        setError(err instanceof Error ? err.message : "Failed to load employee details")
-      } finally {
-        setLoading(false)
-      }
+      setEmployee(response.data.data)
+      setError(null)
+    } catch (err) {
+      console.error("Error fetching employee details:", err)
+      setError(err instanceof Error ? err.message : "Failed to load employee details")
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     if (params.id) {
-      fetchEmployeeDetails()
+      fetchEmployeeDetails(params.id)
     }
   }, [params.id])
 

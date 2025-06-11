@@ -47,7 +47,7 @@ export default function CheckClockSection() {
         fetchData()
     }
 
-    if (!user) {
+    if (!user || isLoading) {
         return <SkeletonDashboardTable />
     }
 

@@ -26,6 +26,10 @@ import { DialogTitle } from "@radix-ui/react-dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleContainer } from "@/components/ui/custom-page"
 import axios from "axios"
+import { addEmployee } from "@/services/employeeService"
+import { indexBranch } from "@/services/branchService"
+import { getCheckClockSettings } from "@/services/checkClockService"
+import Image from "next/image"
 
 // Sample data for dropdowns
 // const branches = [
@@ -97,8 +101,9 @@ const banks = [
 // Form schema using zod
 const formSchema = z.object({
     // Personal Information
-    avatar: z.any().optional(),
+    avatar: z.instanceof(File).optional().or(z.undefined()),
     nik: z.string().min(16, "NIK must be at least 16 characters").max(16, "NIK must be exactly 16 characters"),
+    email: z.string().email("Invalid email address"),
     firstName: z.string().min(2, "First name must be at least 2 characters"),
     lastName: z.string().min(2, "Last name must be at least 2 characters"),
     gender: z.enum(["male", "female"]),
@@ -107,15 +112,6 @@ const formSchema = z.object({
     birthDate: z.date({
         required_error: "Birth date is required",
     }),
-
-    // email: z
-    //     .string({
-    //         required_error: "Email wajib diisi",
-    //         invalid_type_error: "Email harus berupa teks",
-    //     })
-    //     .email("Format email tidak valid"),
-
-
     // Employment Details
     branch: z.string({
         required_error: "Please select a branch",
@@ -179,10 +175,11 @@ export default function AddEmployeeCard() {
         resolver: zodResolver(formSchema as any),
         defaultValues: {
             nik: "",
+            gender: "male",
             firstName: "",
             lastName: "",
-            gender: "male",
             phoneNumber: "",
+            email: "",
             birthPlace: "",
             birthDate: undefined,
             branch: "",
@@ -238,30 +235,24 @@ export default function AddEmployeeCard() {
     //         });
     //     }
     // };
-            const fetchCheckClockSettings = async () => {
-            try {
-            const token = localStorage.getItem("authToken");
-            const res = await axios.get("http://localhost:8000/api/check-clock-settings", {
-                headers: {
-                Accept: "application/json",
-                Authorization: `Bearer ${token}`,
-                },
-            });
+    const fetchCheckClockSettings = async () => {
+        try {
 
-            const data = res.data;
-            const formatted = data.map((item:any) => ({
+            const token = localStorage.getItem("authToken");
+            const data = await getCheckClockSettings()
+            const formatted = data.map((item: any) => ({
                 label: item.name,
                 value: String(item.id),
             }));
             setCheckClockSettings(formatted);
-            } catch (error:any) {
+        } catch (error: any) {
             toast({
                 title: "Error fetching check clock settings",
                 description: error.message,
                 variant: "destructive",
             });
-            }
-        };
+        }
+    };
 
     // useEffect(() => {
     //     const fetchBranches = async () => {
@@ -297,28 +288,23 @@ export default function AddEmployeeCard() {
     //     fetchBranches();
     // }, []);
 
-        useEffect(() => {
+    useEffect(() => {
         const fetchBranches = async () => {
-        try {
-            const token = localStorage.getItem("authToken");
-            const res = await axios.get("http://localhost:8000/api/branches/index", {
-            headers: {
-                Accept: "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            });
+            try {
 
-            const data = res.data;
-            const formatted = data.map((b:any) => ({
-            label: b.branch_name,
-            value: b.id,
-            }));
-            setBranches(formatted);
-        } catch (err) {
-            console.error("Failed to fetch branches:", err);
-        } finally {
-            setBranchesLoading(false);
-        }
+                const res = await indexBranch()
+
+                const data = res.data;
+                const formatted = data.map((b: any) => ({
+                    label: b.branch_name,
+                    value: b.id,
+                }));
+                setBranches(formatted);
+            } catch (err) {
+                console.error("Failed to fetch branches:", err);
+            } finally {
+                setBranchesLoading(false);
+            }
         };
 
         fetchBranches();
@@ -427,8 +413,7 @@ export default function AddEmployeeCard() {
             }
 
             // Dummy email & password (sementara)
-            formPayload.append("email", `${formData.firstName.toLowerCase()}_${Date.now()}@gmail.com`);
-            formPayload.append("password", "default123");
+            formPayload.append("email", formData.email);
 
             const token = localStorage.getItem("authToken")
 
@@ -441,20 +426,10 @@ export default function AddEmployeeCard() {
             //     },
             //     body: formPayload,
             // });
-            const res = await axios.post(
-                "http://localhost:8000/api/add-employees",
-                formPayload,
-                {
-                headers: {
-                    Accept: "application/json",
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "multipart/form-data",
-                },
-                }
-            );
+            const res = await addEmployee(formPayload)
 
             // const result = await res.json();
-           
+
             // if (!res.ok) {
             //     throw new Error(result?.error || result?.message || "Failed to add employee");
             // }
@@ -546,7 +521,9 @@ export default function AddEmployeeCard() {
                                                 <div className="relative h-24 w-24 rounded-full overflow-hidden bg-muted mb-2">
                                                     {avatarPreview ? (
                                                         <Image
-                                                            src={avatarPreview || "/placeholder.svg"}
+                                                            width={48}
+                                                            height={48}
+                                                            src={avatarPreview || ""}
                                                             alt="Avatar preview"
                                                             className="h-full w-full object-cover"
                                                         />
@@ -607,15 +584,32 @@ export default function AddEmployeeCard() {
                                                 )}
                                             />
 
-                                            {/* Phone Number */}
+                                            {/* Gender */}
                                             <FormField
                                                 control={form.control}
-                                                name="phoneNumber"
+                                                name="gender"
                                                 render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Phone Number</FormLabel>
-                                                        <FormControl className="w-full">
-                                                            <Input placeholder="Enter phone number" {...field} />
+                                                    <FormItem className="space-y-3">
+                                                        <FormLabel>Gender</FormLabel>
+                                                        <FormControl>
+                                                            <RadioGroup
+                                                                onValueChange={field.onChange}
+                                                                defaultValue={field.value}
+                                                                className="flex space-x-4"
+                                                            >
+                                                                <FormItem className="flex items-center space-x-2 space-y-0">
+                                                                    <FormControl>
+                                                                        <RadioGroupItem value="male" />
+                                                                    </FormControl>
+                                                                    <FormLabel className="font-normal cursor-pointer">Male</FormLabel>
+                                                                </FormItem>
+                                                                <FormItem className="flex items-center space-x-2 space-y-0">
+                                                                    <FormControl>
+                                                                        <RadioGroupItem value="female" />
+                                                                    </FormControl>
+                                                                    <FormLabel className="font-normal cursor-pointer">Female</FormLabel>
+                                                                </FormItem>
+                                                            </RadioGroup>
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -652,32 +646,30 @@ export default function AddEmployeeCard() {
                                                 )}
                                             />
 
-                                            {/* Gender */}
+                                            {/* Phone Number */}
                                             <FormField
                                                 control={form.control}
-                                                name="gender"
+                                                name="phoneNumber"
                                                 render={({ field }) => (
-                                                    <FormItem className="space-y-3">
-                                                        <FormLabel>Gender</FormLabel>
-                                                        <FormControl>
-                                                            <RadioGroup
-                                                                onValueChange={field.onChange}
-                                                                defaultValue={field.value}
-                                                                className="flex space-x-4"
-                                                            >
-                                                                <FormItem className="flex items-center space-x-2 space-y-0">
-                                                                    <FormControl>
-                                                                        <RadioGroupItem value="male" />
-                                                                    </FormControl>
-                                                                    <FormLabel className="font-normal cursor-pointer">Male</FormLabel>
-                                                                </FormItem>
-                                                                <FormItem className="flex items-center space-x-2 space-y-0">
-                                                                    <FormControl>
-                                                                        <RadioGroupItem value="female" />
-                                                                    </FormControl>
-                                                                    <FormLabel className="font-normal cursor-pointer">Female</FormLabel>
-                                                                </FormItem>
-                                                            </RadioGroup>
+                                                    <FormItem>
+                                                        <FormLabel>Phone Number</FormLabel>
+                                                        <FormControl className="w-full">
+                                                            <Input placeholder="Enter phone number" {...field} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            {/* Phone Number */}
+                                            <FormField
+                                                control={form.control}
+                                                name="email"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Email</FormLabel>
+                                                        <FormControl className="w-full">
+                                                            <Input placeholder="Enter email" {...field} />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -1187,6 +1179,8 @@ export default function AddEmployeeCard() {
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-medium">Avatar:</span>
                                                     <Image
+                                                        width={48}
+                                                        height={48}
                                                         src={avatarPreview || ""}
                                                         alt="Avatar preview"
                                                         className="h-12 w-12 rounded-full object-cover"
