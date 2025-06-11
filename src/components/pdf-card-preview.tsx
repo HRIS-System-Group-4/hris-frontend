@@ -137,11 +137,14 @@ export function PdfCardPreview({
           {isLoading ? (
             <Skeleton className="h-full w-full" />
           ) : thumbnailUrl ? (
-            <Image
-              src={thumbnailUrl || "/placeholder.svg"}
-              alt={`Preview of ${fileName}`}
-              className="object-cover w-full h-full"
-            />
+            // <Image
+            //   src={thumbnailUrl || "/placeholder.svg"}
+            //   alt={`Preview of ${fileName}`}
+            //   className="object-cover w-full h-full"
+            // />
+            <div className="flex items-center justify-center h-full w-full bg-muted">
+              <FileText className="h-20 w-20 text-muted-foreground/60" />
+            </div>
           ) : (
             <div className="flex items-center justify-center h-full w-full bg-muted">
               <FileText className="h-20 w-20 text-muted-foreground/60" />

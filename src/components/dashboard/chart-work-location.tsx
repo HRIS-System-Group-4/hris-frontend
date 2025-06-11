@@ -1,104 +1,92 @@
-"use client"
+"use client";
 
-import { TrendingUp } from "lucide-react"
-import { Pie, PieChart } from "recharts"
+import { useEffect, useState } from "react";
+import { Pie, PieChart } from "recharts";
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
-const chartData = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chart-1)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-chart-2)" },
-  { browser: "firefox", visitors: 187, fill: "var(--color-chart-3)" },
-  { browser: "edge", visitors: 173, fill: "var(--color-chart-4)" },
-  { browser: "other", visitors: 90, fill: "var(--color-chart-5)" },
-]
+} from "@/components/ui/chart";
+
+import { getAdminDashboardStats } from "@/services/dashboardService";
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  chrome: {
-    label: "Chrome",
+  branches: {
+    label: "Branches",
     color: "hsl(var(--chart-1))",
   },
-  safari: {
-    label: "Safari",
-    color: "hsl(var(--chart-2))",
-  },
-  firefox: {
-    label: "Firefox",
-    color: "hsl(var(--chart-3))",
-  },
-  edge: {
-    label: "Edge",
-    color: "hsl(var(--chart-4))",
-  },
-  other: {
-    label: "Other",
-    color: "hsl(var(--chart-5))",
-  },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 export function ChartWorkLocation() {
+  const [totalBranches, setTotalBranches] = useState(0);
+  const [chartData, setChartData] = useState<{ name: string; value: number; fill: string }[]>([]);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const data = await getAdminDashboardStats();
+
+        const branches = data.total_branches ?? 0;
+        setTotalBranches(branches);
+
+        // Data pie chart: hanya 1 slice yang menunjukkan jumlah branch
+        setChartData([
+          {
+            name: "Branches",
+            value: branches,
+            fill: "var(--color-chart-1)",
+          },
+        ]);
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats:", error);
+      }
+    };
+
+    fetchDashboard();
+  }, []);
+
   return (
     <Card className="flex flex-col">
-      <CardHeader className="">
+      <CardHeader>
         <CardTitle>Work Location</CardTitle>
-        <CardDescription>2 Branches</CardDescription>
+        <CardDescription>
+          {totalBranches} Branch{totalBranches !== 1 ? "es" : ""}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square h-[200px] px-0"
-        >
+        <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[200px] px-0">
           <PieChart>
-            <ChartTooltip
-              content={<ChartTooltipContent nameKey="visitors" hideLabel />}
-            />
+            <ChartTooltip content={<ChartTooltipContent nameKey="value" hideLabel />} />
             <Pie
               data={chartData}
-              dataKey="visitors"
+              dataKey="value"
               labelLine={false}
-              label={({ payload, ...props }) => {
-                return (
-                  <text
-                    cx={props.cx}
-                    cy={props.cy}
-                    x={props.x}
-                    y={props.y}
-                    textAnchor={props.textAnchor}
-                    dominantBaseline={props.dominantBaseline}
-                    fill="hsla(var(--foreground))"
-                  >
-                    {payload.visitors}
-                  </text>
-                )
-              }}
-              nameKey="browser"
+              label={({ payload, ...props }) => (
+                <text
+                  x={props.x}
+                  y={props.y}
+                  textAnchor={props.textAnchor}
+                  dominantBaseline={props.dominantBaseline}
+                  fill="hsla(var(--foreground))"
+                  fontSize={12}
+                >
+                  {payload.value}
+                </text>
+              )}
+              nameKey="name"
             />
           </PieChart>
         </ChartContainer>
       </CardContent>
-      {/* <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter> */}
     </Card>
-  )
+  );
 }

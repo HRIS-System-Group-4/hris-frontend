@@ -27,44 +27,86 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
+import { SkeletonDataTable } from "@/components/skeletons/table/skeleton-data-table";
 
-interface DataTableProps<TData, TValue> {
+// interface DataTableProps<TData, TValue> {
+//   columns: ColumnDef<TData, TValue>[];
+//   data: TData[];
+// }
+
+interface DataTableEmployeeProps<TData extends { id: number | string }, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  currentPage: number;
+  pageCount: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  isLoading?: boolean;
 }
 
-export function DataTableEmployee<TData, TValue>({
+interface DataTableProps<TData extends { id: number | string }, TValue> {
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  pageCount: number;
+  total: number;
+  currentPage: number;
+  onPageChange: (page: number) => void;
+}
+
+export function DataTableEmployee<TData extends { id: number | string }, TValue>({
   columns,
-  data
-}: DataTableProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  data,
+  currentPage,
+  pageCount,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange,
+  isLoading = false,
+}: DataTableEmployeeProps<TData, TValue>) {
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+
+  if (isLoading) {
+    return (
+      <SkeletonDataTable
+        columnCount={columns.length}
+        rowCount={5}
+        showToolbar={true}
+        showPagination={true}
+      />
+    );
+  }
 
   const table = useReactTable({
     data,
     columns,
+    pageCount,
+    manualPagination: true,
     state: {
-      sorting,
-      columnVisibility,
-      rowSelection,
-      columnFilters
+      pagination: {
+        pageIndex: currentPage - 1,
+        pageSize,
+      },
+      columnFilters,
     },
-    enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
+    onPaginationChange: (updater) => {
+      const next = typeof updater === "function"
+        ? updater({ pageIndex: currentPage - 1, pageSize })
+        : updater;
+
+      if (next.pageIndex !== currentPage - 1) {
+        onPageChange(next.pageIndex + 1);
+      }
+
+      if (next.pageSize !== pageSize) {
+        onPageSizeChange(next.pageSize);
+      }
+    },
     onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues()
   });
 
   return (
@@ -81,9 +123,9 @@ export function DataTableEmployee<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}
@@ -120,7 +162,7 @@ export function DataTableEmployee<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      <DataTablePagination table={table} total={total} />
     </div>
   );
 }

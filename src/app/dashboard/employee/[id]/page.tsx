@@ -16,236 +16,106 @@ import { PdfGallery } from "@/components/pdf-card-gallery"
 import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleButtons, CustomPageTitleContainer } from "@/components/ui/custom-page"
 import Link from "next/link"
 import { SkeletonDetail } from "@/components/skeletons/skeleton-detail"
+import axios from "axios";
+import { getEmployeeById } from "@/services/employeeService"
 
-// Define Employee type
-type Employee = {
+type EmployeeDetail = {
   id: string
-  firstName: string
-  lastName: string
+  nik: number
+  first_name: string
+  last_name: string
+  gender: string
+  birth_place: string
+  birth_date: string
   avatar?: string
-  jobTitle: string
+  job_title: string
   grade: string
-  branch: string
+  employment_type: string
+  bank_name: string
+  bank_account_no: string
+  bank_account_owner: string
+  sp_type: string
+  branch_name: string
+  check_clock_settings_name: string
+  ck_settings_id: string
+  branch: {
+    id: string
+    name: string
+  }
+  check_clock_settings: {
+    id: string
+    name: string
+  }
   status: "active" | "inactive" | "pending" | "suspended"
   email: string
-  phone: string
-  startDate: string
+  phone_number: string
+  start_date: string
   department: string
 }
 
-const tableData: Employee[] = [
-  {
-    id: "1",
-    firstName: "Alex",
-    lastName: "Johnson",
-    avatar: "/placeholder.svg?height=32&width=32",
-    jobTitle: "Senior Developer",
-    grade: "G5",
-    branch: "New York",
-    status: "active",
-    email: "alex.johnson@example.com",
-    phone: "(555) 123-4567",
-    startDate: "2020-03-15",
-    department: "Engineering",
-  },
-  {
-    id: "2",
-    firstName: "Sarah",
-    lastName: "Williams",
-    avatar: "/placeholder.svg?height=32&width=32",
-    jobTitle: "Product Manager",
-    grade: "G6",
-    branch: "San Francisco",
-    status: "active",
-    email: "sarah.williams@example.com",
-    phone: "(555) 234-5678",
-    startDate: "2019-07-22",
-    department: "Product",
-  },
-  {
-    id: "3",
-    firstName: "Michael",
-    lastName: "Brown",
-    avatar: "/placeholder.svg?height=32&width=32",
-    jobTitle: "UX Designer",
-    grade: "G4",
-    branch: "London",
-    status: "inactive",
-    email: "michael.brown@example.com",
-    phone: "(555) 345-6789",
-    startDate: "2021-01-10",
-    department: "Design",
-  },
-  {
-    id: "4",
-    firstName: "Emily",
-    lastName: "Davis",
-    avatar: "/placeholder.svg?height=32&width=32",
-    jobTitle: "HR Specialist",
-    grade: "G3",
-    branch: "Chicago",
-    status: "active",
-    email: "emily.davis@example.com",
-    phone: "(555) 456-7890",
-    startDate: "2022-05-18",
-    department: "Human Resources",
-  },
-  {
-    id: "5",
-    firstName: "David",
-    lastName: "Miller",
-    avatar: "/placeholder.svg?height=32&width=32",
-    jobTitle: "Financial Analyst",
-    grade: "G4",
-    branch: "New York",
-    status: "pending",
-    email: "david.miller@example.com",
-    phone: "(555) 567-8901",
-    startDate: "2021-11-03",
-    department: "Finance",
-  },
-  {
-    id: "6",
-    firstName: "Jessica",
-    lastName: "Wilson",
-    avatar: "/placeholder.svg?height=32&width=32",
-    jobTitle: "Marketing Specialist",
-    grade: "G3",
-    branch: "San Francisco",
-    status: "active",
-    email: "jessica.wilson@example.com",
-    phone: "(555) 678-9012",
-    startDate: "2020-09-14",
-    department: "Marketing",
-  },
-  {
-    id: "7",
-    firstName: "James",
-    lastName: "Taylor",
-    avatar: "/placeholder.svg?height=32&width=32",
-    jobTitle: "Senior Developer",
-    grade: "G5",
-    branch: "London",
-    status: "suspended",
-    email: "james.taylor@example.com",
-    phone: "(555) 789-0123",
-    startDate: "2019-04-30",
-    department: "Engineering",
-  },
-  {
-    id: "8",
-    firstName: "Olivia",
-    lastName: "Anderson",
-    avatar: "/placeholder.svg?height=32&width=32",
-    jobTitle: "Customer Support",
-    grade: "G2",
-    branch: "Chicago",
-    status: "active",
-    email: "olivia.anderson@example.com",
-    phone: "(555) 890-1234",
-    startDate: "2022-02-11",
-    department: "Customer Success",
-  },
-  {
-    id: "9",
-    firstName: "Daniel",
-    lastName: "Thomas",
-    avatar: "/placeholder.svg?height=32&width=32",
-    jobTitle: "Product Manager",
-    grade: "G6",
-    branch: "New York",
-    status: "active",
-    email: "daniel.thomas@example.com",
-    phone: "(555) 901-2345",
-    startDate: "2020-06-22",
-    department: "Product",
-  },
-  {
-    id: "10",
-    firstName: "Sophia",
-    lastName: "Jackson",
-    avatar: "/placeholder.svg?height=32&width=32",
-    jobTitle: "UX Designer",
-    grade: "G4",
-    branch: "San Francisco",
-    status: "inactive",
-    email: "sophia.jackson@example.com",
-    phone: "(555) 012-3456",
-    startDate: "2021-08-05",
-    department: "Design",
-  },
-  {
-    id: "11",
-    firstName: "Matthew",
-    lastName: "White",
-    avatar: "/placeholder.svg?height=32&width=32",
-    jobTitle: "DevOps Engineer",
-    grade: "G5",
-    branch: "London",
-    status: "active",
-    email: "matthew.white@example.com",
-    phone: "(555) 123-4567",
-    startDate: "2020-11-19",
-    department: "Engineering",
-  },
-  {
-    id: "12",
-    firstName: "Emma",
-    lastName: "Harris",
-    avatar: "/placeholder.svg?height=32&width=32",
-    jobTitle: "Content Writer",
-    grade: "G3",
-    branch: "Chicago",
-    status: "pending",
-    email: "emma.harris@example.com",
-    phone: "(555) 234-5678",
-    startDate: "2022-01-07",
-    department: "Marketing",
-  },
+const grades = [
+  { label: "Junior (G1)", value: "g1" },
+  { label: "Mid-level (G2)", value: "g2" },
+  { label: "Senior (G3)", value: "g3" },
+  { label: "Lead (G4)", value: "g4" },
+  { label: "Manager (G5)", value: "g5" },
+];
+
+function getGradeLabel(value: string): string {
+  return grades.find((g) => g.value === value)?.label || value;
+}
+
+const sp_types = [
+  { label: "Full-time", value: "full-time" },
+  { label: "Part-time", value: "part-time" },
+  { label: "Remote", value: "remote" },
+  { label: "Hybrid", value: "hybrid" },
 ]
+
+function getSPLabel(value: string): string {
+  return sp_types.find((g) => g.value === value)?.label || value;
+}
+
+const bank_name = [
+  { label: "Bank Central Asia (BCA)", value: "bca" },
+  { label: "Bank Mandiri", value: "mandiri" },
+  { label: "Bank Rakyat Indonesia (BRI)", value: "bri" },
+  { label: "Bank Negara Indonesia (BNI)", value: "bni" },
+  { label: "CIMB Niaga", value: "cimb" },
+]
+
+function getBankLabel(value: string): string {
+  return bank_name.find((g) => g.value === value)?.label || value;
+}
 
 export default function EmployeeDetailsPage() {
   const params = useParams()
   const router = useRouter()
-  const [employee, setEmployee] = useState<Employee | null>(null)
+  const [employee, setEmployee] = useState<EmployeeDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchEmployeeDetails = async () => {
-      try {
-        setLoading(true)
-        // Fetch the employee data from the JSON file
-        // const response = await fetch("/data/employees.json")
+  async function fetchEmployeeDetails(id: string) {
+    try {
+      setLoading(true)
+      const response = await getEmployeeById(id)
 
-        // if (!response.ok) {
-        //   throw new Error(`Failed to fetch employee data: ${response.status} ${response.statusText}`)
-        // }
-
-        // const data = await response.json()
-        const data = tableData
-
-        // Find the employee with the matching ID
-        const foundEmployee = data.find((emp: Employee) => emp.id === params.id)
-
-        if (!foundEmployee) {
-          throw new Error(`Employee with ID ${params.id} not found`)
-        }
-
-        setEmployee(foundEmployee)
-        setError(null)
-      } catch (err) {
-        console.error("Error fetching employee details:", err)
-        setError(err instanceof Error ? err.message : "Failed to load employee details")
-      } finally {
-        setLoading(false)
-      }
+      setEmployee(response.data.data)
+      setError(null)
+    } catch (err) {
+      console.error("Error fetching employee details:", err)
+      setError(err instanceof Error ? err.message : "Failed to load employee details")
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     if (params.id) {
-      fetchEmployeeDetails()
+      fetchEmployeeDetails(params.id)
     }
   }, [params.id])
+
 
   // Function to format date
   const formatDate = (dateString: string) => {
@@ -262,7 +132,7 @@ export default function EmployeeDetailsPage() {
   }
 
   // Status badge component
-  const StatusBadge = ({ status }: { status: Employee["status"] }) => {
+  const StatusBadge = ({ status }: { status: EmployeeDetail["status"] }) => {
     const statusConfig = {
       active: { label: "Active", variant: "outline" as const },
       inactive: { label: "Inactive", variant: "outline" as const },
@@ -316,36 +186,36 @@ export default function EmployeeDetailsPage() {
                   <Avatar className="h-16 w-16">
                     <AvatarImage
                       src={employee.avatar || "/placeholder.svg"}
-                      alt={`${employee.firstName} ${employee.lastName}`}
+                      alt={`${employee.first_name} ${employee.last_name}`}
                     />
                     <AvatarFallback className="text-lg">
-                      {employee.firstName[0]}
-                      {employee.lastName[0]}
+                      {employee.first_name[0]}
+                      {employee.last_name[0]}
                     </AvatarFallback>
                   </Avatar>
                 </div>
                 <DetailContainer>
                   <DetailItem label="Full Name" layout={"column"} >
-                    <div className="font-medium text-black">John Doe</div>
+                    <div className="font-medium text-black">{employee?.first_name} {employee?.last_name}</div>
                   </DetailItem>
                   <DetailItem label="NIK" layout={"column"} >
-                    <div className="font-medium text-black">526278981345623</div>
+                    <div className="font-medium text-black">{employee?.nik}</div>
                   </DetailItem>
                 </DetailContainer>
                 <DetailContainer>
                   <DetailItem label="Gender" layout={"column"} >
-                    <div className="font-medium text-black">+1 (555) 123-4567</div>
+                    <div className="font-medium text-black">{employee?.gender}</div>
                   </DetailItem>
                   <DetailItem label="Phone Number" layout={"column"} >
-                    <div className="font-medium text-black">123 Main St, Anytown, CA 12345</div>
+                    <div className="font-medium text-black">{employee?.phone_number}</div>
                   </DetailItem>
                 </DetailContainer>
                 <DetailContainer>
                   <DetailItem label="Birth Place" layout={"column"} >
-                    <div className="font-medium text-black">Malang</div>
+                    <div className="font-medium text-black">{employee?.birth_place}</div>
                   </DetailItem>
                   <DetailItem label="Birth Date" layout={"column"} >
-                    <div className="font-medium text-black">12 Jan 2000</div>
+                    <div className="font-medium text-black">{employee?.birth_date}</div>
                   </DetailItem>
                 </DetailContainer>
               </DetailGroup>
@@ -355,23 +225,23 @@ export default function EmployeeDetailsPage() {
               <DetailGroup title="Employement Details">
                 <DetailContainer>
                   <DetailItem label="Branch" layout={"column"} >
-                    <div className="font-medium text-black">Head Office</div>
+                    <div className="font-medium text-black">{employee?.branch_name}</div>
                   </DetailItem>
                   <DetailItem label="Job Title" layout={"column"} >
-                    <div className="font-medium text-black">UI/UX Designer</div>
+                    <div className="font-medium text-black">{employee?.job_title}</div>
                   </DetailItem>
                 </DetailContainer>
                 <DetailContainer>
                   <DetailItem label="Grade" layout={"column"} >
-                    <div className="font-medium text-black">Staff</div>
+                    <div className="font-medium text-black">{getGradeLabel(employee?.grade)}</div>
                   </DetailItem>
                   <DetailItem label="Contract Type" layout={"column"} >
-                    <div className="font-medium text-black">Permanent</div>
+                    <div className="font-medium text-black">{employee?.employment_type}</div>
                   </DetailItem>
                 </DetailContainer>
                 <DetailContainer>
                   <DetailItem label="SP Type" layout={"column"} >
-                    <div className="font-medium text-black">II</div>
+                    <div className="font-medium text-black">{getSPLabel(employee?.sp_type)}</div>
                   </DetailItem>
                 </DetailContainer>
               </DetailGroup>
@@ -381,15 +251,15 @@ export default function EmployeeDetailsPage() {
               <DetailGroup title="Banking Information">
                 <DetailContainer>
                   <DetailItem label="Bank" layout={"column"} >
-                    <div className="font-medium text-black">Bank Mandiri</div>
+                    <div className="font-medium text-black">{getBankLabel(employee?.bank_name)}</div>
                   </DetailItem>
                   <DetailItem label="Bank Account Number" layout={"column"} >
-                    <div className="font-medium text-black">215234123412</div>
+                    <div className="font-medium text-black">{employee?.bank_account_no}</div>
                   </DetailItem>
                 </DetailContainer>
                 <DetailContainer>
                   <DetailItem label="Account Holder Name" layout={"column"} >
-                    <div className="font-medium text-black">John Doe</div>
+                    <div className="font-medium text-black">{employee?.bank_account_owner}</div>
                   </DetailItem>
                 </DetailContainer>
               </DetailGroup>
@@ -399,7 +269,7 @@ export default function EmployeeDetailsPage() {
               <DetailGroup title="Check Clock">
                 <DetailContainer>
                   <DetailItem label="Check Clock Setting" layout={"column"} >
-                    <div className="font-medium text-black">WFO Head Office</div>
+                    <div className="font-medium text-black">{employee?.check_clock_settings_name}</div>
                   </DetailItem>
                 </DetailContainer>
               </DetailGroup>

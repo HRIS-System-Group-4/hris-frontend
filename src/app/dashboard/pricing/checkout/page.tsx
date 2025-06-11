@@ -1,26 +1,32 @@
 // /components/checkout-content.tsx
 "use client";
 
-import { useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import PricingCard from "@/components/pricing-card";
-import { EmployeeAddonCompact } from "@/components/employee-addon-compact";
-import Link from "next/link";
+import { EmployeeAddonCompact } from "@/components/employee-addon-compact"
+import PricingCard from "@/components/pricing-card"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleContainer } from "@/components/ui/custom-page"
+import Link from "next/link"
+import { useSearchParams } from "next/navigation"
+import { useState } from "react"
+import { activateSubscription } from "@/lib/api";
+import { PRICING_IDS } from "@/lib/constants";
 
-// Separate component that uses useSearchParams
-function CheckoutForm() {
-    const searchParams = useSearchParams();
-    const planParam = searchParams.get("plan") || "1";
-    const additionalEmployeesParam = Number(searchParams.get("additionalEmployees")) || 0;
-    const [additionalEmployees, setAdditionalEmployees] = useState(additionalEmployeesParam);
-    const [error, setError] = useState<string | null>(null);
+
+export default function CheckOutPage() {
+    const searchParams = useSearchParams()
+    const planParam = searchParams.get("plan") || 1
+    const additionalEmployeesParam = Number(searchParams.get("additionalEmployees")) || 0
+    const [additionalEmployees, setAdditionalEmployees] = useState(additionalEmployeesParam)
 
     const handleOutputChange = (newData: number) => {
         setAdditionalEmployees(newData);
+    }
+
+    const planNameMapping: { [key: string]: string } = {
+        "1": "Free",
+        "2": "Basic",
+        "3": "Pro",
     };
 
     // Plan mapping
@@ -28,18 +34,34 @@ function CheckoutForm() {
         "1": 0, // Free
         "2": 1, // Starter
         "3": 2, // Growth
+    }
+
+    // const handleActivate = async () => {
+    //     try {
+    //         const planName = planNameMapping[planParam] || "Starter";
+    //         const result = await activateSubscription(planName);
+    //         alert("Sukses: " + result.message);
+    //     } catch (err: any) {
+    //         alert("Gagal: " + err.message);
+    //     }
+    // };
+    const handleActivate = async () => {
+    try {
+        const payload = {
+        plan: PRICING_IDS[planParam],      // Wajib!
+        additional_employees: additionalEmployees,            // Opsional
+        };
+        console.log("Payload yang dikirim:", payload);
+        console.log("planParam:", planParam);
+        console.log("ID yang digunakan:", PRICING_IDS[planParam]);
+        const result = await activateSubscription(payload);
+        alert("Sukses: " + result.message);
+    } catch (err: any) {
+        alert("Gagal: " + (err.response?.data?.message || err.message));
+    }
     };
 
-    // Validate planParam
-    const selectedPlan = planParam && planMapping[planParam] !== undefined ? planMapping[planParam] : 1;
-    if (!planMapping[planParam]) {
-        setError("Invalid plan selected. Defaulting to Starter Plan.");
-    }
-
-    // Validate additionalEmployeesParam
-    if (isNaN(additionalEmployeesParam) || additionalEmployeesParam < 0) {
-        setError("Invalid number of additional employees.");
-    }
+    const selectedPlan = planParam && planMapping[planParam] !== undefined ? planMapping[planParam] : 1
 
     return (
         <div>
@@ -108,11 +130,9 @@ function CheckoutForm() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Link href="/dashboard/payment" className="w-full">
-                            <Button variant="default" className="w-full">
-                                Pay Now
-                            </Button>
-                        </Link>
+                        <Button variant="default" className="w-full" onClick={handleActivate}>
+                            Pay Now
+                        </Button>
                     </CardFooter>
                 </Card>
             </div>

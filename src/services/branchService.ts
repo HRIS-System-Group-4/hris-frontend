@@ -1,26 +1,37 @@
 import axiosInstance from "@/lib/axios";
 
 export async function getCsrfCookie() {
-    await axiosInstance.get('/sanctum/csrf-cookie');
+  await axiosInstance.get('/sanctum/csrf-cookie');
+}
+
+export async function indexBranch() {
+  const token = localStorage.getItem("token")
+  const response = await axiosInstance.get("/api/branches/index", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  })
+  return response // sesuaikan jika struktur response berbeda
 }
 
 export async function overview() {
-    console.log("Mengambil data cabang...")
+  console.log("Mengambil data cabang...")
 
-    // Panggil getCsrfCookie jika memang diperlukan sebelum request (misalnya untuk Laravel Sanctum)
-    // await getCsrfCookie()
+  // Panggil getCsrfCookie jika memang diperlukan sebelum request (misalnya untuk Laravel Sanctum)
+  // await getCsrfCookie()
 
-    const token = localStorage.getItem("token")
-    const response = await axiosInstance.get("/api/branches", {
-        headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        },
-    })
+  const token = localStorage.getItem("token")
+  const response = await axiosInstance.get("/api/branches", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  })
 
-    console.log("Response cabang:", response)
+  console.log("Response cabang:", response)
 
-    return response.data.data // sesuaikan jika struktur response berbeda
+  return response.data.data // sesuaikan jika struktur response berbeda
 }
 
 export type BranchDetail = {
