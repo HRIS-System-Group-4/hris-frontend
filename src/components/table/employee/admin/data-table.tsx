@@ -68,17 +68,6 @@ export function DataTableEmployee<TData extends { id: number | string }, TValue>
 }: DataTableEmployeeProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
-  if (isLoading) {
-    return (
-      <SkeletonDataTable
-        columnCount={columns.length}
-        rowCount={5}
-        showToolbar={true}
-        showPagination={true}
-      />
-    );
-  }
-
   const table = useReactTable({
     data,
     columns,
@@ -108,6 +97,18 @@ export function DataTableEmployee<TData extends { id: number | string }, TValue>
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   });
+
+
+  if (isLoading) {
+    return (
+      <SkeletonDataTable
+        columnCount={columns.length}
+        rowCount={5}
+        showToolbar={true}
+        showPagination={true}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">

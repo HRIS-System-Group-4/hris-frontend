@@ -63,17 +63,6 @@ export function DataTableAttendanceAdmin<TData, TValue>({
     })), [columns, onRefresh]
   );
 
-  if (isLoading) {
-    return (
-      <SkeletonDataTable
-        columnCount={columns.length}
-        rowCount={skeletonRowCount}
-        showToolbar={true}
-        showPagination={true}
-      />
-    );
-  }
-
   const table = useReactTable({
     data,
     columns: columnsWithRefresh,
@@ -99,6 +88,17 @@ export function DataTableAttendanceAdmin<TData, TValue>({
       onRefresh
     }
   });
+
+  if (isLoading) {
+    return (
+      <SkeletonDataTable
+        columnCount={columns.length}
+        rowCount={skeletonRowCount}
+        showToolbar={true}
+        showPagination={true}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
