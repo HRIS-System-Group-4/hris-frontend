@@ -15,6 +15,8 @@ import { DetailContainer, DetailGroup, DetailItem } from "@/components/ui/custom
 import { PdfGallery } from "@/components/pdf-card-gallery"
 import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleButtons, CustomPageTitleContainer } from "@/components/ui/custom-page"
 import Link from "next/link"
+import { fetchEmployeeDetails } from "@/services/employeeService"
+import axios from "axios";
 import { SkeletonDetail } from "@/components/skeletons/skeleton-detail"
 import axios from "axios";
 import { getEmployeeById } from "@/services/employeeService"
@@ -66,6 +68,11 @@ function getGradeLabel(value: string): string {
 }
 
 const sp_types = [
+    { label: "Full-time", value: "full-time" },
+    { label: "Part-time", value: "part-time" },
+    { label: "Remote", value: "remote" },
+    { label: "Hybrid", value: "hybrid" },
+
   { label: "Full-time", value: "full-time" },
   { label: "Part-time", value: "part-time" },
   { label: "Remote", value: "remote" },
@@ -77,6 +84,12 @@ function getSPLabel(value: string): string {
 }
 
 const bank_name = [
+    { label: "Bank Central Asia (BCA)", value: "bca" },
+    { label: "Bank Mandiri", value: "mandiri" },
+    { label: "Bank Rakyat Indonesia (BRI)", value: "bri" },
+    { label: "Bank Negara Indonesia (BNI)", value: "bni" },
+    { label: "CIMB Niaga", value: "cimb" },
+
   { label: "Bank Central Asia (BCA)", value: "bca" },
   { label: "Bank Mandiri", value: "mandiri" },
   { label: "Bank Rakyat Indonesia (BRI)", value: "bri" },
@@ -89,11 +102,27 @@ function getBankLabel(value: string): string {
 }
 
 export default function EmployeeDetailsPage() {
-  const params = useParams()
+  // const rawParams = useParams()
+  // const { id } = useParams<{ id: string }>()
+  const { id } = useParams() as { id: string } 
   const router = useRouter()
   const [employee, setEmployee] = useState<EmployeeDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+useEffect(() => {
+    const loadEmployee = async () => {
+      try {
+        setLoading(true)
+        const res = await fetchEmployeeDetails(id)
+        // console.log("Employee data:", data)
+        setEmployee(res.data)
+      } catch (err) {
+        console.error("Failed to fetch employee details:", err)
+        setError("Failed to load employee data.")
+      } finally {
+        setLoading(false)
+      }
 
   async function fetchEmployeeDetails(id: string) {
     try {
@@ -109,6 +138,10 @@ export default function EmployeeDetailsPage() {
       setLoading(false)
     }
   }
+
+    loadEmployee()
+  }, [id])
+
 
   useEffect(() => {
     if (typeof params.id === "string") {
@@ -160,7 +193,7 @@ export default function EmployeeDetailsPage() {
           <CustomPageSubtitle>Manage and organize all your employees' data</CustomPageSubtitle>
         </CustomPageTitleContainer>
         <CustomPageTitleButtons>
-          <Link href={`/dashboard/employee/edit/${params.id}`}>
+          <Link href={`/dashboard/employee/edit/${id}`}>
             <Button variant="default" size={"lg"}>
               Edit Employee</Button>
           </Link>
@@ -191,9 +224,18 @@ export default function EmployeeDetailsPage() {
                       src={employee.avatar || "/placeholder.svg"}
                       alt={`${employee.first_name} ${employee.last_name}`}
                     />
-                    <AvatarFallback className="text-lg">
+                    {/* <AvatarFallback className="text-lg">
                       {employee.first_name[0]}
                       {employee.last_name[0]}
+                    </AvatarFallback> */}
+                    <AvatarFallback className="text-lg">
+
+                      {employee?.first_name?.charAt(0) ?? ""}
+                      {employee?.last_name?.charAt(0) ?? ""}
+
+                      {employee.first_name[0]}
+                      {employee.last_name[0]}
+
                     </AvatarFallback>
                   </Avatar>
                 </div>
@@ -219,6 +261,11 @@ export default function EmployeeDetailsPage() {
                   </DetailItem>
                   <DetailItem label="Birth Date" layout={"column"} >
                     <div className="font-medium text-black">{employee?.birth_date}</div>
+                  </DetailItem>
+                </DetailContainer>
+                <DetailContainer>
+                  <DetailItem label="Email" layout={"column"} >
+                    <div className="font-medium text-black">{formatDate(employee?.email)}</div>
                   </DetailItem>
                 </DetailContainer>
               </DetailGroup>

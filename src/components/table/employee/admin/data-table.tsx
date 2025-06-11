@@ -43,6 +43,24 @@ interface DataTableEmployeeProps<TData extends { id: number | string }, TValue> 
   total: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+}
+
+interface DataTableProps<TData extends { id: number | string }, TValue> {
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  pageCount: number;
+  total: number;
+  currentPage: number;
+  onPageChange: (page: number) => void;
+}
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  currentPage: number;
+  pageCount: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
   isLoading?: boolean;
 }
 
@@ -64,10 +82,8 @@ export function DataTableEmployee<TData extends { id: number | string }, TValue>
   total,
   onPageChange,
   onPageSizeChange,
-  isLoading = false,
 }: DataTableEmployeeProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-
   const table = useReactTable({
     data,
     columns,

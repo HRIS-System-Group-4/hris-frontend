@@ -39,6 +39,14 @@ export function EmployeeAddonCompact({
   const [newLimit, setNewLimit] = useState(currentLimit);
   const proratedPricePerEmployee = monthlyPricePerEmployee / 30;
 
+    // Calculate additional employees and cost
+    const additionalEmployees = Math.max(newLimit - currentLimit)
+    // onAdditionalEmployeesChange(additionalEmployees)
+    useEffect(() => {
+    onAdditionalEmployeesChange(additionalEmployees)
+    }, [additionalEmployees])
+    const additionalCostMonthly = additionalEmployees * monthlyPricePerEmployee
+    const additionalCostProrated = additionalEmployees * proratedPricePerEmployee
   // Calculate additional employees and cost
   const additionalEmployees = Math.max(newLimit - currentLimit);
   const additionalCostMonthly = additionalEmployees * monthlyPricePerEmployee;
