@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { format, set } from "date-fns"
 import { CalendarIcon, Check, ChevronsUpDown, Loader2, Plus, Trash2, Upload } from "lucide-react"
@@ -25,22 +25,19 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader } 
 import { DialogTitle } from "@radix-ui/react-dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleContainer } from "@/components/ui/custom-page"
-import Image from "next/image"
-
-// Sample data for dropdowns
-const branches = [
-    { label: "Jakarta HQ", value: "jakarta-hq" },
-    { label: "Surabaya Branch", value: "surabaya" },
-    { label: "Bandung Branch", value: "bandung" },
-    { label: "Bali Branch", value: "bali" },
-]
+import {
+  fetchBranches as fetchBranchesService,
+  fetchCheckClockSettings as fetchCheckClockSettingsService,
+  createEmployee,
+} from "@/services/employeeService"
+import axios from "axios"
 
 const jobTitles = [
-    { label: "Software Engineer", value: "software-engineer" },
-    { label: "Product Manager", value: "product-manager" },
-    { label: "UX Designer", value: "ux-designer" },
-    { label: "HR Manager", value: "hr-manager" },
-    { label: "Finance Specialist", value: "finance-specialist" },
+    { label: "Software Engineer", value: "Software Engineer" },
+    { label: "Product Manager", value: "Product Manager" },
+    { label: "UX Designer", value: "UX Designer" },
+    { label: "HR Manager", value: "HR Manager" },
+    { label: "Finance Specialist", value: "Finance Specialist" },
 ]
 
 const grades = [
@@ -54,9 +51,11 @@ const grades = [
 const contractTypes = [
     { label: "Permanent", value: "permanent" },
     { label: "Contract", value: "contract" },
-    { label: "Probation", value: "probation" },
-    { label: "Internship", value: "internship" },
-]
+    { label: "Intern", value: "intern" },
+    { label: "Honorer", value: "honorer" },
+    { label: "PKWT", value: "pkwt" },
+];
+
 
 const spTypes = [
     { label: "Full-time", value: "full-time" },
@@ -86,6 +85,8 @@ const formSchema = z.object({
     birthDate: z.date({
         required_error: "Birth date is required",
     }),
+
+    email: z.string().email("Invalid email address"),
 
     // Employment Details
     branch: z.string({
@@ -128,6 +129,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
+
 export default function AddEmployeeCard() {
     const { toast } = useToast()
     const router = useRouter()
@@ -135,6 +137,10 @@ export default function AddEmployeeCard() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [formData, setFormData] = useState<FormValues | null>(null)
+    const [checkClockSettings, setCheckClockSettings] = useState<{ label: string; value: string }[]>([]);
+    // const [branches, setBranches] = useState<Branch[]>([]);
+    const [branches, setBranches] = useState<{ label: string; value: string }[]>([]);
+    const [branchesLoading, setBranchesLoading] = useState(true);
 
     // Initialize form
     const form = useForm<FormValues>({
@@ -147,6 +153,7 @@ export default function AddEmployeeCard() {
             phoneNumber: "",
             birthPlace: "",
             birthDate: undefined,
+            email: "",
             branch: "",
             jobTitle: "",
             grade: "",
@@ -165,6 +172,64 @@ export default function AddEmployeeCard() {
         control: form.control,
         name: "letters",
     })
+
+        //     const fetchCheckClockSettings = async () => {
+        //     try {
+        //     const token = localStorage.getItem("token");
+        //     const res = await axios.get("http://localhost:8000/api/check-clock-settings", {
+        //         headers: {
+        //         Accept: "application/json",
+        //         Authorization: `Bearer ${token}`,
+        //         },
+        //     });
+
+        //     const data = res.data;
+        //     const formatted = data.map((item:any) => ({
+        //         label: item.name,
+        //         value: String(item.id),
+        //     }));
+        //     setCheckClockSettings(formatted);
+        //     } catch (error:any) {
+        //     toast({
+        //         title: "Error fetching check clock settings",
+        //         description: error.message,
+        //         variant: "destructive",
+        //     });
+        //     }
+        // };
+        const fetchCheckClockSettings = async () => {
+        try {
+            const formatted = await fetchCheckClockSettingsService()
+            setCheckClockSettings(formatted)
+        } catch (error: any) {
+            toast({ 
+                title: "Error fetching check clock settings",
+                description: error.message,
+                variant: "destructive",
+             })
+        }
+        }
+
+        useEffect(() => {
+        const fetchBranches = async () => {
+            try {
+            const formatted = await fetchBranchesService()
+            setBranches(formatted)
+            } catch (err) {
+            console.error("Failed to fetch branches:", err)
+            } finally {
+            setBranchesLoading(false)
+            }
+        }
+
+        fetchBranches()
+        }, [])
+
+
+    // panggil fetchBranch
+    useEffect(() => {
+        fetchCheckClockSettings();
+    }, []);
 
     // Handle avatar upload
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -201,37 +266,106 @@ export default function AddEmployeeCard() {
 
     // Form submission
     const handleConfirm = async () => {
-        if (!form) return
-        setIsSubmitting(true)
-        setIsDialogOpen(false)
+        if (!formData) return;
+        setIsSubmitting(true);
+        setIsDialogOpen(false);
+
         try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1500))
-            console.log("Form data:", form)
+            const formPayload = new FormData();
 
-            toast({
-                title: "Employee added successfully",
-                description: `${form.getValues("firstName")} ${form.getValues("lastName")} has been added to the system.`,
-            })
+            const employmentTypeMap: Record<string, string> = {
+                permanent: "Pegawai Tetap",
+                contract: "contract",
+                intern: "magang",
+                honorer: "honorer",
+                pkwt: "PKWt",
+            };
 
-            // Navigate to employee list or detail page
-            router.push("/dashboard/employee")
-        } catch (error) {
+            const mappedType = employmentTypeMap[formData.contractType];
+            console.log("contractType:", formData.contractType);
+            console.log("Mapped value:", employmentTypeMap[formData.contractType]);
+            console.log("contractType raw value:", formData.contractType);
+
+            // Personal info
+            formPayload.append("first_name", formData.firstName);
+            formPayload.append("last_name", formData.lastName);
+            formPayload.append("gender", formData.gender === "male" ? "L" : "P");
+            formPayload.append("nik", formData.nik);
+            formPayload.append("phone_number", formData.phoneNumber);
+            formPayload.append("birth_place", formData.birthPlace);
+            formPayload.append("birth_date", formData.birthDate.toISOString().split("T")[0]);
+
+            // Employment details
+            formPayload.append("branch_id", formData.branch.toString());
+            formPayload.append("job_title", formData.jobTitle);
+            formPayload.append("grade", formData.grade);
+            // formPayload.append("contract_type", formData.contractType);
+            formPayload.append("contract_type", formData.contractType);
+            formPayload.append("employment_type", employmentTypeMap[formData.contractType] ?? "");
+            console.log("Form Payload Values:");
+            formPayload.forEach((value, key) => {
+                console.log(`${key}: ${value}`);
+            });
+   
+            formPayload.append("sp_type", formData.spType);
+
+            // Bank info
+            formPayload.append("bank", formData.bank);
+            formPayload.append("bank_account_number", formData.accountNumber);
+            formPayload.append("account_holder_name", formData.accountHolderName);
+
+            // Check Clock Setting (optional)
+            if (formData.checkClockSetting) {
+                formPayload.append("check_clock_setting_id", formData.checkClockSetting);
+            }
+
+            // Avatar (optional)
+            if (formData.avatar) {
+                formPayload.append("avatar", formData.avatar);
+            }
+
+            // Dummy email & password (sementara)
+            // formPayload.append("email", `${formData.firstName.toLowerCase()}_${Date.now()}@gmail.com`);
+            formPayload.append("email", formData.email)
+            formPayload.append("password", "default123");
+
+            const token = localStorage.getItem("token")
+
+            const res = await createEmployee(formPayload)
             toast({
-                title: "Error adding employee",
-                description: "There was an error adding the employee. Please try again.",
+                title: "Success!",
+                description: `${formData.firstName} ${formData.lastName} berhasil ditambahkan.`,
+            });
+
+            // router.push("/dashboard/employee");
+            const result = res.data;
+            toast({
+                title: "Success!",
+                description: `${formData.firstName} ${formData.lastName} berhasil ditambahkan.`,
+            });
+            router.push("/dashboard/employee");
+        } catch (error: any) {
+            toast({
+                title: "Gagal Menambahkan",
+                description: error.message || "Terjadi kesalahan pada server.",
                 variant: "destructive",
-            })
+            });
         } finally {
-            setIsSubmitting(false)
+            setIsSubmitting(false);
         }
-    }
+    };
+
 
     // Handle form submission
     const onSubmit = async (data: FormValues) => {
         if (form.formState.isValid) {
+            // const formattedData = {
+            //     ...data,
+            //     gender: data.gender === "male" ? "L" : "P",
+            // };
             // Store form data and open confirmation modal
             setFormData(data)
+            // setFormData(formattedData);
             setIsDialogOpen(true)
         } else {
             // Show error toast if form is invalid
@@ -246,6 +380,7 @@ export default function AddEmployeeCard() {
     const handleSubmitCheck = async () => {
         const isValid = await form.trigger()
         if (isValid) {
+            setFormData(form.getValues());
             setIsDialogOpen(true)
         } else {
             toast({
@@ -283,7 +418,7 @@ export default function AddEmployeeCard() {
                                             <div className="flex items-center gap-3">
                                                 <div className="relative h-24 w-24 rounded-full overflow-hidden bg-muted mb-2">
                                                     {avatarPreview ? (
-                                                        <Image
+                                                        <img
                                                             src={avatarPreview || "/placeholder.svg"}
                                                             alt="Avatar preview"
                                                             className="h-full w-full object-cover"
@@ -473,6 +608,21 @@ export default function AddEmployeeCard() {
                                                     </FormItem>
                                                 )}
                                             />
+
+                                            <FormField
+                                            control={form.control}
+                                            name="email"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                <FormLabel>Email</FormLabel>
+                                                <FormControl className="w-full">
+                                                    <Input placeholder="Enter email address" type="email" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                                </FormItem>
+                                            )}
+                                            />
+
                                         </div>
                                     </AccordionContent>
                                 </AccordionItem>
@@ -508,26 +658,29 @@ export default function AddEmployeeCard() {
                                                                 <Command className="w-full">
                                                                     <CommandInput placeholder="Search branch..." />
                                                                     <CommandList>
-                                                                        <CommandEmpty>No branch found.</CommandEmpty>
-                                                                        <CommandGroup>
-                                                                            {branches.map((branch) => (
-                                                                                <CommandItem
-                                                                                    key={branch.value}
-                                                                                    value={branch.value}
-                                                                                    onSelect={() => {
-                                                                                        form.setValue("branch", branch.value)
-                                                                                    }}
-                                                                                >
-                                                                                    <Check
-                                                                                        className={cn(
-                                                                                            "mr-2 h-4 w-4",
-                                                                                            branch.value === field.value ? "opacity-100" : "opacity-0",
-                                                                                        )}
-                                                                                    />
-                                                                                    {branch.label}
-                                                                                </CommandItem>
-                                                                            ))}
-                                                                        </CommandGroup>
+                                                                        {branchesLoading ? (
+                                                                            <CommandItem disabled>Loading…</CommandItem>
+                                                                        ) : branches.length === 0 ? (
+                                                                            <CommandEmpty>No branch found.</CommandEmpty>
+                                                                        ) : (
+                                                                            <CommandGroup>
+                                                                                {branches.map((branch) => (
+                                                                                    <CommandItem
+                                                                                        key={branch.value}
+                                                                                        value={branch.value}
+                                                                                        onSelect={() => form.setValue("branch", branch.value)}
+                                                                                    >
+                                                                                        <Check
+                                                                                            className={cn(
+                                                                                                "mr-2 h-4 w-4",
+                                                                                                branch.value === field.value ? "opacity-100" : "opacity-0",
+                                                                                            )}
+                                                                                        />
+                                                                                        {branch.label}
+                                                                                    </CommandItem>
+                                                                                ))}
+                                                                            </CommandGroup>
+                                                                        )}
                                                                     </CommandList>
                                                                 </Command>
                                                             </PopoverContent>
@@ -725,11 +878,18 @@ export default function AddEmployeeCard() {
                                                                 <SelectValue placeholder="Select check clock setting" />
                                                             </SelectTrigger>
                                                         </FormControl>
-                                                        <SelectContent>
+                                                        {/* <SelectContent>
                                                             <SelectItem value="standard">Standard (09:00 - 17:00)</SelectItem>
                                                             <SelectItem value="flexible">Flexible Hours</SelectItem>
                                                             <SelectItem value="shift">Shift Based</SelectItem>
                                                             <SelectItem value="remote">Remote Work</SelectItem>
+                                                        </SelectContent> */}
+                                                        <SelectContent>
+                                                            {checkClockSettings.map((setting) => (
+                                                                <SelectItem key={setting.value} value={setting.value}>
+                                                                    {setting.label}
+                                                                </SelectItem>
+                                                            ))}
                                                         </SelectContent>
                                                     </Select>
                                                     <FormDescription>Configure how this employee's attendance will be tracked</FormDescription>
@@ -875,7 +1035,7 @@ export default function AddEmployeeCard() {
                                             {formData.avatar && (
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-medium">Avatar:</span>
-                                                    <Image
+                                                    <img
                                                         src={avatarPreview || ""}
                                                         alt="Avatar preview"
                                                         className="h-12 w-12 rounded-full object-cover"
@@ -886,6 +1046,7 @@ export default function AddEmployeeCard() {
                                             <p><span className="font-medium">Name:</span> {formData.firstName} {formData.lastName}</p>
                                             <p><span className="font-medium">Gender:</span> {formData.gender}</p>
                                             <p><span className="font-medium">Phone Number:</span> {formData.phoneNumber}</p>
+                                            <p><span className="font-medium">Email:</span> {formData.email}</p>
                                             <p><span className="font-medium">Birth Place:</span> {formData.birthPlace}</p>
                                             <p><span className="font-medium">Birth Date:</span> {formData.birthDate ? format(formData.birthDate, "PPP") : "N/A"}</p>
 
@@ -902,7 +1063,15 @@ export default function AddEmployeeCard() {
                                             <p><span className="font-medium">Account Holder Name:</span> {formData.accountHolderName}</p>
 
                                             <h3 className="text-lg font-semibold mt-4">Check Clock</h3>
-                                            <p><span className="font-medium">Setting:</span> {formData.checkClockSetting || "N/A"}</p>
+                                            {/* <p><span className="font-medium">Setting:</span> {formData.checkClockSetting || "N/A"}</p> */}
+                                            <p>
+                                                <span className="font-medium">Setting:</span>{" "}
+                                                {
+                                                    checkClockSettings.find(
+                                                        (setting) => setting.value === formData.checkClockSetting
+                                                    )?.label || "N/A"
+                                                }
+                                            </p>
 
                                             <h3 className="text-lg font-semibold mt-4">Letters</h3>
                                             {formData.letters.length > 0 ? (

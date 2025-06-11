@@ -141,6 +141,8 @@ export function PdfCardPreview({
               src={thumbnailUrl || "/placeholder.svg"}
               alt={`Preview of ${fileName}`}
               className="object-cover w-full h-full"
+              width={300}
+              height={400}
             />
           ) : (
             <div className="flex items-center justify-center h-full w-full bg-muted">

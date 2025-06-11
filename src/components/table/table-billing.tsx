@@ -33,10 +33,14 @@ import Link from "next/link"
 // Define types
 type Billing = {
   id: string
+  created_at: string;
   invoiceDate: string
   plan: string
-  ammount: string
+  amount: string
   status: "pending" | "processing" | "paid" | "failed"
+  pricing?: {
+    name: string;
+  };
 }
 
 type SortDirection = "asc" | "desc" | undefined
@@ -238,10 +242,10 @@ export function TableBilling({ data }: { data: Billing[] }) {
                   <SortIcon field="plan" currentField={sortField} direction={sortDirection} />
                 </div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("ammount")}>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("amount")}>
                 <div className="flex items-center">
-                  Ammount
-                  <SortIcon field="ammount" currentField={sortField} direction={sortDirection} />
+                  Amount
+                  <SortIcon field="amount" currentField={sortField} direction={sortDirection} />
                 </div>
               </TableHead>
               <TableHead className="cursor-pointer" onClick={() => handleSort("status")}>
@@ -263,8 +267,10 @@ export function TableBilling({ data }: { data: Billing[] }) {
               paginatedData.map((data) => (
                 <TableRow key={data.id}>
                   <TableCell>{data.invoiceDate}</TableCell>
+                  {/* <TableCell>{data.created_at ? new Date(data.created_at).toLocaleDateString() : "-"}</TableCell> */}
                   <TableCell>{data.plan}</TableCell>
-                  <TableCell>{data.ammount}</TableCell>
+                  {/* <TableCell>{data.pricing?.name ?? "-"}</TableCell> */}
+                  <TableCell>{data.amount}</TableCell>
                   <TableCell>
                     <StatusBadge status={data.status} />
                   </TableCell>

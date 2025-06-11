@@ -36,7 +36,10 @@ export function EmployeeAddonCompact({
 
     // Calculate additional employees and cost
     const additionalEmployees = Math.max(newLimit - currentLimit)
+    // onAdditionalEmployeesChange(additionalEmployees)
+    useEffect(() => {
     onAdditionalEmployeesChange(additionalEmployees)
+    }, [additionalEmployees])
     const additionalCostMonthly = additionalEmployees * monthlyPricePerEmployee
     const additionalCostProrated = additionalEmployees * proratedPricePerEmployee
 
