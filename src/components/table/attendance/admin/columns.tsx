@@ -87,19 +87,19 @@ const approvalConfig = (
 
     // Show status badge for approved/rejected
     const config = statusConfig[status as ApprovalStatus];
-    if (!config) {
+    if (config) {
         return (
-            <div className="flex w-[100px] items-center">
-                <span>Unknown</span>
-            </div>
+            <Badge variant="secondary" className={config.className}>
+                <config.icon className="h-4 w-4 mr-1" />
+                {config.label}
+            </Badge>
         );
     }
 
     return (
-        <Badge variant="secondary" className={config.className}>
-            <config.icon className="h-4 w-4 mr-1" />
-            {config.label}
-        </Badge>
+        <div className="flex w-[100px] items-center">
+            <span>-</span>
+        </div>
     );
 };
 

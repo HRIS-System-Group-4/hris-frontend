@@ -7,10 +7,12 @@ import { attendanceService, getAttendanceDetail } from '@/services/attendanceSer
 import { useSelector } from 'react-redux';
 import { RootState } from '@/lib/store';
 import { useSearchParams } from 'next/navigation';
+import { SkeletonDetail } from '@/components/skeletons/skeleton-detail';
+import { toast } from '@/components/ui/use-toast';
 
 interface AttendanceDetailClientProps {
   id: string;
-  checkClock?: boolean;  
+  checkClock?: boolean;
 }
 
 export function AttendanceDetailClient({ id, checkClock = false }: AttendanceDetailClientProps) {
@@ -51,11 +53,17 @@ export function AttendanceDetailClient({ id, checkClock = false }: AttendanceDet
 
   useEffect(() => {
     if (user) fetchData();
-  }, [user,id]);
+  }, [user, id]);
 
-  if (loading) return <p>Loading attendance detail...</p>;
-  if (error) return <p className="text-red-500">Error: {error}</p>;
-  if (!data) return <p>Data tidak ditemukan.</p>;
+  if (loading && user === null) return <SkeletonDetail />
+  if (!data) return <SkeletonDetail />;
+  if (error) return toast({
+    title: "Error",
+    description: error,
+    variant: "destructive",
+  });
 
-  return <AttendanceDetailsPage rawData={data} />;
+  return (
+    <AttendanceDetailsPage rawData={data} isAdmin={user!.is_admin} id={id} />
+  )
 }
