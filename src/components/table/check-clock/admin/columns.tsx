@@ -5,21 +5,47 @@ import { CheckClock } from "./schema"
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 
-const typeConfig = (type: CheckClock["type"]) => {
-    const typeConfig = {
-        "wfo": { label: "WFO"},
-        "wfa": { label: "WFA"},
-        "hybrid": { label: "Hybrid"},
-    } as const
+const mapTypeNumberToString = (type: number): "wfo" | "wfa" | "hybrid" | "unknown" => {
+  switch(type) {
+    case 1: return "wfo";
+    case 2: return "wfa";
+    case 3: return "hybrid";
+    default: return "unknown";
+  }
+};
 
-    const config = typeConfig[type]
+// const typeConfig = (type: CheckClock["type"]) => {
+//     const typeConfig = {
+//         "wfo": { label: "WFO"},
+//         "wfa": { label: "WFA"},
+//         "hybrid": { label: "Hybrid"},
+//     } as const
 
-    return (
-        <div className="flex w-[100px] items-center">
-            <div className="">{config.label}</div>
-        </div>
-    );
-}
+//     const config = typeConfig[type]
+
+//     return (
+//         <div className="flex w-[100px] items-center">
+//             <div className="">{config.label}</div>
+//         </div>
+//     );
+// }
+
+const typeConfig = (type: "wfo" | "wfa" | "hybrid" | "unknown") => {
+  const typeConfigMap = {
+    wfo: { label: "WFO" },
+    wfa: { label: "WFA" },
+    hybrid: { label: "Hybrid" },
+    unknown: { label: "Unknown" }
+  } as const;
+
+  const config = typeConfigMap[type] || typeConfigMap["unknown"];
+
+  return (
+    <div className="flex w-[100px] items-center">
+      <div>{config.label}</div>
+    </div>
+  );
+};
 
 export const columns: ColumnDef<CheckClock>[] = [
     {
@@ -59,12 +85,18 @@ export const columns: ColumnDef<CheckClock>[] = [
             <DataTableColumnHeader column={column} title="Type" />
         ),
         cell: ({ row }) => {
-            return (
-                typeConfig(row.getValue("type"))
-            );
+            // return (
+            //     typeConfig(row.getValue("type"))
+            // );
+            const typeNumber = row.getValue("type") as number;
+            const typeString = mapTypeNumberToString(typeNumber);
+            return typeConfig(typeString);
         },
         filterFn: (row, id, value) => {
-            return value.includes(row.getValue(id));
+            // return value.includes(row.getValue(id));
+            const typeNumber = row.getValue(id) as number;
+            const typeString = mapTypeNumberToString(typeNumber);
+            return value.includes(typeString);
         }
     },
     {

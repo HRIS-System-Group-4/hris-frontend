@@ -11,31 +11,51 @@ import {
 } from "@/components/ui/select";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronsLeft, ChevronsLeftIcon, ChevronsRight, ChevronsRightIcon } from "lucide-react";
 
-interface DataTablePaginationProps<TData> {
+interface DataTablePaginationProps<TData extends { id: number |string }> {
   table: Table<TData>;
+  total: number;
 }
 
-export function DataTablePagination<TData>({
-  table
+export function DataTablePagination<TData extends { id: number | string}>({
+  table,
+  total
 }: DataTablePaginationProps<TData>) {
   return (
     <div className="flex items-center justify-between">
       <div className="text-sm text-muted-foreground">
-        Showing{" "}
-        <strong>
-          {table.getFilteredRowModel().rows.length === 0
-            ? 0
-            : table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}
-        </strong>{" "}
-        to{" "}
-        <strong>
-          {Math.min(
-            (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-            table.getFilteredRowModel().rows.length
-          )}
-        </strong>{" "}
-        of <strong>{table.getFilteredRowModel().rows.length}</strong> attendances
+        {(() => {
+          const pageIndex = table.getState().pagination.pageIndex ?? 0;
+          const pageSize = table.getState().pagination.pageSize ?? 10;
+          // const start = table.getFilteredRowModel().rows.length === 0
+          //   ? 0
+          //   : pageIndex * pageSize + 1;
+          //   const end = Math.min(
+          //     (pageIndex + 1) * pageSize,
+          //     total
+          //   );
+            // const start = total === 0 ? 0 : pageIndex * pageSize + 1;
+            // const end = Math.min((pageIndex + 1) * pageSize, total);
+            const rows = table.getRowModel().rows;
+
+            // const start = rows.length === 0 ? 0 : rows[0].original.id;
+            // const end = rows.length === 0 ? 0 : rows[rows.length - 1].original.id;
+            const start = total === 0 ? 0 : pageIndex * pageSize + 1;
+            const end = Math.min((pageIndex + 1) * pageSize, total);
+
+          console.log("Pagination Debug:", {
+            total,
+            pageIndex: table.getState().pagination.pageIndex,
+            pageSize: table.getState().pagination.pageSize,
+          });
+          return (
+            <>
+              Showing <strong>{start}</strong> to <strong>{end}</strong> of{" "}
+              <strong>{total}</strong> employees
+            </>
+          );
+        })()}
       </div>
+
 
 
       <div className="flex items-center space-x-2">

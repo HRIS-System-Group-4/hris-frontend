@@ -14,15 +14,21 @@ export const metadata: Metadata = {
   description: "A Expense tracker build using Tanstack Table."
 };
 
+// async function getData() {
+//   const filePath = path.join(
+//     process.cwd(),
+//     "src/app/dashboard/check-clock",
+//     "data.json"
+//   );
+//   const data = fs.readFileSync(filePath, "utf8");
+//   return JSON.parse(data);
+// }
 async function getData() {
-  const filePath = path.join(
-    process.cwd(),
-    "src/app/dashboard/check-clock",
-    "data.json"
-  );
-  const data = fs.readFileSync(filePath, "utf8");
-  return JSON.parse(data);
+  const res = await fetch('http://localhost:8000/api/check-clock-settings', { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch data');
+  return res.json();
 }
+
 
 export default async function CheckClockPage() {
   const data = await getData();

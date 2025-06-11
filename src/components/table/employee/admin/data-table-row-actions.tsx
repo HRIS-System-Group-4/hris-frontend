@@ -7,19 +7,11 @@ import { IconDots } from "@tabler/icons-react";
 import Link from "next/link";
 import { EyeIcon, TrashIcon } from "lucide-react";
 
-interface EmployeeData {
-  id: string | number;
-}
-
-interface DataTableRowActionsProps<TData extends EmployeeData> {
+interface DataTableRowActionsProps<TData extends {id:string}> {
   row: Row<TData>;
 }
 
-export function DataTableRowActions<TData extends EmployeeData>({
-  row
-}: DataTableRowActionsProps<TData>) {
-  // const task = taskSchema.parse(row.original);
-
+export function DataTableRowActions<TData extends {id:string}>({ row }: DataTableRowActionsProps<TData>) {
   return (
     <div className="flex justify-end gap-2">
       <Link href={`/dashboard/employee/${row.original.id}`}>

@@ -11,10 +11,19 @@ import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, Cust
 import Link from "next/link"
 import { toTitleCase } from "@/lib/strings"
 import { formatDayWorkType } from "@/lib/utils/dayWorkType"
+import axios from "axios";
+
+type CheckClockDay = {
+  startTime: string
+  endTime: string
+  breakDuration: number
+  lateTolerance: number
+}
 
 type CheckClockDetail = {
   id: string
   name: string
+  type: "WFO" | "WFA" | "Hybrid"
   totalEmployee: string
   monday: CheckClockDay
   tuesday: CheckClockDay
@@ -25,177 +34,101 @@ type CheckClockDetail = {
   sunday: CheckClockDay
 }
 
-type CheckClockDay = {
-  type: "wfo" | "wfa" | "off-day"
-  startTime: string
-  endTime: string
-  breakDuration: number
-  lateTolerance: number
+function mapDay(apiDay: any): CheckClockDay {
+  return {
+    startTime: apiDay.clock_in,
+    endTime: apiDay.clock_out,
+    breakDuration: calculateBreakDuration(apiDay.break_start, apiDay.break_end),
+    lateTolerance: apiDay.late_tolerance,
+  }
 }
 
-// Define the days array with proper typing
-const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const
-type DayKey = typeof DAYS[number]
+function calculateBreakDuration(start: string, end: string): number {
+  // Asumsi waktu format "HH:mm:ss", hitung durasi dalam menit
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  return (eh * 60 + em) - (sh * 60 + sm);
+}
 
-const tableData: CheckClockDetail[] = [
-  {
-    id: "1",
-    name: "Kantor Pusat Jakarta",
-    totalEmployee: "120",
-    monday: {
-      type: "wfo",
-      startTime: "08:00",
-      endTime: "17:00",
-      breakDuration: 60,
-      lateTolerance: 15,
-    },
-    tuesday: {
-      type: "wfo",
-      startTime: "08:00",
-      endTime: "17:00",
-      breakDuration: 60,
-      lateTolerance: 15,
-    },
-    wednesday: {
-      type: "wfo",
-      startTime: "08:00",
-      endTime: "17:00",
-      breakDuration: 60,
-      lateTolerance: 15,
-    },
-    thursday: {
-      type: "wfo",
-      startTime: "08:00",
-      endTime: "17:00",
-      breakDuration: 60,
-      lateTolerance: 15,
-    },
-    friday: {
-      type: "wfo",
-      startTime: "08:00",
-      endTime: "16:00",
-      breakDuration: 60,
-      lateTolerance: 10,
-    },
-    saturday: {
-      type: "wfa",
-      startTime: "09:00",
-      endTime: "12:00",
-      breakDuration: 0,
-      lateTolerance: 5,
-    },
-    sunday: {
-      type: "off-day",
-      startTime: "09:00",
-      endTime: "12:00",
-      breakDuration: 0,
-      lateTolerance: 5,
-    },
-  },
-  {
-    id: "2",
-    name: "Remote Team Bandung",
-    totalEmployee: "45",
-    monday: {
-      type: "wfa",
-      startTime: "09:00",
-      endTime: "17:00",
-      breakDuration: 45,
-      lateTolerance: 10,
-    },
-    tuesday: {
-      type: "wfa",
-      startTime: "09:00",
-      endTime: "17:00",
-      breakDuration: 45,
-      lateTolerance: 10,
-    },
-    wednesday: {
-      type: "wfa",
-      startTime: "09:00",
-      endTime: "17:00",
-      breakDuration: 45,
-      lateTolerance: 10,
-    },
-    thursday: {
-      type: "wfa",
-      startTime: "09:00",
-      endTime: "17:00",
-      breakDuration: 45,
-      lateTolerance: 10,
-    },
-    friday: {
-      type: "wfa",
-      startTime: "09:00",
-      endTime: "16:00",
-      breakDuration: 30,
-      lateTolerance: 10,
-    },
-    saturday: {
-      type: "wfa",
-      startTime: "10:00",
-      endTime: "13:00",
-      breakDuration: 0,
-      lateTolerance: 5,
-    },
-    sunday: {
-      type: "wfa",
-      startTime: "10:00",
-      endTime: "13:00",
-      breakDuration: 0,
-      lateTolerance: 5,
-    },
-  },
-]
+function mapType(type: number): "WFO" | "WFA" | "Hybrid" {
+  switch (type) {
+    case 1: return "WFO";
+    case 2: return "WFA";
+    case 3: return "Hybrid";
+    default: return "WFO"; 
+  }
+}
+
+function formatApiDataToLocal(apiData: any): CheckClockDetail {
+  return {
+    id: apiData.id,
+    name: apiData.name,
+    type: mapType(apiData.type),
+    totalEmployee: "N/A",
+    monday: mapDay(apiData.days.monday),
+    tuesday: mapDay(apiData.days.tuesday),
+    wednesday: mapDay(apiData.days.wednesday),
+    thursday: mapDay(apiData.days.thursday),
+    friday: mapDay(apiData.days.friday),
+    saturday: mapDay(apiData.days.saturday),
+    sunday: mapDay(apiData.days.sunday),
+  }
+}
 
 export default function DetailCheckClockPage() {
-  const params = useParams()
-  const router = useRouter()
-  const [checkClock, setcheckClock] = useState<CheckClockDetail | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
 
-  useEffect(() => {
-    const fetchCheckClockDetails = async () => {
-      try {
-        setLoading(true)
-        // Fetch the employee data from the JSON file
-        // const response = await fetch("/data/employees.json")
+  const [checkClock, setCheckClock] = useState<CheckClockDetail | null>(null);
+  const [loading, setLoading]   = useState(true);
+  const [error,   setError]     = useState<string | null>(null);
 
-        // if (!response.ok) {
-        //   throw new Error(`Failed to fetch employee data: ${response.status} ${response.statusText}`)
-        // }
+//  useEffect(() => {
+//   const fetchCheckClockDetails = async () => {
+//     try {
+//       setLoading(true);
+//       const response = await fetch(`http://localhost:8000/api/check-clock-settings/${params.id}`);
+//       if (!response.ok) {
+//         throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+//       }
+//       const data = await response.json();
+//       const formatted = formatApiDataToLocal(data);
+//       setCheckClock(formatted);
+//       setError(null);
+//     } catch (err) {
+//       console.error("Error fetching check clock details:", err);
+//       setError(err instanceof Error ? err.message : "Failed to load check clock details");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
 
-        // const data = await response.json()
-        const data = tableData
+//   if (params.id) {
+//     fetchCheckClockDetails();
+//   }
+// }, [params.id]);
+    useEffect(() => {
+        const fetchCheckClockDetails = async () => {
+          try {
+            setLoading(true);
+            const response = await axios.get(`http://localhost:8000/api/check-clock-settings/${params.id}`);
+            const data = response.data;
+            const formatted = formatApiDataToLocal(data);
+            setCheckClock(formatted);
+            setError(null);
+          } catch (err) {
+            console.error("Error fetching check clock details:", err);
+            setError(err instanceof Error ? err.message : "Failed to load check clock details");
+          } finally {
+            setLoading(false);
+          }
+        };
 
-        // Find the employee with the matching ID
-        const foundData = data.find((data: CheckClockDetail) => data.id === params.id)
-
-        if (!foundData) {
-          throw new Error(`Check Clock with ID ${params.id} not found`)
+        if (params.id) {
+          fetchCheckClockDetails();
         }
+      }, [params.id]);
 
-        setcheckClock(foundData)
-        setError(null)
-      } catch (err) {
-        console.error("Error fetching check clock details:", err)
-        setError(err instanceof Error ? err.message : "Failed to load check clock details")
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (params.id) {
-      fetchCheckClockDetails()
-    }
-  }, [params.id])
-
-  // Helper function to get day data with proper typing
-  const getDayData = (day: string): CheckClockDay | null => {
-    if (!checkClock) return null
-    return checkClock[day as DayKey] || null
-  }
 
   // Function to format date
   const formatDate = (dateString: string) => {
@@ -283,47 +216,39 @@ export default function DetailCheckClockPage() {
                   </DetailItem>
                 </DetailContainer>
               </DetailGroup>
-              {DAYS.map((day) => {
-                const dayData = getDayData(day)
-                return (
-                  <div key={day}>
-                    <Separator />
-                    <DetailGroup title={toTitleCase(day) as string} className="pt-5">
-                      <DetailContainer>
-                        <DetailItem label="Work Type" layout={"column"} >
-                          <div className="font-medium text-black">
-                            {dayData ? formatDayWorkType(dayData.type) : 'N/A'}
-                          </div>
-                        </DetailItem>
-                      </DetailContainer>
-                      <DetailContainer>
-                        <DetailItem label="Start Time" layout={"column"} >
-                          <div className="font-medium text-black">
-                            {dayData?.startTime || 'N/A'}
-                          </div>
-                        </DetailItem>
-                        <DetailItem label="End Time" layout={"column"} >
-                          <div className="font-medium text-black">
-                            {dayData?.endTime || 'N/A'}
-                          </div>
-                        </DetailItem>
-                      </DetailContainer>
-                      <DetailContainer>
-                        <DetailItem label="Break Duration" layout={"column"} >
-                          <div className="font-medium text-black">
-                            {dayData ? `${dayData.breakDuration} minutes` : 'N/A'}
-                          </div>
-                        </DetailItem>
-                        <DetailItem label="Late Tolerance" layout={"column"} >
-                          <div className="font-medium text-black">
-                            {dayData ? `${dayData.lateTolerance} minutes` : 'N/A'}
-                          </div>
-                        </DetailItem>
-                      </DetailContainer>
-                    </DetailGroup>
-                  </div>
-                )
-              })}
+              {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => (
+                <div key={day}>
+                  <Separator />
+                  <DetailGroup key={day} title={(toTitleCase(day) as string)} className="pt-5">
+                    <DetailContainer>
+                      <DetailItem label="Work Type" layout={"column"} >
+                        {/* <div className="font-medium text-black">{formatDayWorkType(checkClock[day as keyof typeof checkClock]?.type)}</div> */}
+                        <div className="font-medium text-black">
+                          {checkClock?.type}
+                        </div>
+                      </DetailItem>
+                    </DetailContainer>
+                    <DetailContainer>
+                      <DetailItem label="Start Time" layout={"column"} >
+                        <div className="font-medium text-black">{(checkClock[day as keyof typeof checkClock]?.startTime)}</div>
+                      </DetailItem>
+                      <DetailItem label="End Time" layout={"column"} >
+                        <div className="font-medium text-black">{(checkClock[day as keyof typeof checkClock]?.endTime)}</div>
+                      </DetailItem>
+                    </DetailContainer>
+                    <DetailContainer>
+                      <DetailItem label="Break Duration" layout={"column"} >
+                        <div className="font-medium text-black">{(checkClock[day as keyof typeof checkClock]?.breakDuration)} minutes</div>
+                      </DetailItem>
+                      <DetailItem label="Late Tolerance" layout={"column"} >
+                        <div className="font-medium text-black">{(checkClock[day as keyof typeof checkClock]?.lateTolerance)} minutes</div>
+                      </DetailItem>
+                    </DetailContainer>
+                  </DetailGroup>
+                </div>
+
+              ))}
+
             </CardContent>
           </Card>
         )
