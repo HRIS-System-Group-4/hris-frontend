@@ -1,46 +1,49 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { format, set } from "date-fns"
-import { CalendarIcon, Check, ChevronsUpDown, Loader2, Plus, Trash2, Upload } from "lucide-react"
+import { useEffect, useState } from "react"
+import { useRouter, useParams } from "next/navigation"
+import { format } from "date-fns"
+import {
+    CalendarIcon,
+    Check,
+    ChevronsUpDown,
+    Loader2,
+    Plus,
+    Trash2,
+    Upload,
+} from "lucide-react"
 
-import { cn } from "@/lib/utils"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Card, CardContent } from "@/components/ui/card"
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
+import { Label } from "@/components/ui/label"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
 import * as z from "zod"
-import { Label } from "@radix-ui/react-label"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader } from "@/components/ui/dialog"
-import { DialogTitle } from "@radix-ui/react-dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleContainer } from "@/components/ui/custom-page"
+import { CustomPage, CustomPageHeader, CustomPageTitle, CustomPageTitleContainer } from "@/components/ui/custom-page"
 import Image from "next/image"
 
-// Sample data for dropdowns
-const branches = [
-    { label: "Jakarta HQ", value: "jakarta-hq" },
-    { label: "Surabaya Branch", value: "surabaya" },
-    { label: "Bandung Branch", value: "bandung" },
-    { label: "Bali Branch", value: "bali" },
-]
+import { getEmployeeById, updateEmployee } from "@/services/employeeService"
+import { indexBranch } from "@/services/branchService"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
 
 const jobTitles = [
-    { label: "Software Engineer", value: "software-engineer" },
-    { label: "Product Manager", value: "product-manager" },
-    { label: "UX Designer", value: "ux-designer" },
-    { label: "HR Manager", value: "hr-manager" },
-    { label: "Finance Specialist", value: "finance-specialist" },
+    { label: "Software Engineer", value: "Software Engineer" },
+    { label: "Product Manager", value: "Product Manager" },
+    { label: "UX Designer", value: "UX Designer" },
+    { label: "HR Manager", value: "HR Manager" },
+    { label: "Finance Specialist", value: "Finance Specialist" },
 ]
 
 const grades = [
@@ -54,9 +57,11 @@ const grades = [
 const contractTypes = [
     { label: "Permanent", value: "permanent" },
     { label: "Contract", value: "contract" },
-    { label: "Probation", value: "probation" },
-    { label: "Internship", value: "internship" },
-]
+    { label: "Intern", value: "intern" },
+    { label: "Honorer", value: "honorer" },
+    { label: "PKWT", value: "pkwt" },
+];
+
 
 const spTypes = [
     { label: "Full-time", value: "full-time" },
@@ -73,54 +78,31 @@ const banks = [
     { label: "CIMB Niaga", value: "cimb" },
 ]
 
-// Form schema using zod
+
 const formSchema = z.object({
-    // Personal Information
     avatar: z.any().optional(),
-    nik: z.string().min(16, "NIK must be at least 16 characters").max(16, "NIK must be exactly 16 characters"),
-    firstName: z.string().min(2, "First name must be at least 2 characters"),
-    lastName: z.string().min(2, "Last name must be at least 2 characters"),
+    nik: z.string().min(16).max(16),
+    firstName: z.string().min(2),
+    lastName: z.string().min(2),
     gender: z.enum(["male", "female"]),
-    phoneNumber: z.string().min(10, "Phone number must be at least 10 characters"),
-    birthPlace: z.string().min(2, "Birth place must be at least 2 characters"),
-    birthDate: z.date({
-        required_error: "Birth date is required",
-    }),
-
-    // Employment Details
-    branch: z.string({
-        required_error: "Please select a branch",
-    }),
-    jobTitle: z.string({
-        required_error: "Please select a job title",
-    }),
-    grade: z.string({
-        required_error: "Please select a grade",
-    }),
-    contractType: z.string({
-        required_error: "Please select a contract type",
-    }),
-    spType: z.string({
-        required_error: "Please select an SP type",
-    }),
-
-    // Banking Information
-    bank: z.string({
-        required_error: "Please select a bank",
-    }),
-    accountNumber: z.string().min(10, "Account number must be at least 10 characters"),
-    accountHolderName: z.string().min(2, "Account holder name must be at least 2 characters"),
-
-    // Check Clock
+    phoneNumber: z.string().min(10),
+    birthPlace: z.string().min(2),
+    birthDate: z.date(),
+    branch: z.string(),
+    jobTitle: z.string(),
+    grade: z.string(),
+    contractType: z.string(),
+    spType: z.string(),
+    bank: z.string(),
+    accountNumber: z.string().min(10),
+    accountHolderName: z.string().min(2),
     checkClockSetting: z.string().optional(),
-
-    // Letters
     letters: z
         .array(
             z.object({
-                name: z.string().min(1, "Letter name is required"),
+                name: z.string().min(1),
                 file: z.any().optional(),
-            }),
+            })
         )
         .optional()
         .default([]),
@@ -131,20 +113,23 @@ type FormValues = z.infer<typeof formSchema>
 export default function EditEmployee() {
     const { toast } = useToast()
     const router = useRouter()
+    const params = useParams()
+    const employeeId = params.id as string
+
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [formData, setFormData] = useState<FormValues | null>(null)
+    const [branches, setBranches] = useState<{ value: string; label: string }[]>([])
 
-    // Initialize form
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema as any),
+        resolver: zodResolver(formSchema) as any,
         defaultValues: {
-            nik: "1234567890123456",
-            firstName: "John",
-            lastName: "Doe",
+            nik: "",
+            firstName: "",
+            lastName: "",
             gender: "male",
-            phoneNumber: "08123456789",
+            phoneNumber: "",
             birthPlace: "",
             birthDate: undefined,
             branch: "",
@@ -160,110 +145,179 @@ export default function EditEmployee() {
         },
     })
 
-    // Initialize useFieldArray for letters
-    const { fields, append, remove } = useFieldArray({
-        control: form.control,
-        name: "letters",
-    })
+    const { fields, append, remove } = useFieldArray({ control: form.control, name: "letters" })
 
-    // Handle avatar upload
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
-            // Validate file type
-            const validTypes = ['image/jpeg', 'image/png', 'image/gif']
-            if (!validTypes.includes(file.type)) {
-                toast({
-                    title: "Invalid file type",
-                    description: "Please upload a JPEG, PNG, or GIF image.",
-                    variant: "destructive",
-                })
-                return
-            }
-            // Validate file size (max 5MB)
-            const maxSize = 5 * 1024 * 1024 // 5MB
-            if (file.size > maxSize) {
-                toast({
-                    title: "File too large",
-                    description: "Please upload an image smaller than 5MB.",
-                    variant: "destructive",
-                })
-                return
-            }
             form.setValue("avatar", file)
-            const reader = new FileReader()
-            reader.onload = () => {
-                setAvatarPreview(reader.result as string)
+            setAvatarPreview(URL.createObjectURL(file))
+        }
+    }
+
+    useEffect(() => {
+        if (!employeeId) {
+            console.log("Tidak ada employeeId")
+            return
+        }
+
+        (async () => {
+            try {
+                console.log("Fetching employee & branch data...")
+                const employeeRes = await getEmployeeById(employeeId)
+                console.log("Employee response:", employeeRes)
+
+                const employeeData = employeeRes.data.data
+
+                const branchRes = await indexBranch()
+                console.log("Branch response:", branchRes)
+
+                const branches = branchRes.data.data
+                const mappedBranches = branches.map((branch: any) => ({
+                    value: branch.id,
+                    label: branch.name,
+                }))
+                setBranches(mappedBranches)
+
+
+                // Simpan ke state kalau kamu mau (optional), atau langsung gunakan di Select
+                // setBranches(mappedBranches) <- contoh jika pakai state
+
+                form.reset({
+                    nik: employeeData.nik,
+                    firstName: employeeData.first_name,
+                    lastName: employeeData.last_name,
+                    gender: employeeData.gender,
+                    phoneNumber: employeeData.phone_number,
+                    birthPlace: employeeData.birth_place,
+                    birthDate: employeeData.birth_date ? new Date(employeeData.birth_date) : undefined,
+                    branch: employeeData.branch ? employeeData.branch.id : "", // ← ini mungkin ID, pastikan cocok dengan mappedBranches.value
+                    jobTitle: employeeData.job_title,
+                    grade: employeeData.grade,
+                    contractType: employeeData.contract_type,
+                    spType: employeeData.sp_type,
+                    bank: employeeData.bank,
+                    accountNumber: employeeData.account_number,
+                    accountHolderName: employeeData.account_holder_name,
+                    checkClockSetting: employeeData.check_clock_setting,
+                    letters: employeeData.letters || [],
+
+                })
+                // Ambil semua branch dari backend
+                // const branchRes = await indexBranch()
+                // const branches = branchRes.data.data // <--- ini penting
+
+                // // Ubah ke bentuk { value, label } untuk <SelectItem>
+                // const mappedBranches = branches.map((branch: any) => ({
+                //     value: branch.id,
+                //     label: branch.branch_name,
+                // }))
+            } catch (err) {
+                toast({
+                    title: "Error",
+                    description: "Failed to load employee or branch data",
+                    variant: "destructive",
+                })
             }
-            reader.readAsDataURL(file)
-        }
+        })()
+    }, [employeeId])
+
+    const onSubmit = (values: FormValues) => {
+            const onSubmit = (data: any) => {
+            console.log("✅ Form submitted:", data);
+            setFormData(data); // ← Simpan data ke formData
+            setIsDialogOpen(true); // ← Buka dialog konfirmasi
+        };
     }
 
-    // Form submission
+    // const handleConfirm = async () => {
+    //     console.log("Clicked save"); // ✅ Tambahkan ini
+    //     // if (!formData) return;
+    //     console.log("Form data before submission:", formData); // ✅ Tambahkan ini untuk debug
+    //     setIsSubmitting(true);
+    //     setIsDialogOpen(false);
+    //     const formPayload = new FormData();
+    //     Object.entries(formData).forEach(([key, value]) => {
+    //         if (value !== undefined && value !== null) {
+    //             if (key === "letters" && Array.isArray(value)) {
+    //                 value.forEach((letter, index) => {
+    //                     formPayload.append(`letters[${index}][name]`, letter.name);
+    //                     if (letter.file) {
+    //                         formPayload.append(`letters[${index}][file]`, letter.file);
+    //                     }
+    //                 });
+    //             } else if (key === "avatar" && value instanceof File) {
+    //                 formPayload.append("avatar", value);
+    //             } else {
+    //                 formPayload.append(key, value);
+    //             }
+    //         }
+    //     });
+
+    //     try {
+    //         await updateEmployee(employeeId, formPayload)
+    //         toast({ title: "Success", description: "Employee updated successfully" })
+    //         router.push("/dashboard/employee")
+    //     } catch {
+    //         toast({ title: "Error", description: "Failed to update employee", variant: "destructive" })
+    //     } finally {
+    //         setIsSubmitting(false)
+    //     }
+    // }
     const handleConfirm = async () => {
-        if (!form) return
-        setIsSubmitting(true)
-        setIsDialogOpen(false)
+        console.log("Clicked save");
+        console.log("Form data before submission:", formData);
+        if (!formData || typeof formData !== "object") {
+            console.error("Form data is invalid or empty:", formData);
+            toast({ title: "Error", description: "Form data is missing", variant: "destructive" });
+            return;
+        }
+
+        console.log("Form data before submission:", formData);
+
+        setIsSubmitting(true);
+        setIsDialogOpen(false);
+
+        const formPayload = new FormData();
+
         try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1500))
-            console.log("Form data:", form)
+            Object.entries(formData).forEach(([key, value]) => {
+                if (value === undefined || value === null) return;
 
-            toast({
-                title: "Employee added successfully",
-                description: `${form.getValues("firstName")} ${form.getValues("lastName")} has been added to the system.`,
-            })
+                if (key === "letters" && Array.isArray(value)) {
+                    value.forEach((letter, index) => {
+                        formPayload.append(`letters[${index}][name]`, letter.name);
+                        if (letter.file) {
+                            formPayload.append(`letters[${index}][file]`, letter.file);
+                        }
+                    });
+                } else if (key === "avatar" && value instanceof File) {
+                    formPayload.append("avatar", value);
+                } else {
+                    formPayload.append(key, value);
+                }
+            });
 
-            // Navigate to employee list or detail page
-            router.push("/dashboard/employee")
+            await updateEmployee(employeeId, formPayload);
+            toast({ title: "Success", description: "Employee updated successfully" });
+            router.push("/dashboard/employee");
         } catch (error) {
-            toast({
-                title: "Error adding employee",
-                description: "There was an error adding the employee. Please try again.",
-                variant: "destructive",
-            })
+            console.error("Failed to update employee:", error);
+            toast({ title: "Error", description: "Failed to update employee", variant: "destructive" });
         } finally {
-            setIsSubmitting(false)
+            setIsSubmitting(false);
         }
-    }
+    };
 
-    // Handle form submission
-    const onSubmit = async (data: FormValues) => {
-        if (form.formState.isValid) {
-            // Store form data and open confirmation modal
-            setFormData(data)
-            setIsDialogOpen(true)
-        } else {
-            // Show error toast if form is invalid
-            toast({
-                title: "Incomplete form",
-                description: "Please fill in all required fields before submitting.",
-                variant: "destructive",
-            })
-        }
-    }
-
-    const handleSubmitCheck = async () => {
-        const isValid = await form.trigger()
-        if (isValid) {
-            setIsDialogOpen(true)
-        } else {
-            toast({
-                title: "Incomplete form",
-                description: "Please fill in all required fields.",
-                variant: "destructive",
-            })
-        }
-    }
 
     return (
         <CustomPage>
             <CustomPageHeader>
                 <CustomPageTitleContainer>
                     <CustomPageTitle>Edit Employee</CustomPageTitle>
-                    {/* <CustomPageSubtitle>Manage and organize all your employees' data</CustomPageSubtitle> */}
                 </CustomPageTitleContainer>
             </CustomPageHeader>
+
             <Card className="w-full pt-0">
                 <CardContent>
                     <Form {...form}>
@@ -273,9 +327,12 @@ export default function EditEmployee() {
                                 className="w-full"
                                 defaultValue={["personal", "employment", "checkclock", "banking", "letters"]}
                             >
-                                {/* Personal Information */}
+                                {/* --- PERSONAL INFORMATION --- */}
                                 <AccordionItem value="personal">
-                                    <AccordionTrigger className="text-lg font-medium">Personal Information</AccordionTrigger>
+                                    <AccordionTrigger className="text-lg font-medium">
+                                        Personal Information
+                                    </AccordionTrigger>
+
                                     <AccordionContent className="space-y-4">
                                         {/* Avatar Upload */}
                                         <FormItem>
@@ -287,6 +344,8 @@ export default function EditEmployee() {
                                                             src={avatarPreview || "/placeholder.svg"}
                                                             alt="Avatar preview"
                                                             className="h-full w-full object-cover"
+                                                            width={96}
+                                                            height={96}
                                                         />
                                                     ) : (
                                                         <div className="flex items-center justify-center h-full w-full bg-muted">
@@ -294,7 +353,8 @@ export default function EditEmployee() {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div className="flex items-center">
+
+                                                <div className="flex items-center gap-2">
                                                     <label htmlFor="avatar-upload" className="cursor-pointer">
                                                         <Button type="button" variant="outline" size="sm" className="gap-1" asChild>
                                                             <Label htmlFor="avatar-upload" className="cursor-pointer">
@@ -310,6 +370,7 @@ export default function EditEmployee() {
                                                             onChange={handleAvatarChange}
                                                         />
                                                     </label>
+
                                                     {avatarPreview && (
                                                         <Button
                                                             type="button"
@@ -337,7 +398,7 @@ export default function EditEmployee() {
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>NIK (National ID)</FormLabel>
-                                                        <FormControl className="w-full" aria-disabled>
+                                                        <FormControl className="w-full">
                                                             <Input placeholder="Enter 16-digit NIK" {...field} disabled />
                                                         </FormControl>
                                                         <FormMessage />
@@ -382,14 +443,13 @@ export default function EditEmployee() {
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>Last Name</FormLabel>
-                                                        <FormControl>
+                                                        <FormControl className="w-full">
                                                             <Input placeholder="Enter last name" {...field} />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
-
                                             {/* Gender */}
                                             <FormField
                                                 control={form.control}
@@ -400,7 +460,7 @@ export default function EditEmployee() {
                                                         <FormControl>
                                                             <RadioGroup
                                                                 onValueChange={field.onChange}
-                                                                defaultValue={field.value}
+                                                                value={field.value} // ← gunakan `value` bukan `defaultValue`
                                                                 className="flex space-x-4"
                                                             >
                                                                 <FormItem className="flex items-center space-x-2 space-y-0">
@@ -451,7 +511,7 @@ export default function EditEmployee() {
                                                                         variant={"outline"}
                                                                         className={cn(
                                                                             "w-full pl-3 text-left font-normal",
-                                                                            !field.value && "text-muted-foreground",
+                                                                            !field.value && "text-muted-foreground"
                                                                         )}
                                                                     >
                                                                         {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
@@ -464,7 +524,9 @@ export default function EditEmployee() {
                                                                     mode="single"
                                                                     selected={field.value}
                                                                     onSelect={field.onChange}
-                                                                    disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                                                                    disabled={(date) =>
+                                                                        date > new Date() || date < new Date("1900-01-01")
+                                                                    }
                                                                     initialFocus
                                                                 />
                                                             </PopoverContent>
@@ -473,15 +535,7 @@ export default function EditEmployee() {
                                                     </FormItem>
                                                 )}
                                             />
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
 
-                                {/* Employment Details */}
-                                <AccordionItem value="employment">
-                                    <AccordionTrigger className="text-lg font-medium">Employment Details</AccordionTrigger>
-                                    <AccordionContent className="space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                                             {/* Branch */}
                                             <FormField
                                                 control={form.control}
@@ -495,7 +549,10 @@ export default function EditEmployee() {
                                                                     <Button
                                                                         variant="outline"
                                                                         role="combobox"
-                                                                        className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
+                                                                        className={cn(
+                                                                            "w-full justify-between",
+                                                                            !field.value && "text-muted-foreground"
+                                                                        )}
                                                                     >
                                                                         {field.value
                                                                             ? branches.find((branch) => branch.value === field.value)?.label
@@ -514,14 +571,14 @@ export default function EditEmployee() {
                                                                                 <CommandItem
                                                                                     key={branch.value}
                                                                                     value={branch.value}
-                                                                                    onSelect={() => {
-                                                                                        form.setValue("branch", branch.value)
-                                                                                    }}
+                                                                                    onSelect={() => form.setValue("branch", branch.value)}
                                                                                 >
                                                                                     <Check
                                                                                         className={cn(
                                                                                             "mr-2 h-4 w-4",
-                                                                                            branch.value === field.value ? "opacity-100" : "opacity-0",
+                                                                                            branch.value === field.value
+                                                                                                ? "opacity-100"
+                                                                                                : "opacity-0"
                                                                                         )}
                                                                                     />
                                                                                     {branch.label}
@@ -544,7 +601,7 @@ export default function EditEmployee() {
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>Job Title</FormLabel>
-                                                        <Select onValueChange={field.onChange} defaultValue={field.value} >
+                                                        <Select value={field.value} onValueChange={field.onChange}>
                                                             <FormControl className="w-full">
                                                                 <SelectTrigger>
                                                                     <SelectValue placeholder="Select job title" />
@@ -570,7 +627,7 @@ export default function EditEmployee() {
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>Grade</FormLabel>
-                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <Select value={field.value} onValueChange={field.onChange}>
                                                             <FormControl className="w-full">
                                                                 <SelectTrigger>
                                                                     <SelectValue placeholder="Select grade" />
@@ -596,7 +653,7 @@ export default function EditEmployee() {
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>Contract Type</FormLabel>
-                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <Select value={field.value} onValueChange={field.onChange}>
                                                             <FormControl className="w-full">
                                                                 <SelectTrigger>
                                                                     <SelectValue placeholder="Select contract type" />
@@ -622,7 +679,7 @@ export default function EditEmployee() {
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>SP Type</FormLabel>
-                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <Select value={field.value} onValueChange={field.onChange}>
                                                             <FormControl className="w-full">
                                                                 <SelectTrigger>
                                                                     <SelectValue placeholder="Select SP type" />
@@ -640,15 +697,7 @@ export default function EditEmployee() {
                                                     </FormItem>
                                                 )}
                                             />
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
 
-                                {/* Banking Information */}
-                                <AccordionItem value="banking">
-                                    <AccordionTrigger className="text-lg font-medium">Banking Information</AccordionTrigger>
-                                    <AccordionContent className="space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                                             {/* Bank */}
                                             <FormField
                                                 control={form.control}
@@ -656,7 +705,7 @@ export default function EditEmployee() {
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>Bank</FormLabel>
-                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <Select value={field.value} onValueChange={field.onChange}>
                                                             <FormControl className="w-full">
                                                                 <SelectTrigger>
                                                                     <SelectValue placeholder="Select bank" />
@@ -847,7 +896,7 @@ export default function EditEmployee() {
                                 <Button variant="outline" type="button" onClick={() => router.back()}>
                                     Cancel
                                 </Button>
-                                <Button type="button" disabled={isSubmitting} onClick={handleSubmitCheck}>
+                                <Button type="submit" disabled={isSubmitting}>
                                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Save
                                 </Button>

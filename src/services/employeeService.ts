@@ -35,3 +35,15 @@ export async function addEmployee(payload: any) {
     return response;
 
 }
+
+export async function updateEmployee(id: string, payload: any) {
+    console.log("Payload Update", payload)
+    const response = await axiosInstance.put(`/api/employees/${id}`, payload, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        withCredentials: true,
+    });
+    console.log("response", response.data);
+    return response;
+}   

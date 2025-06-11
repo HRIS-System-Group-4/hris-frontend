@@ -6,7 +6,7 @@ export async function getCsrfCookie() {
 
 export async function indexBranch() {
   const token = localStorage.getItem("token")
-  const response = await axiosInstance.get("/api/branches/index", {
+  const response = await axiosInstance.get("/api/branches", {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
