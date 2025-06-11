@@ -160,6 +160,30 @@ export async function activateSubscription(payload: {
   return await response.json();
 }
 
+// export async function activateSubscription(payload: {
+//     plan: string;
+//     additional_employees: number;
+//   }) {
+//   const token = localStorage.getItem("token")
+//   const response = await fetch("http://localhost:8000/api/subscription/activate", {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//       "Accept": "application/json",
+//       "Authorization": `Bearer ${token}` 
+//     },
+//     body: JSON.stringify({
+//       plan: payload.plan, 
+//     }),
+//   });
+
+//   if (!response.ok) {
+//     const error = await response.json();
+//     throw new Error(error.message || "Something went wrong");
+//   }
+
+//   return await response.json();
+// }
 
 // ------------------------------------------------------------
 // OPTIONAL: interceptor global untuk log error (bisa di‐hapus)
