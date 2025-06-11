@@ -17,6 +17,7 @@ interface EmployeeAddonSliderProps {
   currentLimit: number
   activeUser: number
   monthlyPricePerEmployee: number
+  currentPlan: "Free" | "Starter" | "Growth"
   maxEmployees?: number
   onLimitChange?: (newLimit: number) => void
   className?: string
@@ -26,10 +27,21 @@ export function EmployeeAddonSlider({
   currentLimit,
   activeUser,
   monthlyPricePerEmployee,
+  currentPlan,
   maxEmployees = 1000,
   onLimitChange,
   className,
 }: EmployeeAddonSliderProps) {
+  type PlanType = "Free" | "Starter" | "Growth"
+  
+  const planLimitMap: Record<PlanType, number> = {
+    Free: 10,
+    Starter: 20,
+    Growth: 500,
+  }
+
+  const effectiveMaxEmployees = maxEmployees ?? planLimitMap[currentPlan]
+
   activeUser = Math.ceil(activeUser / 10) * 10
   const [newLimit, setNewLimit] = useState(currentLimit)
   const [isAnimating, setIsAnimating] = useState(false)
@@ -43,9 +55,9 @@ export function EmployeeAddonSlider({
   const additionalCostProrated = additionalEmployees * proratedPricePerEmployee
 
   // Calculate percentage for progress bar
-  const currentActiveUserPercentage = (activeUser / maxEmployees) * 100
-  const currentLimitPercentage = (currentLimit / maxEmployees) * 100
-  const newPercentage = (newLimit / maxEmployees) * 100
+  const currentActiveUserPercentage = (activeUser / effectiveMaxEmployees) * 100
+  const currentLimitPercentage = (currentLimit / effectiveMaxEmployees) * 100
+  const newPercentage = (newLimit / effectiveMaxEmployees) * 100
 
   // Handle slider change
   const handleSliderChange = (value: number[]) => {
@@ -57,7 +69,7 @@ export function EmployeeAddonSlider({
 
   // Handle increment/decrement
   const handleIncrement = () => {
-    const updatedLimit = Math.min(newLimit + 10, maxEmployees)
+    const updatedLimit = Math.min(newLimit + 10, effectiveMaxEmployees)
     setNewLimit(updatedLimit)
     if (onLimitChange) {
       onLimitChange(updatedLimit)

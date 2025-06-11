@@ -13,111 +13,174 @@ import fs from "fs";
 import path from "path";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { EmployeeAddonSlider } from "@/components/employee-addon-slider"
+import axios from "axios"
 
 type Billing = {
-    id: string
-    invoiceDate: string
-    plan: string
-    ammount: string
-    status: "pending" | "processing" | "paid" | "failed"
+  id: string
+  created_at: string;
+  invoiceDate: string
+  plan: string
+  amount: string
+  status: "pending" | "processing" | "paid" | "failed"
+  pricing?: {
+    name: string;
+  };
 }
-
-const data: Billing[] = [
-    {
-        "id": "INV-001",
-        "invoiceDate": "2025-05-01",
-        "plan": "Basic Plan",
-        "ammount": "49.99",
-        "status": "pending"
-    },
-    {
-        "id": "INV-002",
-        "invoiceDate": "2025-04-15",
-        "plan": "Pro Plan",
-        "ammount": "99.99",
-        "status": "processing"
-    },
-    {
-        "id": "INV-003",
-        "invoiceDate": "2025-04-01",
-        "plan": "Enterprise Plan",
-        "ammount": "199.99",
-        "status": "paid"
-    },
-    {
-        "id": "INV-004",
-        "invoiceDate": "2025-03-20",
-        "plan": "Basic Plan",
-        "ammount": "49.99",
-        "status": "failed"
-    },
-    {
-        "id": "INV-005",
-        "invoiceDate": "2025-05-05",
-        "plan": "Pro Plan",
-        "ammount": "99.99",
-        "status": "paid"
-    }
-]
 
 export default function PricingPage() {
     const [billings, setBillings] = useState<Billing[]>([])
     const [loading, setLoading] = useState(true)
+    const [subscriptionActive, setSubscriptionActive] = useState<boolean | null>(null)
+    const [expiresAt, setExpiresAt] = useState<string | null>(null)
+    const [currentPlan, setCurrentPlan] = useState<"Free" | "Starter" | "Growth">("Free")
 
     useEffect(() => {
-        const fetchBilling = async () => {
-            try {
+    const fetchData = async () => {
+        try {
+            const token = localStorage.getItem("authToken")
 
-                // const parse = await fetch("https://api.stripe.com/v1/billing/invoices",)
-                // const data = await parse.json()
-                // const data = [
-                //     {
-                //         "id": "INV-001",
-                //         "invoiceDate": "2025-05-01",
-                //         "plan": "Basic Plan",
-                //         "ammount": "49.99",
-                //         "status": "pending"
-                //     },
-                //     {
-                //         "id": "INV-002",
-                //         "invoiceDate": "2025-04-15",
-                //         "plan": "Pro Plan",
-                //         "ammount": "99.99",
-                //         "status": "processing"
-                //     },
-                //     {
-                //         "id": "INV-003",
-                //         "invoiceDate": "2025-04-01",
-                //         "plan": "Enterprise Plan",
-                //         "ammount": "199.99",
-                //         "status": "paid"
-                //     },
-                //     {
-                //         "id": "INV-004",
-                //         "invoiceDate": "2025-03-20",
-                //         "plan": "Basic Plan",
-                //         "ammount": "49.99",
-                //         "status": "failed"
-                //     },
-                //     {
-                //         "id": "INV-005",
-                //         "invoiceDate": "2025-05-05",
-                //         "plan": "Pro Plan",
-                //         "ammount": "99.99",
-                //         "status": "paid"
-                //     }
-                // ]
+            // Ambil data billing
+            const billingRes = await axios.get('http://localhost:8000/api/subscription/billing', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json',
+                },
+            });
 
-                setBillings(data)
-            } catch (error) {
-                console.error("Failed to fetch billing data:", error)
-            } finally {
-                setLoading(false)
-            }
+            console.log("Raw billing response:", billingRes.data);
+
+            // Sesuaikan format data dari Laravel
+            const billingData = billingRes.data.data.map((item: any) => ({
+                id: item.id,
+                invoiceDate: item.created_at,
+                plan: item.plan_name ?? "-",
+                ammount: item.amount,
+                status: item.status,
+            }))
+
+            // setBillings(billingData)
+            // setBillings((billingData.data ?? []).map((item: any) => ({
+            // id: item.id,
+            // invoiceDate: item.created_at,
+            // plan: item.pricing?.name ?? "-",
+            // amount: item.amount,
+            // status: item.status
+            // })))
+            setBillings(billingRes.data.data); // langsung assign karena datanya sudah rapi
+
+
+            // Ambil status subscription
+            const statusRes = await axios.get("http://localhost:8000/api/subscription/status", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json',
+                }
+            })
+            const statusJson = statusRes.data
+            console.log("Subscription status response:", statusRes.data);
+            setSubscriptionActive(statusJson.subscription_active)
+            setExpiresAt(statusJson.expires_at)
+        //     if (statusJson.subscription_active && statusJson.plan_name) {
+        //   const validPlans = ["Free", "Starter", "Growth"]
+        //   if (validPlans.includes(statusJson.plan_name)) {
+        //         setCurrentPlan(statusJson.plan_name)
+        //     } else {
+        //         setCurrentPlan("Free") // fallback jika tidak ada plan yang dipilih
+        //     }
+        //     } else {
+        //     setCurrentPlan("Free")
+        //     }
+        const planAliasMap: Record<string, "Free" | "Starter" | "Growth"> = {
+        "Free Plan": "Free",
+        "Basic Plan": "Starter",
+        "Pro Plan": "Growth",
         }
 
-        fetchBilling()
-    }, [])
+        if (statusJson.subscription_active && statusJson.plan_name) {
+        const mappedPlan = planAliasMap[statusJson.plan_name] ?? "Free"
+        console.log("Plan name from API:", statusJson.plan_name)
+        console.log("Mapped current plan:", mappedPlan)
+        setCurrentPlan(mappedPlan)
+        } else {
+        setCurrentPlan("Free")
+        }
+        } catch (err) {
+            console.error("Error fetching data", err)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    fetchData()
+}, [])
+
+
+    // useEffect(() => {
+    //     const fetchBilling = async () => {
+    //         try {
+
+    //             // const parse = await fetch("https://api.stripe.com/v1/billing/invoices",)
+    //             // const data = await parse.json()
+    //             // const data = [
+    //             //     {
+    //             //         "id": "INV-001",
+    //             //         "invoiceDate": "2025-05-01",
+    //             //         "plan": "Basic Plan",
+    //             //         "ammount": "49.99",
+    //             //         "status": "pending"
+    //             //     },
+    //             //     {
+    //             //         "id": "INV-002",
+    //             //         "invoiceDate": "2025-04-15",
+    //             //         "plan": "Pro Plan",
+    //             //         "ammount": "99.99",
+    //             //         "status": "processing"
+    //             //     },
+    //             //     {
+    //             //         "id": "INV-003",
+    //             //         "invoiceDate": "2025-04-01",
+    //             //         "plan": "Enterprise Plan",
+    //             //         "ammount": "199.99",
+    //             //         "status": "paid"
+    //             //     },
+    //             //     {
+    //             //         "id": "INV-004",
+    //             //         "invoiceDate": "2025-03-20",
+    //             //         "plan": "Basic Plan",
+    //             //         "ammount": "49.99",
+    //             //         "status": "failed"
+    //             //     },
+    //             //     {
+    //             //         "id": "INV-005",
+    //             //         "invoiceDate": "2025-05-05",
+    //             //         "plan": "Pro Plan",
+    //             //         "ammount": "99.99",
+    //             //         "status": "paid"
+    //             //     }
+    //             // ]
+
+    //             setBillings(data)
+    //         } catch (error) {
+    //             console.error("Failed to fetch billing data:", error)
+    //         } finally {
+    //             setLoading(false)
+    //         }
+    //     }
+
+    //     fetchBilling()
+    // }, [])
+
+    // useEffect(() => {
+    //     console.log("Current Plan:", currentPlan)
+    // }, [currentPlan])
+    const planLimitMap: Record<"Free" | "Starter" | "Growth", number> = {
+    Free: 10,
+    Starter: 20,
+    Growth: 500,
+    }
+
+    const maxEmployees = planLimitMap[currentPlan] ?? 10
+
 
     if (loading) return <p>Loading...</p>
 
@@ -127,14 +190,29 @@ export default function PricingPage() {
                 <CustomPageTitleContainer>
                     <CustomPageTitle>Pricing Plan & Add-on</CustomPageTitle>
                     <CustomPageSubtitle>Review your current plan, explore upgrades, and access your payment records.</CustomPageSubtitle>
+                    {subscriptionActive && expiresAt && (
+                    <p className="text-sm text-muted-foreground">
+                        Your plan expires on {new Date(expiresAt).toLocaleDateString()}
+                    </p>
+                    )}
                 </CustomPageTitleContainer>
             </CustomPageHeader>
-            <Alert variant={"destructive"}>
+            {/* <Alert variant={"destructive"}>
                 <AlertTriangle className="h-4 w-4 text-error-500" />
                 <AlertTitle>Your subscription payment is overdue</AlertTitle>
                 <AlertDescription>Administrative actions are restricted and employees cannot record attendance. Complete your payment to restore full functionality.</AlertDescription>
-            </Alert>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-fr">
+            </Alert> */}
+            {subscriptionActive === false && (
+                <Alert variant={"destructive"}>
+                    <AlertTriangle className="h-4 w-4 text-error-500" />
+                    <AlertTitle>Your subscription payment is overdue</AlertTitle>
+                    <AlertDescription>
+                        Administrative actions are restricted and employees cannot record attendance. Complete your payment to restore full functionality.
+                    </AlertDescription>
+                </Alert>
+            )}
+            
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-fr">
 
                 <PricingCard
                     title="Free Plan"
@@ -147,8 +225,9 @@ export default function PricingPage() {
                     ]}
                 >
                     <Link href={"/dashboard/pricing/checkout?plan=1"} className="w-full" >
-                        <Button variant={"outline"} className="w-full" size={"lg"} disabled>
-                            Current Plan
+                        <Button variant={"outline"} className="w-full" size={"lg"} disabled={currentPlan === "Free"}>
+                            {/* Current Plan */}
+                            {currentPlan === "Free" ? "Current Plan" : "Choose Plan"}
                         </Button>
                     </Link>
                 </PricingCard>
@@ -163,8 +242,9 @@ export default function PricingPage() {
                     ]}
                 >
                     <Link href={"/dashboard/pricing/checkout?plan=2"} className="w-full" >
-                        <Button variant={"outline"} className="w-full" size={"lg"}>
-                            Upgrade
+                        <Button variant={"outline"} className="w-full" size={"lg"} disabled={currentPlan === "Starter"}>
+                            {/* Upgrade */}
+                            {currentPlan === "Starter" ? "Current Plan" : "Upgrade"}
                         </Button>
                     </Link>
                 </PricingCard>
@@ -180,13 +260,14 @@ export default function PricingPage() {
                     ]}
                 >
                     <Link href={"/dashboard/pricing/checkout?plan=3"} className="w-full" >
-                        <Button variant={"secondary"} className="w-full" size={"lg"}>
-                            Choose Plan
+                        <Button variant={"secondary"} className="w-full" size={"lg"} disabled={currentPlan === "Growth"}>
+                            {/* Choose Plan */}
+                            {currentPlan === "Growth" ? "Current Plan" : "Upgrade"}
                         </Button>
                     </Link>
                 </PricingCard>
             </div>
-            <EmployeeAddonSlider activeUser={401} currentLimit={500} monthlyPricePerEmployee={1.5} />
+            <EmployeeAddonSlider activeUser={401} currentLimit={maxEmployees} monthlyPricePerEmployee={1.5} currentPlan={currentPlan}/>
             <CustomPageHeader>
                 <CustomPageTitleContainer>
                     <CustomPageTitle>Billing History</CustomPageTitle>
