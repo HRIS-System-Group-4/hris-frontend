@@ -4,8 +4,8 @@ import DashboardEmployee from "@/components/dashboard/dashboard-employee";
 export default function DashboardPage() {
   return (
     <div>
-      {/* <DashboardAdmin /> */}
-      <DashboardEmployee />
+      <DashboardAdmin />
+      {/* <DashboardEmployee /> */}
     </div>
   )
 }

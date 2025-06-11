@@ -1,0 +1,37 @@
+[
+  {
+    "id": "INV-001",
+    "invoiceDate": "2025-05-01",
+    "plan": "Basic Plan",
+    "ammount": "49.99",
+    "status": "pending"
+  },
+  {
+    "id": "INV-002",
+    "invoiceDate": "2025-04-15",
+    "plan": "Pro Plan",
+    "ammount": "99.99",
+    "status": "processing"
+  },
+  {
+    "id": "INV-003",
+    "invoiceDate": "2025-04-01",
+    "plan": "Enterprise Plan",
+    "ammount": "199.99",
+    "status": "paid"
+  },
+  {
+    "id": "INV-004",
+    "invoiceDate": "2025-03-20",
+    "plan": "Basic Plan",
+    "ammount": "49.99",
+    "status": "failed"
+  },
+  {
+    "id": "INV-005",
+    "invoiceDate": "2025-05-05",
+    "plan": "Pro Plan",
+    "ammount": "99.99",
+    "status": "paid"
+  }
+]

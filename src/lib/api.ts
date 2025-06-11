@@ -1,112 +1,173 @@
-// export async function loginAdmin(login: string, password: string) {
-//     const res = await fetch("http://localhost:8000/api/admin/login", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({ login, password }),
-//       credentials: "include", // <- sangat penting
-//     });
-  
-//     const data = await res.json();
-  
-//     if (!res.ok) {
-//       throw new Error(data.message || "Login gagal");
-//     }
-  
-//     return data; // { access_token: ..., token_type: "Bearer" }
-//   }
-  
-  
-//   export async function loginEmployee(company: string, employee_id: string, password: string) {
-//     const res = await fetch("http://localhost:8000/api/login/employee", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({ company, employee_id, password }),
-//     });
-  
-//     if (!res.ok) {
-//       const error = await res.json();
-//       throw new Error(error.message || "Login gagal");
-//     }
-  
-//     return res.json(); // { access_token: ..., token_type: "Bearer" }
-//   }
+// lib/authApi.ts
+// Utility functions untuk autentikasi menggunakan Axios + Laravel Sanctum
+// ------------------------------------------------------------
+// Konfigurasi axios global agar:
+// 1. baseURL cukup sekali didefinisikan
+// 2. withCredentials mengirimkan cookie "XSRF-TOKEN" dan sesi
+// 3. xsrfCookieName & xsrfHeaderName diset agar axios otomatis
+//    menaruh header X-XSRF-TOKEN sesuai value cookie
 
-const API_URL = "http://localhost:8000/api/admin/login"; // ganti sesuai URL backend-mu
+import axios from "axios";
 
+export const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000",
+  withCredentials: true,
+  headers: {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+  },
+  xsrfCookieName: "XSRF-TOKEN",
+  xsrfHeaderName: "X-XSRF-TOKEN",
+});
+
+// ------------------------------------------------------------
+// Helper untuk mengambil CSRF cookie terlebih dahulu (Sanctum)
+// ------------------------------------------------------------
+export async function getCsrfCookie() {
+  await api.get("/sanctum/csrf-cookie");
+}
+
+// ------------------------------------------------------------
+// ADMIN LOGIN
+// ------------------------------------------------------------
 export async function loginAdmin(login: string, password: string) {
+  try {
+    await getCsrfCookie();
 
-  const csrfToken = document.cookie.split(';')
-  .find(cookie => cookie.trim().startsWith('XSRF-TOKEN='))
-  ?.split('=')[1];
+    const { data } = await api.post("/api/admin/login", {
+      login,
+      password,
+    });
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "accept" : "application/json",
-      'X-CSRF-TOKEN': csrfToken,
-    },
-    credentials: 'include',
-    body: JSON.stringify({ login, password }),
-  });
-  
-  const contentType = res.headers.get("Content-Type");
-  
-  if (!res.ok) {
-    if (contentType && contentType.includes("application/json")) {
-      const data = await res.json();
-      throw new Error(data.message || "Failed to login");
-    } else {
-      const text = await res.text();
-      throw new Error(`Unexpected response: ${text}`);
+    return data; // { token, user, ... }
+  } catch (err) {
+    // AxiosError memiliki response: { data, status, … }
+    if (axios.isAxiosError(err)) {
+      const message = err.response?.data?.message || "Failed to login";
+      throw new Error(message);
     }
+    throw err;
   }
-  
-  const data = await res.json();
-  return data;  
 }
 
-export async function loginEmployee(company: string, employee_id: string, password: string) {
-  const res = await fetch(`${API_URL}/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ company, employee_id, password }),
-  });
+// ------------------------------------------------------------
+// EMPLOYEE LOGIN
+// ------------------------------------------------------------
+export async function loginEmployee(
+  company: string,
+  employee_id: string,
+  password: string
+) {
+  try {
+    await getCsrfCookie();
 
-  if (!res.ok) throw new Error("Failed to login");
-  return res.json();
+    const { data } = await api.post("/api/employee/login", {
+      company,
+      employee_id,
+      password,
+    });
+
+    return data;
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const message = err.response?.data?.message || "Failed to login";
+      throw new Error(message);
+    }
+    throw err;
+  }
 }
 
-export async function registerUser(data: {
+// ------------------------------------------------------------
+// ADMIN REGISTER
+// ------------------------------------------------------------
+interface RegisterData {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
   confirmPassword: string;
-}) {
-  const res = await fetch(`${API_URL}/register`, {
+}
+
+export async function registerUser({
+  firstName,
+  lastName,
+  email,
+  password,
+  confirmPassword,
+}: RegisterData) {
+  try {
+    await getCsrfCookie();
+
+    const { data } = await api.post("/api/admin/register", {
+      name: `${firstName} ${lastName}`,
+      email,
+      password,
+      password_confirmation: confirmPassword,
+    });
+
+    return data;
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const message = err.response?.data?.message || "Failed to register";
+      throw new Error(message);
+    }
+    throw err;
+  }
+}
+
+// ------------------------------------------------------------
+// ADMIN REGISTER
+// ------------------------------------------------------------
+// export async function activateSubscription(plan: string) {
+//   try {
+//     await getCsrfCookie(); 
+
+//     const { data } = await api.post("/api/subscription/activate", {
+//       plan,
+//     });
+
+//     return data; 
+//   } catch (err) {
+//     if (axios.isAxiosError(err)) {
+//       const message = err.response?.data?.message || "Gagal aktivasi subscription";
+//       throw new Error(message);
+//     }
+//     throw err;
+//   }
+// }
+export async function activateSubscription(payload: {
+    plan: string;
+    additional_employees: number;
+  }) {
+  const token = localStorage.getItem("authToken")
+  const response = await fetch("http://localhost:8000/api/subscription/activate", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Authorization": `Bearer ${token}` // Ganti dengan token yang sesuai
     },
     body: JSON.stringify({
-      name: `${data.firstName} ${data.lastName}`,
-      email: data.email,
-      password: data.password,
-      password_confirmation: data.confirmPassword,
+      plan: payload.plan, // atau plan ID
     }),
   });
 
-  if (!res.ok) {
-    const errData = await res.json();
-    throw new Error(errData.message || "Failed to register");
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Something went wrong");
   }
 
-  return res.json();
+  return await response.json();
 }
+
+
+// ------------------------------------------------------------
+// OPTIONAL: interceptor global untuk log error (bisa di‐hapus)
+// ------------------------------------------------------------
+// api.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     console.error("API Error:", error);
+//     return Promise.reject(error);
+//   }
+// );

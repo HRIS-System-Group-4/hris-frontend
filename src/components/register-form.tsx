@@ -1,5 +1,7 @@
 "use client"
 
+import { useRouter } from "next/navigation"
+
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { registerSchema } from "@/schemas/register-schema"
@@ -9,7 +11,16 @@ import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+
+import axios from "axios"
 
 // 1. Define the schema
 
@@ -19,6 +30,7 @@ type RegisterFormData = z.infer<typeof registerSchema>
 export default function RegisterForm() {
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    mode: "onChange",
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -28,46 +40,49 @@ export default function RegisterForm() {
     },
   })
 
-  // function onSubmit(data: RegisterFormData) {
-  //   console.log("Register Data", data)
-  //   // TODO: handle registration here
-  // }
+  const router = useRouter()
+
   async function onSubmit(data: RegisterFormData) {
     try {
-      const res = await fetch("http://localhost:8000/api/admin/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
+      const response = await axios.post(
+        "http://localhost:8000/api/admin/register",
+        {
           first_name: data.firstName,
           last_name: data.lastName,
           email: data.email,
           password: data.password,
           password_confirmation: data.confirmPassword,
-        }),
-      });
-  
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Registration failed");
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          withCredentials: true, // jika menggunakan Sanctum atau butuh cookie
+        }
+      )
+
+      console.log("Success", response.data)
+      alert("Registration success!")
+      router.push("/auth/login")
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const message = err.response?.data?.message || "Registration failed"
+        console.error("Error registering:", err)
+        alert("Registration failed: " + message)
+      } else {
+        console.error("Unexpected error registering:", err)
+        alert("Registration failed: " + (err as Error).message)
       }
-  
-      const result = await res.json();
-      console.log("Success", result);
-      alert("Registration success!");
-      // Optionally redirect:
-      // router.push("/auth/login");
-    } catch (err: any) {
-      console.error("Error registering:", err);
-      alert("Registration failed: " + err.message);
     }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col gap-6"
+      >
         {/* Title */}
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="text-2xl font-bold">Let’s Get You Started!</h1>

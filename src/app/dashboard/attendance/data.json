@@ -1,0 +1,326 @@
+[
+  {
+    "id": 1,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/women/1.jpg",
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "email": "jane.smith@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": null,
+    "clockOut": null,
+    "workHours": null,
+    "attendanceType": "absent",
+    "approval": null
+  },
+  {
+    "id": 2,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/men/2.jpg",
+      "firstName": "Michael",
+      "lastName": "Johnson",
+      "email": "michael.johnson@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": null,
+    "clockOut": null,
+    "workHours": null,
+    "attendanceType": "sick leave",
+    "approval": "waiting"
+  },
+  {
+    "id": 3,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/women/3.jpg",
+      "firstName": "Emily",
+      "lastName": "Brown",
+      "email": "emily.brown@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": "09:00",
+    "clockOut": "18:10",
+    "workHours": {
+      "hours": 9,
+      "minutes": 10
+    },
+    "attendanceType": "late",
+    "approval": "waiting"
+  },
+  {
+    "id": 4,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/men/4.jpg",
+      "firstName": "David",
+      "lastName": "Jones",
+      "email": "david.jones@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": "09:00",
+    "clockOut": "18:15",
+    "workHours": {
+      "hours": 9,
+      "minutes": 15
+    },
+    "attendanceType": "late",
+    "approval": "rejected"
+  },
+  {
+    "id": 5,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/women/5.jpg",
+      "firstName": "Sarah",
+      "lastName": "Garcia",
+      "email": "sarah.garcia@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": null,
+    "clockOut": null,
+    "workHours": null,
+    "attendanceType": "annual leave",
+    "approval": "waiting"
+  },
+  {
+    "id": 6,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/men/6.jpg",
+      "firstName": "Daniel",
+      "lastName": "Miller",
+      "email": "daniel.miller@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": null,
+    "clockOut": null,
+    "workHours": null,
+    "attendanceType": "sick leave",
+    "approval": "waiting"
+  },
+  {
+    "id": 7,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/women/7.jpg",
+      "firstName": "Olivia",
+      "lastName": "Davis",
+      "email": "olivia.davis@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": "08:00",
+    "clockOut": "17:04",
+    "workHours": {
+      "hours": 9,
+      "minutes": 4
+    },
+    "attendanceType": "ontime",
+    "approval": "waiting"
+  },
+  {
+    "id": 8,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/men/8.jpg",
+      "firstName": "James",
+      "lastName": "Rodriguez",
+      "email": "james.rodriguez@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": null,
+    "clockOut": null,
+    "workHours": null,
+    "attendanceType": "sick leave",
+    "approval": "rejected"
+  },
+  {
+    "id": 9,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/women/9.jpg",
+      "firstName": "Emma",
+      "lastName": "Martinez",
+      "email": "emma.martinez@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": "09:00",
+    "clockOut": "18:06",
+    "workHours": {
+      "hours": 9,
+      "minutes": 6
+    },
+    "attendanceType": "late",
+    "approval": "rejected"
+  },
+  {
+    "id": 10,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/men/10.jpg",
+      "firstName": "William",
+      "lastName": "Hernandez",
+      "email": "william.hernandez@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": null,
+    "clockOut": null,
+    "workHours": null,
+    "attendanceType": "absent",
+    "approval": "waiting"
+  },
+  {
+    "id": 11,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/women/11.jpg",
+      "firstName": "Ava",
+      "lastName": "Lopez",
+      "email": "ava.lopez@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": "09:00",
+    "clockOut": "18:06",
+    "workHours": {
+      "hours": 9,
+      "minutes": 6
+    },
+    "attendanceType": "late",
+    "approval": "waiting"
+  },
+  {
+    "id": 12,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/men/12.jpg",
+      "firstName": "Alexander",
+      "lastName": "Gonzalez",
+      "email": "alexander.gonzalez@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": null,
+    "clockOut": null,
+    "workHours": null,
+    "attendanceType": "sick leave",
+    "approval": "rejected"
+  },
+  {
+    "id": 13,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/women/13.jpg",
+      "firstName": "Sophia",
+      "lastName": "Wilson",
+      "email": "sophia.wilson@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": null,
+    "clockOut": null,
+    "workHours": null,
+    "attendanceType": "annual leave",
+    "approval": "waiting"
+  },
+  {
+    "id": 14,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/men/14.jpg",
+      "firstName": "Benjamin",
+      "lastName": "Anderson",
+      "email": "benjamin.anderson@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": "09:00",
+    "clockOut": "18:07",
+    "workHours": {
+      "hours": 9,
+      "minutes": 7
+    },
+    "attendanceType": "late",
+    "approval": "approve"
+  },
+  {
+    "id": 15,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/women/15.jpg",
+      "firstName": "Mia",
+      "lastName": "Thomas",
+      "email": "mia.thomas@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": null,
+    "clockOut": null,
+    "workHours": null,
+    "attendanceType": "annual leave",
+    "approval": null
+  },
+  {
+    "id": 16,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/men/16.jpg",
+      "firstName": "Lucas",
+      "lastName": "Taylor",
+      "email": "lucas.taylor@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": "08:00",
+    "clockOut": "17:11",
+    "workHours": {
+      "hours": 9,
+      "minutes": 11
+    },
+    "attendanceType": "ontime",
+    "approval": "rejected"
+  },
+  {
+    "id": 17,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/women/17.jpg",
+      "firstName": "Charlotte",
+      "lastName": "Moore",
+      "email": "charlotte.moore@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": "09:00",
+    "clockOut": "18:14",
+    "workHours": {
+      "hours": 9,
+      "minutes": 14
+    },
+    "attendanceType": "late",
+    "approval": null
+  },
+  {
+    "id": 18,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/men/18.jpg",
+      "firstName": "Henry",
+      "lastName": "Jackson",
+      "email": "henry.jackson@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": "08:00",
+    "clockOut": null,
+    "workHours": null,
+    "attendanceType": "ontime",
+    "approval": "approve"
+  },
+  {
+    "id": 19,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/women/19.jpg",
+      "firstName": "Amelia",
+      "lastName": "Martin",
+      "email": "amelia.martin@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": "09:00",
+    "clockOut": null,
+    "workHours": null,
+    "attendanceType": "late",
+    "approval": null
+  },
+  {
+    "id": 20,
+    "employee": {
+      "avatar": "https://randomuser.me/api/portraits/men/20.jpg",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com"
+    },
+    "date": "2025-05-04",
+    "clockIn": "08:00",
+    "clockOut": null,
+    "workHours": null,
+    "attendanceType": "ontime",
+    "approval": null
+  }
+]
