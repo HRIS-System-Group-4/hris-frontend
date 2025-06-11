@@ -17,6 +17,9 @@ import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, Cust
 import Link from "next/link"
 import { fetchEmployeeDetails } from "@/services/employeeService"
 import axios from "axios";
+import { SkeletonDetail } from "@/components/skeletons/skeleton-detail"
+import axios from "axios";
+import { getEmployeeById } from "@/services/employeeService"
 
 type EmployeeDetail = {
   id: string
@@ -69,6 +72,11 @@ const sp_types = [
     { label: "Part-time", value: "part-time" },
     { label: "Remote", value: "remote" },
     { label: "Hybrid", value: "hybrid" },
+
+  { label: "Full-time", value: "full-time" },
+  { label: "Part-time", value: "part-time" },
+  { label: "Remote", value: "remote" },
+  { label: "Hybrid", value: "hybrid" },
 ]
 
 function getSPLabel(value: string): string {
@@ -81,6 +89,12 @@ const bank_name = [
     { label: "Bank Rakyat Indonesia (BRI)", value: "bri" },
     { label: "Bank Negara Indonesia (BNI)", value: "bni" },
     { label: "CIMB Niaga", value: "cimb" },
+
+  { label: "Bank Central Asia (BCA)", value: "bca" },
+  { label: "Bank Mandiri", value: "mandiri" },
+  { label: "Bank Rakyat Indonesia (BRI)", value: "bri" },
+  { label: "Bank Negara Indonesia (BNI)", value: "bni" },
+  { label: "CIMB Niaga", value: "cimb" },
 ]
 
 function getBankLabel(value: string): string {
@@ -109,11 +123,31 @@ useEffect(() => {
       } finally {
         setLoading(false)
       }
+
+  async function fetchEmployeeDetails(id: string) {
+    try {
+      setLoading(true)
+      const response = await getEmployeeById(id)
+
+      setEmployee(response.data.data)
+      setError(null)
+    } catch (err) {
+      console.error("Error fetching employee details:", err)
+      setError(err instanceof Error ? err.message : "Failed to load employee details")
+    } finally {
+      setLoading(false)
     }
+  }
 
     loadEmployee()
   }, [id])
 
+
+  useEffect(() => {
+    if (params.id) {
+      fetchEmployeeDetails(params.id)
+    }
+  }, [params.id])
 
 
   // Function to format date
@@ -164,37 +198,7 @@ useEffect(() => {
       </CustomPageHeader>
 
       {loading ? (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-16 w-16 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-6 w-48" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-8">
-            <div className="space-y-4">
-              <Skeleton className="h-5 w-32" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
-            </div>
-            <div className="space-y-4">
-              <Skeleton className="h-5 w-32" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <SkeletonDetail/>
       ) : error ? (
         <Card>
           <CardContent className="p-6">
@@ -222,8 +226,13 @@ useEffect(() => {
                       {employee.last_name[0]}
                     </AvatarFallback> */}
                     <AvatarFallback className="text-lg">
+
                       {employee?.first_name?.charAt(0) ?? ""}
                       {employee?.last_name?.charAt(0) ?? ""}
+
+                      {employee.first_name[0]}
+                      {employee.last_name[0]}
+
                     </AvatarFallback>
                   </Avatar>
                 </div>

@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import "../globals.css"; // penting agar style global tetap ada
 
 export default function DashboardLayout({
-    children,
+  children,
 }: {
     children: React.ReactNode;
 }) {
@@ -24,3 +24,4 @@ export default function DashboardLayout({
         </Providers>
     );
 }
+
