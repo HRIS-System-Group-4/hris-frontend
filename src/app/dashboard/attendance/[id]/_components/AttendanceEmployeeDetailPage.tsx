@@ -25,8 +25,7 @@ const mapRawAttendanceEmployee = (raw: any): AttendanceRecord => ({
   id: raw.clock_in?.id ?? '',
   employee: {
     avatar: raw.employee_avatar ?? 'https://via.placeholder.com/150',
-    firstName: raw.employee_first_name ?? '',
-    lastName: raw.employee_last_name ?? '',
+    name: raw.employee_name ?? '',
     email: raw.employee_email ?? '',
   },
   date: new Date(raw.date),
