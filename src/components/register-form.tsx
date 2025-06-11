@@ -8,18 +8,11 @@ import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
 
 import axios from "axios"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { registerAdmin } from "@/services/authService"; // Pastikan path sesuai
+import { useRouter } from "next/router"
 
 // 1. Define the schema
 
@@ -38,8 +31,6 @@ export default function RegisterForm() {
       confirmPassword: "",
     },
   })
-
-  const router = useRouter()
 
   async function onSubmit(data: RegisterFormData) {
     try {
