@@ -1,7 +1,5 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { registerSchema } from "@/schemas/register-schema"
@@ -11,19 +9,9 @@ import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-
-import axios from "axios"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { registerAdmin, loginAdmin } from "@/services/authService"; // Pastikan path sesuai
-// import { loginAdmin } from "@/lib/api"
+import { registerAdmin } from "@/services/authService"; // Pastikan path sesuai
+import { loginAdmin } from "@/lib/api"
 
 // 1. Define the schema
 
@@ -34,7 +22,6 @@ export default function RegisterForm() {
   const router = useRouter() // ← Inisialisasi router
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
-    mode: "onChange",
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -44,16 +31,18 @@ export default function RegisterForm() {
     },
   })
 
-  const router = useRouter()
-
+  // function onSubmit(data: RegisterFormData) {
+  //   console.log("Register Data", data)
+  //   // TODO: handle registration here
+  // }
   async function onSubmit(data: RegisterFormData) {
     try {
       const result = await registerAdmin(data);
 
       console.log("Success", result);
 
-      // const loginResult = await loginAdmin(data.email, data.password);
-      // console.log("Login Success", loginResult);
+      const loginResult = await loginAdmin(data.email, data.password);
+      console.log("Login Success", loginResult);
       if (result.access_token) {
         localStorage.setItem("token", result.access_token);
       } else {
@@ -70,10 +59,7 @@ export default function RegisterForm() {
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-6"
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
         {/* Title */}
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="text-2xl font-bold">Let’s Get You Started!</h1>

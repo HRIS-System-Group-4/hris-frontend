@@ -1,10 +1,38 @@
-const API_URL = `${process.env.NEXT_PUBLIC_BASE_API_URL}`
+// lib/authApi.ts
+// Utility functions untuk autentikasi menggunakan Axios + Laravel Sanctum
+// ------------------------------------------------------------
+// Konfigurasi axios global agar:
+// 1. baseURL cukup sekali didefinisikan
+// 2. withCredentials mengirimkan cookie "XSRF-TOKEN" dan sesi
+// 3. xsrfCookieName & xsrfHeaderName diset agar axios otomatis
+//    menaruh header X-XSRF-TOKEN sesuai value cookie
 
+import axios from "axios";
+
+export const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000",
+  withCredentials: true,
+  headers: {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+  },
+  xsrfCookieName: "XSRF-TOKEN",
+  xsrfHeaderName: "X-XSRF-TOKEN",
+});
+
+// ------------------------------------------------------------
+// Helper untuk mengambil CSRF cookie terlebih dahulu (Sanctum)
+// ------------------------------------------------------------
+export async function getCsrfCookie() {
+  await api.get("/sanctum/csrf-cookie");
+}
+
+// ------------------------------------------------------------
+// ADMIN LOGIN
+// ------------------------------------------------------------
 export async function loginAdmin(login: string, password: string) {
-
-  const csrfToken = document.cookie.split(';')
-  .find(cookie => cookie.trim().startsWith('XSRF-TOKEN='))
-  ?.split('=')[1];
+  try {
+    await getCsrfCookie();
 
     const { data } = await api.post("/api/admin/login", {
       login,
