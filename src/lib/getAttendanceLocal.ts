@@ -7,5 +7,5 @@ export async function getLocalAttendanceById(id: string): Promise<AttendanceAdmi
   const filePath = path.join(process.cwd(), "src/app/dashboard/attendance/data.json")
   const rawData = fs.readFileSync(filePath, "utf-8")
   const data: AttendanceAdmin[] = JSON.parse(rawData)
-  return data.find(item => item.id === Number(id)) ?? null
+  return data.find(item => item.id === (id)) ?? null
 }

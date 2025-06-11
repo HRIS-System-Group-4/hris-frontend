@@ -8,12 +8,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleContainer } from "@/components/ui/custom-page"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import { activateSubscription } from "@/lib/api";
 import { PRICING_IDS } from "@/lib/constants";
 
 
-export default function CheckOutPage() {
+function CheckoutForm() {
     const searchParams = useSearchParams()
     const planParam = searchParams.get("plan") || 1
     const additionalEmployeesParam = Number(searchParams.get("additionalEmployees")) || 0
@@ -35,15 +35,7 @@ export default function CheckOutPage() {
         "2": 1, // Starter
         "3": 2, // Growth
     }
-    // const handleActivate = async () => {
-    //     try {
-    //         const planName = planNameMapping[planParam] || "Starter";
-    //         const result = await activateSubscription(planName);
-    //         alert("Sukses: " + result.message);
-    //     } catch (err: any) {
-    //         alert("Gagal: " + err.message);
-    //     }
-    // };
+
     const handleActivate = async () => {
     try {
         const payload = {
@@ -64,13 +56,13 @@ export default function CheckOutPage() {
 
     return (
         <div>
-            {error && (
+            {/* {error && (
                 <Alert variant="destructive" className="mb-4">
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Error</AlertTitle>
                     <AlertDescription>{error}</AlertDescription>
                 </Alert>
-            )}
+            )} */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                 <Card className="col-span-7">
                     <CardHeader>
