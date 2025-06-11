@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/form"
 
 import axios from "axios"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { registerAdmin } from "@/services/authService"; // Pastikan path sesuai
 
 // 1. Define the schema
 
@@ -44,47 +46,24 @@ export default function RegisterForm() {
   const router = useRouter()
 
   async function onSubmit(data: RegisterFormData) {
-    try {
+  try {
+    const result = await registerAdmin(data);
 
-      const employeeId = `${data.firstName}${data.lastName}`.toLowerCase(); // generate otomatis
-      const res = await fetch("http://localhost:8000/api/admin/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          first_name: data.firstName,
-          last_name: data.lastName,
-          email: data.email,
-          password: data.password,
-          password_confirmation: data.confirmPassword,
-          employee_id: employeeId, // tambahkan employeeId
-        }),
-      });
+    console.log("Success", result);
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Registration failed");
-      }
-
-      const result = await res.json();
-      console.log("Success", result);
-
-      // ✅ Simpan token ke localStorage
-      if (result.access_token) {
-        localStorage.setItem("token", result.access_token)
-      } else {
-        console.warn("No token received from registration response")
-      }
-
-      alert("Registration success!");
-      router.push("/auth/setup-company"); // Ganti dengan rute yang sesuai
-    } catch (err: any) {
-      console.error("Error registering:", err);
-      alert("Registration failed: " + err.message);
+    if (result.access_token) {
+      localStorage.setItem("token", result.access_token);
+    } else {
+      console.warn("No token received from registration response");
     }
+
+    alert("Registration success!");
+    router.push("/auth/setup-company");
+  } catch (err: any) {
+    console.error("Error registering:", err);
+    alert("Registration failed: " + err.response?.data?.message || err.message);
   }
+}
 
   return (
     <Form {...form}>

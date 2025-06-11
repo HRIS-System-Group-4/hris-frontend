@@ -1,7 +1,8 @@
 "use client"
 
 import { AdminStats } from "./admin-stats"
-import { ChartEmployementTypes } from "./chart-employement-types"
+// import { ChartEmployementTypes } from "./chart-employement-types"
+import { ChartEmploymentTypes } from "./chart-employement-types"
 import { ChartTeamComposition } from "./chart-team-composition"
 import { ChartWorkLocation } from "./chart-work-location"
 
@@ -12,7 +13,7 @@ export default function DashboardAdmin() {
             <ChartTeamComposition />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="col-span-2">
-                    <ChartEmployementTypes />
+                    <ChartEmploymentTypes />
                 </div>
                 <div className="col-span-1">
                     <ChartWorkLocation />
