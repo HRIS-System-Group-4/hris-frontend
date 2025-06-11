@@ -27,7 +27,6 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
-import { SkeletonDataTable } from "@/components/skeletons/table/skeleton-data-table";
 
 // interface DataTableProps<TData, TValue> {
 //   columns: ColumnDef<TData, TValue>[];
@@ -43,7 +42,6 @@ interface DataTableEmployeeProps<TData extends { id: number | string }, TValue> 
   total: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-  isLoading?: boolean;
 }
 
 interface DataTableProps<TData extends { id: number | string }, TValue> {
@@ -64,10 +62,8 @@ export function DataTableEmployee<TData extends { id: number | string }, TValue>
   total,
   onPageChange,
   onPageSizeChange,
-  isLoading = false,
 }: DataTableEmployeeProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  
   const table = useReactTable({
     data,
     columns,
@@ -98,18 +94,6 @@ export function DataTableEmployee<TData extends { id: number | string }, TValue>
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-
-  if (isLoading) {
-    return (
-      <SkeletonDataTable
-        columnCount={columns.length}
-        rowCount={5}
-        showToolbar={true}
-        showPagination={true}
-      />
-    );
-  }
-
   return (
     <div className="space-y-4">
       <DataTableToolbar table={table} />
@@ -124,9 +108,9 @@ export function DataTableEmployee<TData extends { id: number | string }, TValue>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   );
                 })}
