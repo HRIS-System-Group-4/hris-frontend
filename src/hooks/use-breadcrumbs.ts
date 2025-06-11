@@ -19,8 +19,11 @@ export function useBreadcrumbSegments() {
       if (/^[0-9a-fA-F-]+$/.test(segment)) {
         if (segments[index - 1] === "edit")
           return "Edit"
-        if (segments[index - 1] != null) 
+        if (segments[index - 1] != null)
           return "Detail"
+      }
+      if (segment.includes("=")) {
+        return "Detail";
       }
       if (segment === "edit") return null
       return toTitleCase(segment)

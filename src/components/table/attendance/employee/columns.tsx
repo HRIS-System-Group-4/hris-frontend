@@ -8,9 +8,13 @@ import { CheckCircle2, CircleX, Loader } from "lucide-react";
 import { DataTableRowActions } from "./data-table-row-actions";
 
 // Konfigurasi approval
-const approvalConfig = (approval?: AttendanceRecord["approval"]) => {
+type ApprovalStatus = "approved" | "rejected" | "waiting" | "pending";
+
+const approvalConfig = (
+  status: AttendanceRecord["approval"],
+) => {
   const statusConfig = {
-    approve: {
+    approved: {
       label: "Approved",
       className: "bg-green-100 text-green-600",
       icon: CheckCircle2,
@@ -25,20 +29,38 @@ const approvalConfig = (approval?: AttendanceRecord["approval"]) => {
       className: "bg-gray-100 text-gray-500",
       icon: Loader,
     },
+    pending: {
+      label: "Pending",
+      className: "bg-gray-100 text-gray-500",
+      icon: Loader,
+    },
   } as const;
 
-  const config = approval ? statusConfig[approval] : null;
 
-  if (!config)
+  // Handle null approval status
+  if (status === null) {
     return (
-      <div className="flex w-[100px] items-center text-muted-foreground">-</div>
+      <div className="flex w-[100px] items-center">
+        <span>-</span>
+      </div>
     );
+  }
+
+  // Show status badge for approved/rejected
+  const config = statusConfig[status as ApprovalStatus];
+  if (config) {
+    return (
+      <Badge variant="secondary" className={config.className}>
+        <config.icon className="h-4 w-4 mr-1" />
+        {config.label}
+      </Badge>
+    );
+  }
 
   return (
-    <Badge variant="secondary" className={config.className}>
-      <config.icon className="h-4 w-4 mr-1" />
-      {config.label}
-    </Badge>
+    <div className="flex w-[100px] items-center">
+      <span>-</span>
+    </div>
   );
 };
 
@@ -87,7 +109,7 @@ export const employeeColumns: ColumnDef<AttendanceRecord>[] = [
       return <div className="w-[120px]">{duration || "-"}</div>;
     },
   },
-  
+
   {
     accessorKey: "attendance_type",
     header: ({ column }) => (
@@ -96,12 +118,11 @@ export const employeeColumns: ColumnDef<AttendanceRecord>[] = [
     cell: ({ row }) => {
       const type = row.getValue("attendance_type") as string;
       const typeConfig: Record<string, { label: string; className: string }> = {
-        "On Time": { label: "On Time", className: "bg-green-100 text-green-600" },
-        "Late": { label: "Late", className: "bg-yellow-100 text-yellow-600" },
-        "Sick Leave": { label: "Sick Leave", className: "bg-blue-100 text-blue-600" },
-        "Absent": { label: "Absent", className: "bg-red-100 text-red-600" },
-        "Annual Leave": { label: "Annual Leave", className: "bg-purple-100 text-purple-600" },
-        "Diluar jam kerja": { label: "Diluar Jam", className: "bg-gray-100 text-gray-500" },
+        "On Time": { label: "On Time", className: "bg-gray-100 text-gray-950" },
+        "Late": { label: "Late", className: "bg-gray-100 text-gray-950" },
+        "Sick Leave": { label: "Sick Leave", className: "bg-amber-100 text-amber-500" },
+        "Absent": { label: "Absent", className: "bg-amber-100 text-amber-500" },
+        "Annual Leave": { label: "Annual Leave", className: "bg-amber-100 text-amber-500" },
       };
 
       const config = typeConfig[type] || {
@@ -126,9 +147,9 @@ export const employeeColumns: ColumnDef<AttendanceRecord>[] = [
     ),
   },
   {
-      id: "actions",
-      cell: ({ row }) => {
-          return <DataTableRowActions row={row} />
-      }
+    id: "actions",
+    cell: ({ row }) => {
+      return <DataTableRowActions row={row} />
+    }
   }
 ];

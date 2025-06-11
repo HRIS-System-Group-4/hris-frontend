@@ -52,22 +52,21 @@ export function NavUser({
 
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    async function loadUser() {
-      try {
-        const data = await fetchUser()
-        console.log("User authenticated", data)
-        dispatch(login(data))
-        setIsLoading(false)
-      } catch (error) {
-        console.error("User not authenticated", error)
-      } finally {
-        setIsLoggingOut(true)
-      }
+  async function loadUser() {
+    try {
+      const data = await fetchUser()
+      console.log("User authenticated", data)
+      dispatch(login(data))
+      setIsLoading(false)
+    } catch (error) {
+      console.error("User not authenticated", error)
+    } finally {
+      setIsLoggingOut(true)
     }
+  }
 
-
-    if (!user && !isLoggingOut!) {
+  useEffect(() => {
+    if (user === null && !isLoggingOut!) {
       loadUser()
     }
     if (user) {
@@ -132,7 +131,7 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
+            {/* <DropdownMenuGroup>
               <DropdownMenuItem>
                 <IconUserCircle />
                 Account
@@ -146,7 +145,7 @@ export function NavUser({
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator /> */}
             <DropdownMenuItem onClick={handleLogout}>
               <IconLogout />
               Log out

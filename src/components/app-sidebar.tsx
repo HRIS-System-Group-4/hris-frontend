@@ -67,54 +67,6 @@ const data = {
       onlyAdmin: true,
     },
   ],
-  // navClouds: [
-  //   {
-  //     title: "Capture",
-  //     icon: IconCamera,
-  //     isActive: true,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: "Proposal",
-  //     icon: IconFileDescription,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: "Prompts",
-  //     icon: IconFileAi,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  // ],
   navSecondary: [
     {
       title: "Settings",
@@ -122,16 +74,6 @@ const data = {
       icon: IconSettings,
       onlyAdmin: false,
     },
-    // {
-    //   title: "Get Help",
-    //   url: "/dashboard/help",
-    //   icon: IconHelp,
-    // },
-    // {
-    //   title: "Search",
-    //   url: "/dashboard/search",
-    //   icon: IconSearch,
-    // },
   ],
   documents: [
     {
@@ -174,7 +116,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ) : (
           <>
             <NavMain items={data.navMain} />
-            <NavSecondary items={data.navSecondary} className="mt-auto" />
+            {
+              user.is_admin &&
+              <NavSecondary items={data.navSecondary} className="mt-auto" />
+            }
           </>
         )}
       </SidebarContent>
