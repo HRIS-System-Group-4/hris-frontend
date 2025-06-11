@@ -50,17 +50,6 @@ export function DataTableBranch<TData, TValue>({
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
-  if (isLoading) {
-    return (
-      <SkeletonDataTable
-        columnCount={columns.length}
-        rowCount={skeletonRowCount}
-        showToolbar={true}
-        showPagination={true}
-      />
-    );
-  }
-
   const table = useReactTable({
     data,
     columns,
@@ -82,6 +71,17 @@ export function DataTableBranch<TData, TValue>({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues()
   });
+
+  if (isLoading) {
+    return (
+      <SkeletonDataTable
+        columnCount={columns.length}
+        rowCount={skeletonRowCount}
+        showToolbar={true}
+        showPagination={true}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">

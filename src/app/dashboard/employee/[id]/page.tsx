@@ -111,8 +111,11 @@ export default function EmployeeDetailsPage() {
   }
 
   useEffect(() => {
-    if (params.id) {
-      fetchEmployeeDetails(params.id)
+    if (typeof params.id === "string") {
+      fetchEmployeeDetails(params.id);
+    } else {
+      setError("Invalid employee ID");
+      setLoading(false);
     }
   }, [params.id])
 
@@ -165,7 +168,7 @@ export default function EmployeeDetailsPage() {
       </CustomPageHeader>
 
       {loading ? (
-        <SkeletonDetail/>
+        <SkeletonDetail />
       ) : error ? (
         <Card>
           <CardContent className="p-6">

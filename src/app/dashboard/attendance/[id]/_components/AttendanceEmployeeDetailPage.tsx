@@ -25,8 +25,7 @@ const mapRawAttendanceEmployee = (raw: any): AttendanceRecord => ({
   id: raw.clock_in?.id ?? '',
   employee: {
     avatar: raw.employee_avatar ?? 'https://via.placeholder.com/150',
-    firstName: raw.employee_first_name ?? '',
-    lastName: raw.employee_last_name ?? '',
+    name: raw.employee_name ?? '',
     email: raw.employee_email ?? '',
   },
   date: new Date(raw.date),
@@ -152,33 +151,33 @@ export default function AttendanceDetailsPage({ rawData, isAdmin = false, id }: 
               <div className="flex items-center gap-2">
                 <Avatar className="h-16 w-16">
                   <AvatarImage
-                    src={data.avatar || "/placeholder.svg"}
-                    alt={`${data.employee_name}`}
+                    src={(data as AttendanceAdmin).avatar || "/placeholder.svg"}
+                    alt={`${(data as AttendanceAdmin).employee_name}`}
                   />
                   <AvatarFallback>
-                    {getInitials(data.employee_name)}
+                    {getInitials((data as AttendanceAdmin).employee_name)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <div className="font-medium">
-                    {data.employee_name}
+                    {(data as AttendanceAdmin).employee_name}
                   </div>
-                  <div className="text-xs text-muted-foreground">{data.email}</div>
+                  <div className="text-xs text-muted-foreground">{(data as AttendanceAdmin).email}</div>
                 </div>
               </div>
               <DetailContainer>
                 <DetailItem layout={"column"} label="Job Title">
-                  <div className="font-medium text-black">{data.job_title}</div>
+                  <div className="font-medium text-black">{(data as AttendanceAdmin).job_title}</div>
                 </DetailItem>
                 <DetailItem layout={"column"} label="Grade">
-                  <div className="font-medium text-black">{data.grade}</div>
+                  <div className="font-medium text-black">{(data as AttendanceAdmin).grade}</div>
                 </DetailItem>
               </DetailContainer>
             </DetailGroup>
           )}
           <DetailGroup title="Attendance Information">
             <DetailContainer>
-              {(data.attendanceType !== "On Time" || data.attendanceType !== "Late" || data.attendance_type !== "On Time" || data.attendance_type !== "Late") ? (
+              {((data as AttendanceRecord).attendanceType !== "On Time" || (data as AttendanceRecord).attendanceType !== "Late" || (data as AttendanceAdmin).attendance_type !== "On Time" || (data as AttendanceAdmin).attendance_type !== "Late") ? (
                 <DetailItem layout="column" label="Leave Date">
                   <div className="font-medium text-black">
                     {data.date.toLocaleDateString("en-US", {
@@ -201,23 +200,23 @@ export default function AttendanceDetailsPage({ rawData, isAdmin = false, id }: 
 
               )}
               <DetailItem layout="column" label="Attendance Type">
-                {attendanceTypeConfig(data.attendanceType || data.attendance_type)}
+                {attendanceTypeConfig((data as AttendanceRecord).attendanceType || (data as AttendanceAdmin).attendance_type)}
               </DetailItem>
             </DetailContainer>
-            {(data.attendanceType === "On Time" || data.attendanceType === "Late" || data.attendance_type === "On Time" || data.attendance_type === "Late") && (
+            {((data as AttendanceRecord).attendanceType === "On Time" || (data as AttendanceRecord).attendanceType === "Late" || (data as AttendanceAdmin).attendance_type === "On Time" || (data as AttendanceAdmin).attendance_type === "Late") && (
               <DetailContainer>
                 <DetailItem layout="column" label="Clock In">
-                  <div className="font-medium text-black">{data.clockIn || data.clock_in}</div>
+                  <div className="font-medium text-black">{(data as AttendanceRecord).clockIn || (data as AttendanceAdmin).clock_in}</div>
                 </DetailItem>
                 <DetailItem layout="column" label="Clock Out">
-                  <div className="font-medium text-black">{data.clockOut || data.clock_out}</div>
+                  <div className="font-medium text-black">{(data as AttendanceRecord).clockOut || (data as AttendanceAdmin).clock_out}</div>
                 </DetailItem>
               </DetailContainer>
             )}
-            {data.approval || data.status && (
+            {(data as AttendanceRecord).approval || (data as AttendanceAdmin).status && (
               <DetailContainer>
                 <DetailItem layout="column" label="Status">
-                  {approvalConfig(data.approval || data.status)}
+                  {approvalConfig((data as AttendanceRecord).approval || (data as AttendanceAdmin).status)}
                 </DetailItem>
               </DetailContainer>
             )}
@@ -226,10 +225,10 @@ export default function AttendanceDetailsPage({ rawData, isAdmin = false, id }: 
           <DetailGroup title="Branch Information">
             <DetailContainer>
               <DetailItem layout="column" label="Branch Name">
-                <div className="font-medium text-black">{data.branchName || data.branch_name}</div>
+                <div className="font-medium text-black">{(data as AttendanceRecord).branchName || (data as AttendanceAdmin).branch_name}</div>
               </DetailItem>
               <DetailItem layout="column" label="Address">
-                <div className="font-medium text-black">{data.branchAddress || data.branch_address}</div>
+                <div className="font-medium text-black">{(data as AttendanceRecord).branchAddress || (data as AttendanceAdmin).branch_address}</div>
               </DetailItem>
             </DetailContainer>
           </DetailGroup>
@@ -247,7 +246,7 @@ export default function AttendanceDetailsPage({ rawData, isAdmin = false, id }: 
             />
           </DetailGroup> */}
         </CardContent>
-        {(isAdmin && data.status !== "approved" && data.status !== "rejected" && data.status !== null) && <CardFooter className="flex justify-end border-t pt-6 gap-3">
+        {(isAdmin && ((data as AttendanceAdmin).status === "waiting" || (data as AttendanceAdmin).status === "pending")) && <CardFooter className="flex justify-end border-t pt-6 gap-3">
           <Button onClick={handleApprove} variant="ghost" size={"lg"} className="bg-green-600 text-white hover:bg-green-700 hover:text-white">
             <Check className="h-4 w-4" />
             Approve

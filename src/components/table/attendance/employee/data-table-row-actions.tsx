@@ -8,7 +8,7 @@ import { EyeIcon } from "lucide-react";
 // Define the interface for the data shape
 interface AttendanceData {
   id: string | number;
-  date: string | number; // Adjust type based on your data (string or number)
+  date: Date | string | number; // Adjust type based on your data (string or number)
   // Add other properties if needed, e.g., name, date, etc.
 }
 

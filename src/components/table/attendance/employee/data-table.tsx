@@ -51,17 +51,6 @@ export function DataTableAttendanceEmployee({
   const [sorting, setSorting] = React.useState<SortingState>([]);
   console.log("Render table with data:", data);
 
-  if (isLoading) {
-    return (
-      <SkeletonDataTable
-        columnCount={columns.length}
-        rowCount={skeletonRowCount}
-        showToolbar={true}
-        showPagination={true}
-      />
-    );
-  }
-
   const table = useReactTable({
     data,
     columns,
@@ -83,6 +72,17 @@ export function DataTableAttendanceEmployee({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
+
+  if (isLoading) {
+    return (
+      <SkeletonDataTable
+        columnCount={columns.length}
+        rowCount={skeletonRowCount}
+        showToolbar={true}
+        showPagination={true}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
