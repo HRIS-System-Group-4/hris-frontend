@@ -1,13 +1,115 @@
+// "use client"
+
+// import { TrendingUp } from "lucide-react"
+// import { Pie, PieChart } from "recharts"
+
+// import {
+//   Card,
+//   CardContent,
+//   CardDescription,
+//   CardFooter,
+//   CardHeader,
+//   CardTitle,
+// } from "@/components/ui/card"
+// import {
+//   ChartConfig,
+//   ChartContainer,
+//   ChartTooltip,
+//   ChartTooltipContent,
+// } from "@/components/ui/chart"
+// const chartData = [
+//   { browser: "chrome", visitors: 275, fill: "var(--color-chart-1)" },
+//   { browser: "safari", visitors: 200, fill: "var(--color-chart-2)" },
+//   { browser: "firefox", visitors: 187, fill: "var(--color-chart-3)" },
+//   { browser: "edge", visitors: 173, fill: "var(--color-chart-4)" },
+//   { browser: "other", visitors: 90, fill: "var(--color-chart-5)" },
+// ]
+
+// const chartConfig = {
+//   visitors: {
+//     label: "Visitors",
+//   },
+//   chrome: {
+//     label: "Chrome",
+//     color: "hsl(var(--chart-1))",
+//   },
+//   safari: {
+//     label: "Safari",
+//     color: "hsl(var(--chart-2))",
+//   },
+//   firefox: {
+//     label: "Firefox",
+//     color: "hsl(var(--chart-3))",
+//   },
+//   edge: {
+//     label: "Edge",
+//     color: "hsl(var(--chart-4))",
+//   },
+//   other: {
+//     label: "Other",
+//     color: "hsl(var(--chart-5))",
+//   },
+// } satisfies ChartConfig
+
+// export function ChartTimeOffTypes() {
+//   return (
+//     <Card className="flex flex-col">
+//       <CardHeader className="">
+//         <CardTitle>Time Off Types Distribution</CardTitle>
+//         <CardDescription>See which types of leave you've used the most this year</CardDescription>
+//       </CardHeader>
+//       <CardContent className="flex-1 pb-0">
+//         <ChartContainer
+//           config={chartConfig}
+//           className="mx-auto aspect-square h-[300px] px-0"
+//         >
+//           <PieChart>
+//             <ChartTooltip
+//               content={<ChartTooltipContent nameKey="visitors" hideLabel />}
+//             />
+//             <Pie
+//               data={chartData}
+//               dataKey="visitors"
+//               labelLine={false}
+//               label={({ payload, ...props }) => {
+//                 return (
+//                   <text
+//                     cx={props.cx}
+//                     cy={props.cy}
+//                     x={props.x}
+//                     y={props.y}
+//                     textAnchor={props.textAnchor}
+//                     dominantBaseline={props.dominantBaseline}
+//                     fill="hsla(var(--foreground))"
+//                   >
+//                     {payload.visitors}
+//                   </text>
+//                 )
+//               }}
+//               nameKey="browser"
+//             />
+//           </PieChart>
+//         </ChartContainer>
+//       </CardContent>
+//       {/* <CardFooter className="flex-col gap-2 text-sm">
+//         <div className="flex items-center gap-2 font-medium leading-none">
+//           Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+//         </div>
+//         <div className="leading-none text-muted-foreground">
+//           Showing total visitors for the last 6 months
+//         </div>
+//       </CardFooter> */}
+//     </Card>
+//   )
+// }
 "use client"
 
-import { TrendingUp } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Pie, PieChart } from "recharts"
-
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -17,62 +119,48 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-const chartData = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chart-1)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-chart-2)" },
-  { browser: "firefox", visitors: 187, fill: "var(--color-chart-3)" },
-  { browser: "edge", visitors: 173, fill: "var(--color-chart-4)" },
-  { browser: "other", visitors: 90, fill: "var(--color-chart-5)" },
-]
-
-const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  chrome: {
-    label: "Chrome",
-    color: "hsl(var(--chart-1))",
-  },
-  safari: {
-    label: "Safari",
-    color: "hsl(var(--chart-2))",
-  },
-  firefox: {
-    label: "Firefox",
-    color: "hsl(var(--chart-3))",
-  },
-  edge: {
-    label: "Edge",
-    color: "hsl(var(--chart-4))",
-  },
-  other: {
-    label: "Other",
-    color: "hsl(var(--chart-5))",
-  },
-} satisfies ChartConfig
+import { getTimeOffDistribution } from "@/services/dashboardService"
 
 export function ChartTimeOffTypes() {
+  const [data, setData] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const result = await getTimeOffDistribution()
+        setData(result)
+      } catch (e) {
+        console.error("Failed to fetch time off distribution", e)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetch()
+  }, [])
+
   return (
     <Card className="flex flex-col">
-      <CardHeader className="">
+      <CardHeader>
         <CardTitle>Time Off Types Distribution</CardTitle>
         <CardDescription>See which types of leave you've used the most this year</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square h-[300px] px-0"
-        >
-          <PieChart>
-            <ChartTooltip
-              content={<ChartTooltipContent nameKey="visitors" hideLabel />}
-            />
-            <Pie
-              data={chartData}
-              dataKey="visitors"
-              labelLine={false}
-              label={({ payload, ...props }) => {
-                return (
+        {loading ? (
+          <div className="text-muted-foreground text-sm">Loading...</div>
+        ) : (
+          <ChartContainer config={{}} className="mx-auto aspect-square h-[300px] px-0">
+            <PieChart>
+              <ChartTooltip
+                content={<ChartTooltipContent nameKey="visitors" hideLabel />}
+              />
+              <Pie
+                data={data}
+                dataKey="visitors"
+                labelLine={false}
+                nameKey="browser"
+                label={({ payload, ...props }) => (
                   <text
                     cx={props.cx}
                     cy={props.cy}
@@ -84,21 +172,12 @@ export function ChartTimeOffTypes() {
                   >
                     {payload.visitors}
                   </text>
-                )
-              }}
-              nameKey="browser"
-            />
-          </PieChart>
-        </ChartContainer>
+                )}
+              />
+            </PieChart>
+          </ChartContainer>
+        )}
       </CardContent>
-      {/* <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter> */}
     </Card>
   )
 }

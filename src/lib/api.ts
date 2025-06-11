@@ -1,6 +1,6 @@
 const API_URL = `${process.env.NEXT_PUBLIC_BASE_API_URL}`
 
-export async function loginAdmin(login: string, password: string) {
+export async function   loginAdmin(login: string, password: string) {
 
   const csrfToken = document.cookie.split(';')
   .find(cookie => cookie.trim().startsWith('XSRF-TOKEN='))

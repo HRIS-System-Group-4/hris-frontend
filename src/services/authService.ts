@@ -26,6 +26,7 @@ export async function loginEmployee(company: string, employee_id: string, passwo
     }, {
         withCredentials: true, // ini penting untuk Sanctum!
     });
+    console.log("response", response)
     return response.data;
 }
 

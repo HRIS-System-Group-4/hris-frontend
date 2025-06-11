@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { registerAdmin } from "@/services/authService"; // Pastikan path sesuai
+import { registerAdmin, loginAdmin } from "@/services/authService"; // Pastikan path sesuai
+// import { loginAdmin } from "@/lib/api"
 
 // 1. Define the schema
 
@@ -35,24 +36,26 @@ export default function RegisterForm() {
   //   // TODO: handle registration here
   // }
   async function onSubmit(data: RegisterFormData) {
-  try {
-    const result = await registerAdmin(data);
+    try {
+      const result = await registerAdmin(data);
 
-    console.log("Success", result);
+      console.log("Success", result);
 
-    if (result.access_token) {
-      localStorage.setItem("token", result.access_token);
-    } else {
-      console.warn("No token received from registration response");
+      // const loginResult = await loginAdmin(data.email, data.password);
+      // console.log("Login Success", loginResult);
+      if (result.access_token) {
+        localStorage.setItem("token", result.access_token);
+      } else {
+        console.warn("No token received from registration response");
+      }
+
+      alert("Registration success!");
+      router.push("/auth/setup-company");
+    } catch (err: any) {
+      console.error("Error registering:", err);
+      alert("Registration failed: " + err.response?.data?.message || err.message);
     }
-
-    alert("Registration success!");
-    router.push("/auth/setup-company");
-  } catch (err: any) {
-    console.error("Error registering:", err);
-    alert("Registration failed: " + err.response?.data?.message || err.message);
   }
-}
 
   return (
     <Form {...form}>
