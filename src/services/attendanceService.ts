@@ -63,8 +63,10 @@ export async function rejectClockRequest(id: string) {
     return response;
 }
 
-export async function getAttendanceDetail(id: string) {
-    const response = await axiosInstance.get(`/api/clock-requests/${id}/detail`, {
+export async function getAttendanceDetail(id: string, isCheckClock: boolean) {
+    const endpoint = isCheckClock ? `/api/clock-requests/${id}/detail?source=check_clock` : `/api/clock-requests/${id}/detail`;
+    console.log("Endpoint:", endpoint);
+    const response = await axiosInstance.get(endpoint, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -87,7 +89,8 @@ export const attendanceService = {
             : [response.data.data];
     },
 
-    async getAttendanceById(id: string, token: string): Promise<AttendanceRecord | null> {
+    async getAttendanceById(id: string): Promise<AttendanceRecord | null> {
+        const token = localStorage.getItem("token");
         try {
             const response = await axiosInstance.get(`/api/detail-check-clock?date=${id}`, {
                 headers: {
