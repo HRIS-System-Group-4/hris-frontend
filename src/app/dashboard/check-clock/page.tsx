@@ -7,48 +7,17 @@ import { Button } from "@/components/ui/button";
 import { CustomPage, CustomPageHeader, CustomPageSubtitle, CustomPageTitle, CustomPageTitleButtons, CustomPageTitleContainer } from "@/components/ui/custom-page";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { columns } from "@/components/table/check-clock/admin/columns";
+
+import { getCheckClockSettings } from "@/services/checkClockService";
+import CheckClockSection from "@/components/check-clock/CheckClockSection";
 
 export const metadata: Metadata = {
   title: "Check Clock",
   description: "A Expense tracker build using Tanstack Table."
 };
 
-// async function getData() {
-//   const filePath = path.join(
-//     process.cwd(),
-//     "src/app/dashboard/check-clock",
-//     "data.json"
-//   );
-//   const data = fs.readFileSync(filePath, "utf8");
-//   return JSON.parse(data);
-// }
-async function getData() {
-  const res = await fetch('http://localhost:8000/api/check-clock-settings', { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to fetch data');
-  return res.json();
-}
-
-
 export default async function CheckClockPage() {
-  const data = await getData();
-    return (
-      <CustomPage>
-      <CustomPageHeader>
-        <CustomPageTitleContainer>
-          <CustomPageTitle>Check Clock Management</CustomPageTitle>
-          <CustomPageSubtitle>Manage and organize all your check clock setting</CustomPageSubtitle>
-        </CustomPageTitleContainer>
-        <CustomPageTitleButtons>
-          <Link href={'/dashboard/check-clock/add'}>
-            <Button variant="default" size={"lg"}>
-              <Plus />
-              Add Check Clock</Button>
-          </Link>
-        </CustomPageTitleButtons>
-      </CustomPageHeader>
-      <DataTableCheckClock data={data} columns={columns} />
-    </CustomPage>
-    )
-  }
-  
+  return (
+    <CheckClockSection/>
+  )
+}

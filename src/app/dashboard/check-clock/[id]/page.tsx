@@ -12,6 +12,7 @@ import Link from "next/link"
 import { toTitleCase } from "@/lib/strings"
 import { formatDayWorkType } from "@/lib/utils/dayWorkType"
 import axios from "axios";
+import { getCheckClockSettingsById } from "@/services/checkClockService"
 
 type CheckClockDay = {
   startTime: string
@@ -55,7 +56,7 @@ function mapType(type: number): "WFO" | "WFA" | "Hybrid" {
     case 1: return "WFO";
     case 2: return "WFA";
     case 3: return "Hybrid";
-    default: return "WFO"; 
+    default: return "WFO";
   }
 }
 
@@ -65,13 +66,13 @@ function formatApiDataToLocal(apiData: any): CheckClockDetail {
     name: apiData.name,
     type: mapType(apiData.type),
     totalEmployee: "N/A",
-    monday: mapDay(apiData.days.monday),
-    tuesday: mapDay(apiData.days.tuesday),
-    wednesday: mapDay(apiData.days.wednesday),
-    thursday: mapDay(apiData.days.thursday),
-    friday: mapDay(apiData.days.friday),
-    saturday: mapDay(apiData.days.saturday),
-    sunday: mapDay(apiData.days.sunday),
+    monday: mapDay(apiData.days.Monday),
+    tuesday: mapDay(apiData.days.Tuesday),
+    wednesday: mapDay(apiData.days.Wednesday),
+    thursday: mapDay(apiData.days.Thursday),
+    friday: mapDay(apiData.days.Friday),
+    saturday: mapDay(apiData.days.Saturday),
+    sunday: mapDay(apiData.days.Sunday),
   }
 }
 
@@ -80,54 +81,53 @@ export default function DetailCheckClockPage() {
   const router = useRouter();
 
   const [checkClock, setCheckClock] = useState<CheckClockDetail | null>(null);
-  const [loading, setLoading]   = useState(true);
-  const [error,   setError]     = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-//  useEffect(() => {
-//   const fetchCheckClockDetails = async () => {
-//     try {
-//       setLoading(true);
-//       const response = await fetch(`http://localhost:8000/api/check-clock-settings/${params.id}`);
-//       if (!response.ok) {
-//         throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
-//       }
-//       const data = await response.json();
-//       const formatted = formatApiDataToLocal(data);
-//       setCheckClock(formatted);
-//       setError(null);
-//     } catch (err) {
-//       console.error("Error fetching check clock details:", err);
-//       setError(err instanceof Error ? err.message : "Failed to load check clock details");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+  //  useEffect(() => {
+  //   const fetchCheckClockDetails = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const response = await fetch(`http://localhost:8000/api/check-clock-settings/${params.id}`);
+  //       if (!response.ok) {
+  //         throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+  //       }
+  //       const data = await response.json();
+  //       const formatted = formatApiDataToLocal(data);
+  //       setCheckClock(formatted);
+  //       setError(null);
+  //     } catch (err) {
+  //       console.error("Error fetching check clock details:", err);
+  //       setError(err instanceof Error ? err.message : "Failed to load check clock details");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-//   if (params.id) {
-//     fetchCheckClockDetails();
-//   }
-// }, [params.id]);
-    useEffect(() => {
-        const fetchCheckClockDetails = async () => {
-          try {
-            setLoading(true);
-            const response = await axios.get(`http://localhost:8000/api/check-clock-settings/${params.id}`);
-            const data = response.data;
-            const formatted = formatApiDataToLocal(data);
-            setCheckClock(formatted);
-            setError(null);
-          } catch (err) {
-            console.error("Error fetching check clock details:", err);
-            setError(err instanceof Error ? err.message : "Failed to load check clock details");
-          } finally {
-            setLoading(false);
-          }
-        };
+  //   if (params.id) {
+  //     fetchCheckClockDetails();
+  //   }
+  // }, [params.id]);
+  useEffect(() => {
+    const fetchCheckClockDetails = async () => {
+      try {
+        setLoading(true);
+        const data = await getCheckClockSettingsById(params.id);
+        const formatted = formatApiDataToLocal(data);
+        setCheckClock(formatted);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching check clock details:", err);
+        setError(err instanceof Error ? err.message : "Failed to load check clock details");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        if (params.id) {
-          fetchCheckClockDetails();
-        }
-      }, [params.id]);
+    if (params.id) {
+      fetchCheckClockDetails();
+    }
+  }, [params.id]);
 
 
   // Function to format date
@@ -222,7 +222,6 @@ export default function DetailCheckClockPage() {
                   <DetailGroup key={day} title={(toTitleCase(day) as string)} className="pt-5">
                     <DetailContainer>
                       <DetailItem label="Work Type" layout={"column"} >
-                        {/* <div className="font-medium text-black">{formatDayWorkType(checkClock[day as keyof typeof checkClock]?.type)}</div> */}
                         <div className="font-medium text-black">
                           {checkClock?.type}
                         </div>

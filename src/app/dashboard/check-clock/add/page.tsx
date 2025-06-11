@@ -21,7 +21,8 @@ import { TimePickerDemo } from "@/components/time-picker-demo";
 import { format } from "date-fns/format";
 import { DetailContainer, DetailGroup, DetailItem } from "@/components/ui/custom-detail";
 import { toTitleCase } from "@/lib/strings";
-import axios from "axios"; 
+import axios from "axios";
+import { addCheckClockSetting } from "@/services/checkClockService";
 
 const types = [
   { label: "WFO", value: "wfo" },
@@ -143,7 +144,7 @@ export default function AddCheckClockPage() {
       // const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
       // type DayKey = Exclude<keyof FormValues, "name">;
-      type DayKeys = typeof days[number]; 
+      type DayKeys = typeof days[number];
       const days = [
         'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
       ] as const;
@@ -168,26 +169,27 @@ export default function AddCheckClockPage() {
             // break_start: data.type === "off-day" ? "00:00" : format(data.breakStart, "HH:mm"),
             // break_end: data.type === "off-day" ? "00:00" : format(data.breakEnd, "HH:mm"),
             // late_tolerance: data.lateTolerance,
-            clock_in:  isOff ? '00:00' : format(data.startTime, 'HH:mm'),
-            clock_out: isOff ? dummyEnd : format(data.endTime,   'HH:mm'),
+            clock_in: isOff ? '00:00' : format(data.startTime, 'HH:mm'),
+            clock_out: isOff ? dummyEnd : format(data.endTime, 'HH:mm'),
             break_start: isOff ? '00:00' : format(data.breakStart, 'HH:mm'),
-            break_end:   isOff ? dummyEnd : format(data.breakEnd,   'HH:mm'),
+            break_end: isOff ? dummyEnd : format(data.breakEnd, 'HH:mm'),
             late_tolerance: data.lateTolerance,
-            };
+          };
         }),
       };
-      
-      const token = localStorage.getItem("authToken");
 
-      const res = await axios.post("http://localhost:8000/api/add/check-clock-settings", {
-        method: "POST",
-        credentials: 'include',
-        headers: {  
-          'Content-Type': 'application/json',
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`, },
-        body: JSON.stringify(payload),
-      });
+      await addCheckClockSetting(payload)
+
+      // const res = await axios.post("http://localhost:8000/api/add/check-clock-settings", {
+      //   method: "POST",
+      //   credentials: 'include',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     Accept: "application/json",
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      //   body: JSON.stringify(payload),
+      // });
 
       // if (!res.ok) throw new Error("Failed to add check clock");
 
@@ -271,7 +273,7 @@ export default function AddCheckClockPage() {
                   <AccordionTrigger>Settings</AccordionTrigger>
                   <AccordionContent>
                     <FormField control={form.control} name="name" render={({ field }) => (
-                      <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                      <FormItem><FormLabel>Name</FormLabel><FormControl><Input placeholder="Enter name"{...field} /></FormControl></FormItem>
                     )} />
                   </AccordionContent>
                 </AccordionItem>
