@@ -11,8 +11,6 @@ import { useSearchParams } from "next/navigation"
 import { Suspense, useState } from "react"
 import { activateSubscription } from "@/lib/api";
 import { PRICING_IDS } from "@/lib/constants";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 
 
 function CheckoutForm() {

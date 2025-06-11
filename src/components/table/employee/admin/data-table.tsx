@@ -67,7 +67,7 @@ export function DataTableEmployee<TData extends { id: number | string }, TValue>
   isLoading = false,
 }: DataTableEmployeeProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-
+  
   const table = useReactTable({
     data,
     columns,
