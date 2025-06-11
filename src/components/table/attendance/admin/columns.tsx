@@ -240,7 +240,7 @@ export const columns: ColumnDef<AttendanceAdmin>[] = [
                     if (res.status === 200) {
                         // Call the refresh function from column meta
                         if (onRefresh) {
-                            onRefreshCallback();
+                            onRefreshCallback!();
                         }
 
                         toast({
@@ -266,7 +266,7 @@ export const columns: ColumnDef<AttendanceAdmin>[] = [
                     if (res.status === 200) {
                         // Call the refresh function from column meta
                         if (onRefresh) {
-                            onRefreshCallback();
+                            onRefreshCallback!();
                         }
 
                         toast({

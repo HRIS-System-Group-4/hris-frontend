@@ -38,7 +38,7 @@ export interface AttendanceAdmin {
   clock_out?: string | null; // jam keluar "17:00:00" atau null
   work_hours?: { hours: number; minutes: number } | null; // {hours: 8, minutes: 0} atau null
   attendance_type: 'On Time' | 'Late' | 'Sick Leave' | 'Absent' | 'Annual Leave'; // sesuai BE
-  status?: 'approve' | 'rejected' | 'waiting' | null;
+  status?: 'approve' | 'rejected' | 'waiting' | 'pending' | null;
   start_date?: Date | null; // yyyy-mm-dd, contoh: "2025-06-01"
   end_date?: Date | null; // yyyy-mm-dd, contoh: "2025-06-30"
   branch_name?: string | null; // nama cabang, contoh: "Jakarta"
