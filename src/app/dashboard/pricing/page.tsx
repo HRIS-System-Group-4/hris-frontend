@@ -13,7 +13,6 @@ import fs from "fs";
 import path from "path";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { EmployeeAddonSlider } from "@/components/employee-addon-slider"
-import { fetchBillingHistory, fetchSubscriptionStatus, getPlans } from "@/services/subscriptionService"
 import axios from "axios"
 
 type Billing = {
@@ -34,60 +33,6 @@ export default function PricingPage() {
     const [subscriptionActive, setSubscriptionActive] = useState<boolean | null>(null)
     const [expiresAt, setExpiresAt] = useState<string | null>(null)
     const [currentPlan, setCurrentPlan] = useState<"Free" | "Starter" | "Growth">("Free")
-
-    const [planMap, setPlanMap] = useState<Record<string, string>>({})
-
-    useEffect(() => {
-    const fetchPlans = async () => {
-        const plans = await getPlans()
-        const map: Record<string, string> = {}
-        plans.forEach(plan => {
-        map[plan.name] = plan.id
-        })
-        setPlanMap(map)
-    }
-
-    fetchPlans()
-    }, [])
-
-    useEffect(() => {
-    const fetchData = async () => {
-        try {
-        const token = localStorage.getItem("authToken")
-        if (!token) throw new Error("Unauthorized")
-
-        // 1. Ambil billing history
-        const billingData = await fetchBillingHistory()
-        setBillings(billingData)
-
-        console.log("Token from localStorage:", token)
-
-        // 2. Ambil status subscription
-        const statusJson = await fetchSubscriptionStatus()
-        setSubscriptionActive(statusJson.subscription_active)
-        setExpiresAt(statusJson.expires_at)
-
-        const planAliasMap: Record<string, "Free" | "Starter" | "Growth"> = {
-            "Free Plan": "Free",
-            "Basic Plan": "Starter",
-            "Pro Plan": "Growth",
-        }
-
-        if (statusJson.subscription_active && statusJson.plan_name) {
-            const mappedPlan = planAliasMap[statusJson.plan_name] ?? "Free"
-            setCurrentPlan(mappedPlan)
-        } else {
-            setCurrentPlan("Free")
-        }
-        } catch (err) {
-        console.error("Error fetching subscription data", err)
-        } finally {
-        setLoading(false)
-        }
-    }
-
-    fetchData()
-    }, [])
 
     useEffect(() => {
     const fetchData = async () => {
@@ -237,18 +182,6 @@ export default function PricingPage() {
     const maxEmployees = planLimitMap[currentPlan] ?? 10
 
 
-    // useEffect(() => {
-    //     console.log("Current Plan:", currentPlan)
-    // }, [currentPlan])
-    const planLimitMap: Record<"Free" | "Starter" | "Growth", number> = {
-    Free: 10,
-    Starter: 20,
-    Growth: 500,
-    }
-
-    const maxEmployees = planLimitMap[currentPlan] ?? 10
-
-
     if (loading) return <p>Loading...</p>
 
     return (
@@ -291,8 +224,6 @@ export default function PricingPage() {
                         "Every feature in *Starter* and *Growth Plan* during trial",
                     ]}
                 >
-                    <Link href={`/dashboard/pricing/checkout?plan=${planMap["Free Plan"]}&planName=Free Plan`} className="w-full" >
-                        <Button variant={"outline"} className="w-full" size={"lg"} disabled={currentPlan === "Free" || !planMap["Free Plan"]}>
                     <Link href={"/dashboard/pricing/checkout?plan=1"} className="w-full" >
                         <Button variant={"outline"} className="w-full" size={"lg"} disabled={currentPlan === "Free"}>
                             {/* Current Plan */}
@@ -310,8 +241,6 @@ export default function PricingPage() {
                         "*Advanced Attendance Tracking* (Location-based)",
                     ]}
                 >
-                    <Link  href={`/dashboard/pricing/checkout?plan=${planMap["Basic Plan"]}&planName=Basic Plan`} className="w-full" >
-                        <Button variant={"outline"} className="w-full" size={"lg"} disabled={currentPlan === "Starter" || !planMap["Basic Plan"]}>
                     <Link href={"/dashboard/pricing/checkout?plan=2"} className="w-full" >
                         <Button variant={"outline"} className="w-full" size={"lg"} disabled={currentPlan === "Starter"}>
                             {/* Upgrade */}
@@ -330,9 +259,8 @@ export default function PricingPage() {
                         "*Branch Management* (Organize teams across offices)",
                     ]}
                 >
-                    <Link href={`/dashboard/pricing/checkout?plan=${planMap["Growth Plan"]}&planName=Growth Plan`} className="w-full" >
-                        <Button variant={"secondary"} className="w-full" size={"lg"} disabled={currentPlan === "Growth" || !planMap["Pro Plan"]}>
                     <Link href={"/dashboard/pricing/checkout?plan=3"} className="w-full" >
+                        <Button variant={"secondary"} className="w-full" size={"lg"} disabled={currentPlan === "Growth"}>
                             {/* Choose Plan */}
                             {currentPlan === "Growth" ? "Current Plan" : "Upgrade"}
                         </Button>

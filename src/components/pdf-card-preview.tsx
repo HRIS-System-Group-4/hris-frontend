@@ -137,13 +137,6 @@ export function PdfCardPreview({
           {isLoading ? (
             <Skeleton className="h-full w-full" />
           ) : thumbnailUrl ? (
-            <Image
-              src={thumbnailUrl || "/placeholder.svg"}
-              alt={`Preview of ${fileName}`}
-              className="object-cover w-full h-full"
-              width={300}
-              height={400}
-            />
             // <Image
             //   src={thumbnailUrl || "/placeholder.svg"}
             //   alt={`Preview of ${fileName}`}
