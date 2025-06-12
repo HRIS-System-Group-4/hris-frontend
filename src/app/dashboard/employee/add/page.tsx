@@ -240,7 +240,7 @@ export default function AddEmployeeCard() {
 
             const token = localStorage.getItem("authToken");
             const data = await getCheckClockSettings()
-            const formatted = data.map((item: any) => ({
+            const formatted = data.data.map((item: any) => ({
                 label: item.name,
                 value: String(item.id),
             }));
