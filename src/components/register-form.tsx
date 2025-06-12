@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/form"
 import { registerAdmin } from "@/services/authService"; // Pastikan path sesuai
 import { useRouter } from "next/navigation"
+import { useToast } from "@/components/ui/use-toast"
 
 // 1. Define the schema
 
@@ -25,6 +26,7 @@ import { useRouter } from "next/navigation"
 type RegisterFormData = z.infer<typeof registerSchema>
 
 export default function RegisterForm() {
+  const { toast } = useToast() // ← Inisialisasi router
   const router = useRouter() // ← Inisialisasi router
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -50,11 +52,16 @@ export default function RegisterForm() {
         console.warn("No token received from registration response");
       }
 
-      alert("Registration success!");
+      toast({
+        title: "Registration success!",
+        description: "Your account has been created successfully",
+      })
       router.push("/auth/setup-company");
     } catch (err: any) {
-      console.error("Error registering:", err);
-      alert("Registration failed: " + err.response?.data?.message || err.message);
+      toast({
+        title: "Registration error!",
+        description: err,
+      })
     }
   }
 
