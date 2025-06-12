@@ -27,7 +27,7 @@ export default function CheckClockSection() {
             console.log("Fetching data...", user);
             const data = await getCheckClockSettings()
             console.log("Data", data)
-            setData(data)
+            setData(data.data)
             setIsLoading(false)
         } catch (error) {
             console.error("Error fetching data:", error);

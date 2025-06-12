@@ -64,21 +64,21 @@ export const columns: ColumnDef<CheckClock>[] = [
         enableSorting: false,
         enableHiding: false
     },
-    {
-        accessorKey: "totalEmployee",
-        header: ({ column }) => (
-            <DataTableColumnHeader column={column} title="Total Employee" />
-        ),
-        cell: ({ row }) => {
-            return (
-                <div className="flex w-[100px] items-center">
-                    <span className="capitalize">{row.original.totalEmployee}</span>
-                </div>
-            );
-        },
-        enableSorting: false,
-        enableHiding: false
-    },
+    // {
+    //     accessorKey: "totalEmployee",
+    //     header: ({ column }) => (
+    //         <DataTableColumnHeader column={column} title="Total Employee" />
+    //     ),
+    //     cell: ({ row }) => {
+    //         return (
+    //             <div className="flex w-[100px] items-center">
+    //                 <span className="capitalize">{row.original.totalEmployee}</span>
+    //             </div>
+    //         );
+    //     },
+    //     enableSorting: false,
+    //     enableHiding: false
+    // },
     {
         accessorKey: "type",
         header: ({ column }) => (
